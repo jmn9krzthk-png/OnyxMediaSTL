@@ -678,7 +678,8 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
       <div class="full stack" style="gap:12px">
         <p class="err" id="formErr" hidden>Add your name, mobile number, a full email address and your company so Max can confirm your call.</p>
         <div class="btns"><button class="btn primary" type="submit">Book my 15-minute call <span class="tri"></span></button></div>
-        <p class="form-note">Submissions go to Max's email and the lead tracker sheet. Prototype only: nothing is sent from this page.</p>
+        <p class="form-note" id="protoNote">Submissions go to Max's email and the lead tracker sheet. Prototype only: nothing is sent from this page.</p>
+        <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"><label for="f-fax">Fax</label><input id="f-fax" name="fax" tabindex="-1" autocomplete="off"></div>
       </div>
     </form>
   </section>
@@ -825,7 +826,7 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
     menuBtn.setAttribute("aria-expanded", String(open)); menuBtn.textContent = open ? "CLOSE" : "MENU";
   });
 
-  const form = document.getElementById("leadForm"), err = document.getElementById("formErr");
+  const form = document.getElementById("leadForm"), err = document.getElementById("formErr"), errDefault = err.textContent;
   form.addEventListener("submit", e => {
     e.preventDefault();
     const okEmail = /\S+@\S+\.\S+/.test(form.email.value);
@@ -833,9 +834,32 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
     form.phone.setAttribute("aria-invalid", okPhone ? "false" : "true");
     const ok = form.name.value.trim() && okEmail && okPhone && form.company.value.trim();
     form.email.setAttribute("aria-invalid", okEmail ? "false" : "true");
-    err.hidden = !!ok;
-    if (ok) { form.reset(); location.hash = "thanks"; }
+    err.textContent = errDefault; err.hidden = !!ok;
+    if (!ok) return;
+    // Live mode: config.js (written at build time) supplies the Convex deployment URL.
+    const convexUrl = window.ONYX_CONVEX_URL;
+    if (!convexUrl) { form.reset(); location.hash = "thanks"; return; }
+    const btn = form.querySelector('button[type="submit"]');
+    const args = { page: location.href };
+    for (const [k, val] of new FormData(form)) args[k] = String(val);
+    btn.disabled = true;
+    fetch(convexUrl.replace(/\/$/, "") + "/api/mutation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: "leads:submit", args, format: "json" })
+    })
+      .then(r => r.json())
+      .then(res => {
+        if (res.status !== "success") throw new Error(res.errorMessage || "Submit failed");
+        form.reset(); location.hash = "thanks";
+      })
+      .catch(() => {
+        err.textContent = "Something went wrong sending your details. Please call or text Max at 636.385.3995.";
+        err.hidden = false;
+      })
+      .finally(() => { btn.disabled = false; });
   });
+  if (window.ONYX_CONVEX_URL) document.getElementById("protoNote").hidden = true;
 
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
