@@ -5,3 +5,4 @@
 | 1 | 2026-11-04 | 1 | Audit built from search-index data; live crawl blocked by session network policy | Noted | Rerun the technical audit once `onyxmediastl.com` is allowed |
 | 2 | 2026-11-04 | 1 | Current platform assumed to be Wix (`-7` slug pattern) | Pending confirmation | Affects the Phase 5 platform choice |
 | 3 | 2026-11-04 | 1 | Phase 1 findings list | ⏸ Awaiting approval | `docs/phase-1-audit.md` |
+| 4 | 2026-11-04 | Prototype | Built a clickable site prototype as a private artifact (not deployed to onyxmediastl.com) | Done | `prototype/index.html`. Dark onyx base, tungsten-amber accent; primary CTA "Book a Free Strategy Call", secondary "See Our Work". All proof, prices and policies are placeholders |
