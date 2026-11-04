@@ -340,6 +340,12 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
 @media (min-width:720px){.clients{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .clients li{background:var(--bg);padding:18px 16px;min-height:72px;display:flex;align-items:center;font-family:var(--font-display);font-weight:800;font-stretch:112%;text-transform:uppercase;font-size:14px;line-height:1.15;letter-spacing:.03em;color:var(--ink-muted);transition:color .2s,background .2s}
 .clients li:hover{color:var(--ink);background:var(--surface)}
+.thumb.photo{position:relative;overflow:hidden;aspect-ratio:4/5;max-width:100%;background:var(--surface)}
+.thumb.photo img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s ease}
+.case:hover .thumb.photo img{transform:scale(1.04)}
+.thumb.photo > .tri{position:absolute;left:14px;top:14px;width:12px;height:16px}
+.media.photo{margin:0;overflow:hidden;background:var(--surface)}
+.media.photo img{width:100%;height:100%;object-fit:cover;display:block}
 /* Gallery */
 .gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:170px;gap:8px}
 @media (min-width:860px){.gallery{grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:240px;gap:12px}}
@@ -443,11 +449,15 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
         <p class="body-l">On the roof, in the yard, on the lot. We go where the work happens and film the people doing it.</p>
       </div>
       <div class="gallery">
-        <figure class="g-roof"><img src="media/roof-drone-overhead.webp" alt="Drone view looking straight down on a roof replacement in progress, underlayment going down" loading="lazy"><figcaption class="caption"><span class="tri"></span>Roof replacement · drone</figcaption></figure>
-        <figure class="g-scaf"><img src="media/restoration-scaffolding.webp" alt="Historic brick building wrapped in scaffolding during exterior restoration" loading="lazy"><figcaption class="caption"><span class="tri"></span>Exterior restoration</figcaption></figure>
-        <figure class="g-owners"><img src="media/owners-on-camera.webp" alt="Two business owners smiling outdoors on their property" loading="lazy"><figcaption class="caption"><span class="tri"></span>Owners on camera</figcaption></figure>
-        <figure class="g-kennel"><img src="media/kennel-play-yard.webp" alt="Dogs playing in a wading pool in a kennel's play yard" loading="lazy"><figcaption class="caption"><span class="tri"></span>Kennel · play yard</figcaption></figure>
-        <figure class="g-aerial"><img src="media/neighborhood-aerial.webp" alt="Aerial view of a brick home and neighborhood on a summer day" loading="lazy"><figcaption class="caption"><span class="tri"></span>Neighborhood aerial</figcaption></figure>
+        <figure class="g-roof"><img src="media/roof-drone-overhead.webp" alt="Drone view looking straight down on a roof replacement in progress, underlayment going down" loading="lazy"><figcaption class="caption"><span class="tri"></span>Gorilla Roofing · drone</figcaption></figure>
+        <figure class="g-scaf"><img src="media/restoration-scaffolding.webp" alt="Historic brick building wrapped in scaffolding during exterior restoration" loading="lazy"><figcaption class="caption"><span class="tri"></span>Gorilla Roofing · restoration</figcaption></figure>
+        <figure class="g-owners"><img src="media/owners-on-camera.webp" alt="Two business owners smiling outdoors on their property" loading="lazy"><figcaption class="caption"><span class="tri"></span>Almost Home Kennels · owners</figcaption></figure>
+        <figure class="g-kennel"><img src="media/kennel-play-yard.webp" alt="Dogs playing in a wading pool in a kennel's play yard" loading="lazy"><figcaption class="caption"><span class="tri"></span>Almost Home Kennels</figcaption></figure>
+        <figure class="g-aerial"><img src="media/neighborhood-aerial.webp" alt="Aerial view of a brick home and neighborhood on a summer day" loading="lazy"><figcaption class="caption"><span class="tri"></span>Gorilla Roofing · aerial</figcaption></figure>
+        <figure><img src="media/kimco-site-walk.webp" alt="KIMCO Concrete team walking a job site in safety vests" loading="lazy"><figcaption class="caption"><span class="tri"></span>KIMCO Concrete</figcaption></figure>
+        <figure><img src="media/wies-offsite-interior.webp" alt="Wies Offsite installer working on scaffolding inside a building under construction" loading="lazy"><figcaption class="caption"><span class="tri"></span>Wies Offsite</figcaption></figure>
+        <figure><img src="media/trailblaze-studio-interview.webp" alt="Studio interview set with lights and camera for Trailblaze Media" loading="lazy"><figcaption class="caption"><span class="tri"></span>Trailblaze Media · studio</figcaption></figure>
+        <figure><img src="media/gorilla-roof-drone.webp" alt="Drone view of a Gorilla Roofing tear-off with shingle bundles on the roof" loading="lazy"><figcaption class="caption"><span class="tri"></span>Gorilla Roofing · tear-off</figcaption></figure>
       </div>
     </div>
   </section>
@@ -721,15 +731,15 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
 <script>
 (function(){
   const cases = [
-    {f:["social"], client:"K9 Kamp", tag:"Social content", note:"Client",
+    {f:["social"], client:"K9 Kamp", tag:"Social content", note:"", img:"media/k9kamp-owner.webp", alt:"K9 Kamp owner smiling in front of the K9 Kamp van",
      problem:"A dog trainer whose results speak for themselves, but whose feed didn't show them.",
      made:"Talking-head reels with the owner, filmed during real training sessions with the dogs.",
      result:"[RESULT: real numbers only]"},
-    {f:["brand","ads"], client:"[HVAC client]", tag:"Brand video + ads", note:"Placeholder",
-     problem:"[e.g. Slow shoulder season, install leads going to a bigger competitor]",
-     made:"[e.g. Techs-on-the-job reels and a 30s ad from one shoot day]",
+    {f:["social","ads"], client:"Gorilla Roofing", tag:"Roofing · social + ads", note:"", img:"media/gorilla-crew-on-roof.webp", alt:"Gorilla Roofing crew installing underlayment on a steep roof",
+     problem:"[The business problem in one sentence]",
+     made:"[What we shot: crew-on-the-roof reels, drone, Meta ad creatives]",
      result:"[Measured result]"},
-    {f:["social","ads"], client:"[Automotive client]", tag:"Automotive · social + ads", note:"Placeholder",
+    {f:["social","ads"], client:"Mountain Top Service Center", tag:"Automotive · social + ads", note:"", img:"media/mtsc-service-bays.webp", alt:"Mountain Top Service Center shop with vehicles on lifts in the service bays",
      problem:"[e.g. Empty bays midweek, customers choosing the dealer for routine service]",
      made:"[e.g. Tech-explains-the-repair reels and a service-special ad from one shoot day]",
      result:"[Measured result]"}
@@ -750,16 +760,16 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
     ["Do I have to sign a long contract?","Monthly plans run on a [X]-month minimum, then month to month.",true]
   ];
   const svc = [
-    ["brand","Brand & commercial video","Look like the company people call first.","Brand films, commercials, website video and recruiting video. We script around the questions customers ask before they hire you.",["Concept, script and shot list","Half-day or full-day shoot on real jobs","Hero cut plus 15s and 30s versions","Vertical cuts for social and ads"],"From $[X]"],
-    ["social","Monthly social content","Show up every week without lifting a camera.","One shoot day becomes a month of short-form video: your crew, your trucks or bays, your finished work.",["[X] reels per month","Edited for Reels, TikTok and Shorts","Captions and posting schedule","Monthly results report"],"From $[X]/mo"],
-    ["ads","Performance advertising","Turn your best video into booked jobs.","Meta and Google campaigns built from the footage we shoot, targeted to the ZIP codes your customers actually come from.",["Account and pixel setup","Service-area targeting","Monthly creative testing","Every lead to your email and a Google Sheet"],"From $[X]/mo + spend"],
-    ["strategy","Strategy & content planning","Know what to film before we roll.","A working session and written 90-day plan built around your busy and slow seasons.",["Offer and market review","Competitor content review","90-day content calendar","Hook and script bank"],"From $[X]"]
+    ["brand","Brand & commercial video","Look like the company people call first.","Brand films, commercials, website video and recruiting video. We script around the questions customers ask before they hire you.", ["Concept, script and shot list","Half-day or full-day shoot on real jobs","Hero cut plus 15s and 30s versions","Vertical cuts for social and ads"],"From $[X]","media/trailblaze-studio-interview.webp","Lit studio interview set"],
+    ["social","Monthly social content","Show up every week without lifting a camera.","One shoot day becomes a month of short-form video: your crew, your trucks or bays, your finished work.",["[X] reels per month","Edited for Reels, TikTok and Shorts","Captions and posting schedule","Monthly results report"],"From $[X]/mo","media/almosthome-owners.webp","Almost Home Kennels owners on camera"],
+    ["ads","Performance advertising","Turn your best video into booked jobs.","Meta and Google campaigns built from the footage we shoot, targeted to the ZIP codes your customers actually come from.",["Account and pixel setup","Service-area targeting","Monthly creative testing","Every lead to your email and a Google Sheet"],"From $[X]/mo + spend","media/mtsc-service-bays.webp","Mountain Top Service Center service bays"],
+    ["strategy","Strategy & content planning","Know what to film before we roll.","A working session and written 90-day plan built around your busy and slow seasons.",["Offer and market review","Competitor content review","90-day content calendar","Hook and script bank"],"From $[X]","media/kimco-site-walk.webp","KIMCO Concrete team planning on a job site"]
   ];
 
   const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
   const tri = '<span class="tri"></span>';
   const caseHTML = c => `<article class="case" data-f="${c.f.join(" ")}">
-      <div class="slot thumb">${tri}${esc(c.client)} · vertical reel<span class="thumb-bar"><i></i></span></div>
+      ${c.img ? `<div class="thumb photo"><img src="${c.img}" alt="${esc(c.alt)}" loading="lazy">${tri}<span class="thumb-bar"><i></i></span></div>` : `<div class="slot thumb">${tri}${esc(c.client)} · vertical reel<span class="thumb-bar"><i></i></span></div>`}
       <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><span class="eyebrow">${esc(c.tag)}</span><span class="caption muted">${esc(c.note)}</span></div>
       <h3 class="display-m">${esc(c.client)}</h3>
       <dl><div><dt>Problem</dt><dd>${esc(c.problem)}</dd></div><div><dt>What we made</dt><dd>${esc(c.made)}</dd></div><div><dt>Result</dt><dd class="result">${esc(c.result)}</dd></div></dl>
@@ -774,7 +784,7 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
       <div class="foot"><span class="price">${esc(s[5])}</span><span>Details</span></div>
     </a>`;
   const svcHTML = s => `<article class="svc-detail" id="svc-${s[0]}">
-      <div class="slot media">${esc(s[1])} sample clip</div>
+      ${s[6] ? `<figure class="media photo"><img src="${s[6]}" alt="${esc(s[7])}" loading="lazy"></figure>` : `<div class="slot media">${esc(s[1])} sample clip</div>`}
       <div class="stack" style="gap:20px"><span class="eyebrow"><span class="tri"></span>${esc(s[1])}</span><h2 class="display-l">${esc(s[2])}</h2><p class="body-l">${esc(s[3])}</p>
       <ul class="ticks">${s[4].map(x=>`<li>${tri}${esc(x)}</li>`).join("")}</ul>
       <p class="eyebrow">${esc(s[5])}</p>
