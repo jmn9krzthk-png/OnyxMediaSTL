@@ -247,16 +247,12 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
 
 /* ===== Motion: always something moving, all of it small. Disabled under prefers-reduced-motion. ===== */
 /* Trades ticker */
-.ticker{overflow:hidden;border-block:1px solid var(--line);background:var(--surface);margin-top:clamp(40px,5vw,64px)}
-.ticker-track{display:flex;width:max-content;animation:marquee 38s linear infinite}
-.ticker-row{display:flex;align-items:center;gap:28px;padding:18px 14px;white-space:nowrap;font-family:var(--font-display);font-weight:900;font-stretch:125%;text-transform:uppercase;font-size:20px;letter-spacing:.02em}
-.ticker-row .tri{width:9px;height:12px}
-.ticker:hover .ticker-track{animation-play-state:paused}
+.ticker{border-block:1px solid var(--line);background:var(--surface);margin-top:clamp(40px,5vw,64px)}
+.ticker-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-block:18px;font-family:var(--font-display);font-weight:800;font-stretch:112%;text-transform:uppercase;font-size:15px;letter-spacing:.04em;color:var(--ink-muted)}
+.ticker-row .tri{width:7px;height:10px}
+.ticker-row .tri:last-child{display:none}
 @keyframes marquee{to{transform:translateX(-50%)}}
 /* Client logo marquee */
-.logo-marquee{overflow:hidden;margin-top:16px;mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
-.logo-track{display:flex;gap:12px;width:max-content;animation:marquee 46s linear infinite}
-.logo-track .slot{width:200px;height:64px;flex:none}
 /* Rotating headline word */
 .rot{display:block;position:relative;white-space:nowrap}
 @media (max-width:640px){.rot{white-space:normal;min-height:1.84em}}
@@ -302,11 +298,37 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
 .logo::after{content:"";position:absolute;top:0;bottom:0;width:30%;left:-40%;background:linear-gradient(100deg,transparent,#F2F0EB30,transparent);animation:glint 7s ease-in-out infinite}
 @keyframes glint{0%,80%{left:-40%}100%{left:120%}}
 @media (prefers-reduced-motion: reduce){
-  .ticker-track,.logo-track,.btn .tri,.eyebrow .tri,.playhead i,.thumb-bar i,.cta-pattern,.logo::after{animation:none}
-  .ticker-track,.logo-track{flex-wrap:wrap;width:auto}
-  .ticker-row:last-child,.logo-track .slot[aria-hidden]{display:none}
+  .btn .tri,.eyebrow .tri,.playhead i,.thumb-bar i,.cta-pattern,.logo::after{animation:none}
   .trade::before,.trade .tri{transition:none}
 }
+
+
+/* ===== Quick-call conversion ===== */
+.quick{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 24px;color:var(--ink-muted);font-size:15px;font-weight:600}
+.quick li{display:flex;align-items:center;gap:8px}
+.quick .tri{width:7px;height:10px}
+.cta-strip{margin-top:24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 24px;padding:24px 28px;border:1px solid var(--amber);background:var(--surface)}
+.cta-strip p{max-width:none}
+.call-steps{list-style:none;margin:8px 0;padding:0;display:grid;gap:1px;background:#0B0B0C33;border:1px solid #0B0B0C33}
+@media (min-width:860px){.call-steps{grid-template-columns:repeat(3,1fr)}}
+.call-steps li{background:var(--amber);padding:20px 22px;display:grid;gap:6px;color:var(--on-amber)}
+.call-steps .n{font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.call-steps strong{font-family:var(--font-display);font-weight:800;font-stretch:112%;text-transform:uppercase;font-size:20px;line-height:1.05}
+.call-steps span:last-child{font-size:16px;line-height:1.5}
+.more{border:1px solid var(--line);padding:0 16px}
+.more summary{cursor:pointer;padding-block:14px;font-weight:700;list-style:none;display:flex;align-items:center;gap:10px}
+.more summary::-webkit-details-marker{display:none}
+.more summary::before{content:"";width:8px;height:11px;background:var(--amber);clip-path:polygon(0 0,100% 50%,0 100%);transition:transform .15s}
+.more[open] summary::before{transform:rotate(90deg)}
+.more-grid{display:grid;gap:16px;padding-bottom:16px}
+@media (min-width:640px){.more-grid{grid-template-columns:1fr 1fr}}
+.field input[aria-invalid="true"]{border-color:var(--danger)}
+.callbar{position:fixed;left:0;right:0;bottom:0;z-index:55;display:none;align-items:center;gap:12px;background:var(--bg);border-top:1px solid var(--line);
+  padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.callbar .btn{flex:1;justify-content:center;padding:16px 18px;width:auto}
+.callbar-num{display:grid;gap:2px;text-align:right;font-size:15px;line-height:1.2}
+@media (max-width:760px){.callbar{display:flex}body{padding-bottom:86px}}
+.callbar[hidden]{display:none}
 
 /* Prototype banner */
 .proto{background:var(--surface-high);border-bottom:1px solid var(--line);color:var(--ink-muted)}
@@ -350,6 +372,7 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
         <a class="btn primary" href="#contact">Book a Free Strategy Call <span class="tri"></span></a>
         <a class="btn secondary" href="#work">See Our Work</a>
       </div>
+      <ul class="quick"><li><span class="tri"></span>15 minutes</li><li><span class="tri"></span>Free, no pitch deck</li><li><span class="tri"></span>Leave with 3 video ideas</li></ul>
     </div>
     <div class="wrap">
       <div class="reel" role="img" aria-label="Showreel placeholder. The final site plays a muted 60-second showreel loop here.">
@@ -362,15 +385,14 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
     </div>
   </section>
 
-  <div class="ticker" aria-hidden="true"><div class="ticker-track"><div class="ticker-row"><span>HVAC</span><span class="tri"></span><span>Plumbing</span><span class="tri"></span><span>Roofing</span><span class="tri"></span><span>Electrical</span><span class="tri"></span><span>Remodeling</span><span class="tri"></span><span>Landscaping</span><span class="tri"></span><span>Garage doors</span><span class="tri"></span><span>Pest control</span><span class="tri"></span><span>Auto repair</span><span class="tri"></span><span>Dealerships</span><span class="tri"></span><span>Detailing</span><span class="tri"></span><span>Tint &amp; wrap</span><span class="tri"></span><span>Body shops</span><span class="tri"></span></div><div class="ticker-row"><span>HVAC</span><span class="tri"></span><span>Plumbing</span><span class="tri"></span><span>Roofing</span><span class="tri"></span><span>Electrical</span><span class="tri"></span><span>Remodeling</span><span class="tri"></span><span>Landscaping</span><span class="tri"></span><span>Garage doors</span><span class="tri"></span><span>Pest control</span><span class="tri"></span><span>Auto repair</span><span class="tri"></span><span>Dealerships</span><span class="tri"></span><span>Detailing</span><span class="tri"></span><span>Tint &amp; wrap</span><span class="tri"></span><span>Body shops</span><span class="tri"></span></div></div></div>
+  <div class="ticker"><div class="wrap"><div class="ticker-row"><span>HVAC</span><span class="tri"></span><span>Plumbing</span><span class="tri"></span><span>Roofing</span><span class="tri"></span><span>Electrical</span><span class="tri"></span><span>Remodeling</span><span class="tri"></span><span>Landscaping</span><span class="tri"></span><span>Garage doors</span><span class="tri"></span><span>Pest control</span><span class="tri"></span><span>Auto repair</span><span class="tri"></span><span>Dealerships</span><span class="tri"></span><span>Detailing</span><span class="tri"></span><span>Tint &amp; wrap</span><span class="tri"></span><span>Body shops</span><span class="tri"></span></div></div></div>
 
   <section class="trust">
     <div class="wrap">
       <span class="eyebrow"><span class="tri"></span>Crews and shops we've filmed</span>
-      <div class="logo-marquee"><div class="logo-track">
-        <div class="slot">Client logo</div><div class="slot">Client logo</div><div class="slot">Client logo</div><div class="slot">Client logo</div><div class="slot">Client logo</div><div class="slot">Client logo</div>
-        <div class="slot" aria-hidden="true">Client logo</div><div class="slot" aria-hidden="true">Client logo</div><div class="slot" aria-hidden="true">Client logo</div><div class="slot" aria-hidden="true">Client logo</div><div class="slot" aria-hidden="true">Client logo</div><div class="slot" aria-hidden="true">Client logo</div>
-      </div></div>
+      <div class="trust-row">
+        <div class="slot">Client logo</div><div class="slot">Client logo</div><div class="slot">Client logo</div><div class="slot">Client logo</div><div class="slot">Client logo</div>
+      </div>
     </div>
   </section>
 
@@ -388,6 +410,7 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
         <a class="trade" href="#services"><span class="tri"></span><h3>Garage doors &amp; pest</h3><p>Be the first name a homeowner trusts when something breaks or bites.</p></a>
         <a class="trade auto" href="#services"><span class="tri"></span><h3>Automotive</h3><p>Repair shops, dealers, detailers, tint and wrap, body shops. Fill the bays with video that shows the work and the people doing it.</p></a>
       </div>
+      <div class="cta-strip"><p><strong>See your business in there?</strong> <span class="muted">15 minutes. Free. Pick a time that works.</span></p><a class="btn primary" href="#contact">Book a Free Strategy Call <span class="tri"></span></a></div>
     </div>
   </section>
 
@@ -414,6 +437,7 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
       </div>
       <div class="svc-grid" id="home-svc"></div>
       <div class="also"><strong>Also:</strong><span>Real estate photo, walkthrough video and drone, delivered within 24 hours. Event and testimonial video.</span></div>
+      <div class="cta-strip"><p><strong>Not sure which one fits?</strong> <span class="muted">15 minutes. Free. Pick a time that works.</span></p><a class="btn primary" href="#contact">Book a Free Strategy Call <span class="tri"></span></a></div>
     </div>
   </section>
 
@@ -483,9 +507,13 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
   <section class="cta-band">
     <div class="cta-pattern" aria-hidden="true"></div>
     <div class="wrap">
-      <span class="eyebrow"><span class="tri"></span>Free 30-minute call</span>
+      <span class="eyebrow"><span class="tri"></span>Free 15-minute call</span>
       <h2 class="display-xl">Let's fill your schedule.</h2>
-      <p>We'll look at what you're posting now, what the competition in your area is doing, and what we'd film first. No pitch deck.</p>
+      <ol class="call-steps">
+        <li><span class="n">Min 0–5</span><strong>Your business</strong><span>What you sell, where your customers come from, what a good month looks like.</span></li>
+        <li><span class="n">Min 5–10</span><strong>Your competition</strong><span>What the top shops and crews in your area are posting, and where they're weak.</span></li>
+        <li><span class="n">Min 10–15</span><strong>Your first shoot</strong><span>Three video ideas you can use whether you hire us or not.</span></li>
+      </ol>
       <div class="btns"><a class="btn" href="#contact">Book a Free Strategy Call <span class="tri"></span></a><a class="btn ghost" href="#work">See Our Work</a></div>
     </div>
   </section>
@@ -569,12 +597,14 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
 <div data-view="contact" hidden>
   <section class="page-head"><div class="wrap stack">
     <span class="eyebrow"><span class="tri"></span>Book a call</span>
-    <h1 class="display-l">Book a free 30-minute strategy call.</h1>
-    <p class="body-l">Pick a time, or send the details and Max will reply within one business day.</p>
+    <h1 class="display-l">Book a free 15-minute strategy call.</h1>
+    <p class="body-l">Pick a time that works. It takes 15 minutes, it's free, and you'll leave with three video ideas for your business.</p>
   </div></section>
   <section class="wrap book" style="padding-bottom:96px">
     <div class="stack" style="gap:24px">
-      <div class="slot sched">Scheduler embed<br><span style="opacity:.8">Calendly / Cal.com / Google booking: tool to be confirmed</span></div>
+      <div class="stack" style="gap:12px"><span class="eyebrow"><span class="tri"></span>Fastest: pick a time</span>
+      <div class="slot sched">Scheduler embed · 15-minute slots<br><span style="opacity:.8">Calendly / Cal.com / Google booking: tool to be confirmed</span></div></div>
+      <p class="form-note"><strong style="color:var(--ink)">Rather talk now?</strong> Call or text Max at <strong style="color:var(--ink)">636.385.3995</strong>.</p>
       <address class="nap form-note">
         <strong style="color:var(--ink)">Onyx Media</strong>
         <span>St. Charles, MO · Serving the St. Louis metro</span>
@@ -583,12 +613,14 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
       </address>
     </div>
     <form class="lead" id="leadForm" novalidate>
+      <div class="full"><span class="eyebrow"><span class="tri"></span>Or send 5 quick details</span></div>
       <div class="field"><label for="f-name">Name <span class="req">*</span></label><input id="f-name" name="name" autocomplete="name" required></div>
       <div class="field"><label for="f-email">Email <span class="req">*</span></label><input id="f-email" name="email" type="email" autocomplete="email" required></div>
-      <div class="field"><label for="f-phone">Phone</label><input id="f-phone" name="phone" type="tel" autocomplete="tel"></div>
+      <div class="field"><label for="f-phone">Mobile <span class="req">*</span></label><input id="f-phone" name="phone" type="tel" autocomplete="tel" required></div>
       <div class="field"><label for="f-company">Company <span class="req">*</span></label><input id="f-company" name="company" autocomplete="organization" required></div>
-      <div class="field"><label for="f-trade">Your trade</label>
+      <div class="field full"><label for="f-trade">Your business</label>
         <select id="f-trade" name="trade"><option>HVAC</option><option>Plumbing</option><option>Electrical</option><option>Roofing &amp; exteriors</option><option>Remodeling</option><option>Landscaping &amp; outdoor</option><option>Garage doors</option><option>Pest control</option><option>Auto repair / service</option><option>Dealership</option><option>Detailing, tint &amp; wrap</option><option>Body / collision</option><option>Other</option></select></div>
+      <details class="more full"><summary>Add more details (optional)</summary><div class="more-grid">
       <div class="field"><label for="f-trucks">Trucks or bays</label>
         <select id="f-trucks" name="trucks"><option>1–2</option><option>3–5</option><option>6–15</option><option>16+</option></select></div>
       <div class="field full"><label for="f-site">Website</label><input id="f-site" name="website" type="url" placeholder="https://"></div>
@@ -599,9 +631,10 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
       <div class="field full"><label for="f-time">Timeline</label>
         <select id="f-time" name="timeline"><option>Within 2 weeks</option><option>This month</option><option>Before busy season</option><option>Just exploring</option></select></div>
       <div class="field full"><label for="f-msg">What do you want more of?</label><textarea id="f-msg" name="message" placeholder="More install jobs, fuller bays, fewer price shoppers, a recruiting video…"></textarea></div>
+      </div></details>
       <div class="full stack" style="gap:12px">
-        <p class="err" id="formErr" hidden>Add your name, a full email address and your company so Max can reply.</p>
-        <div class="btns"><button class="btn primary" type="submit">Send and book my call <span class="tri"></span></button></div>
+        <p class="err" id="formErr" hidden>Add your name, mobile number, a full email address and your company so Max can confirm your call.</p>
+        <div class="btns"><button class="btn primary" type="submit">Book my 15-minute call <span class="tri"></span></button></div>
         <p class="form-note">Submissions go to Max's email and the lead tracker sheet. Prototype only: nothing is sent from this page.</p>
       </div>
     </form>
@@ -615,7 +648,7 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
     <h1 class="display-l">Got it. Here's what happens next.</h1>
     <ol>
       <li>Max reviews your details today and replies within one business day.</li>
-      <li>If you haven't picked a time, you'll get a link to book your 30-minute call.</li>
+      <li>If you haven't picked a time, you'll get a text with a link to book your 15-minute call.</li>
       <li>Before the call we look at your site, your Google profile and your competitors so the time is spent on ideas.</li>
     </ol>
     <p class="form-note">The live version fires the GA4 and Meta conversion event on this page.</p>
@@ -623,6 +656,11 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
   </section>
 </div>
 </main>
+
+<div class="callbar" id="callbar">
+  <a class="btn primary" href="#contact">Book a 15-min call <span class="tri"></span></a>
+  <span class="callbar-num"><span class="caption muted">Call / text</span><strong>636.385.3995</strong></span>
+</div>
 
 <footer class="site">
   <div class="wrap">
@@ -660,7 +698,7 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
      result:"[Measured result]"}
   ];
   const steps = [
-    ["Discovery","A 30-minute call about your business, your area and what's bringing in jobs now. You leave with ideas whether you hire us or not.","Week 0"],
+    ["Discovery","A 15-minute call about your business, your area and what's bringing in jobs now. You leave with ideas whether you hire us or not.","Week 0"],
     ["Strategy","We map the first 90 days around your season: what to film, which jobs to feature, where ads will run.","Week 1"],
     ["Production","Shoot day on real jobs or in the shop. We bring the gear and a shot list, and your crew keeps working.","Week 2"],
     ["Launch","Edited reels go live on a schedule. Ads launch with the strongest cuts.","Week 3"],
@@ -730,6 +768,7 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
     const name = names.includes(h) ? h : "home";
     views.forEach(v => v.hidden = v.dataset.view !== name);
     document.querySelectorAll("nav.main a").forEach(a => a.getAttribute("href")==="#"+name ? a.setAttribute("aria-current","page") : a.removeAttribute("aria-current"));
+    document.getElementById("callbar").hidden = (name==="contact"||name==="thanks");
     drawer.hidden = true; menuBtn.setAttribute("aria-expanded","false"); menuBtn.textContent="MENU";
     window.scrollTo(0,0);
   }
@@ -743,7 +782,9 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
   form.addEventListener("submit", e => {
     e.preventDefault();
     const okEmail = /\S+@\S+\.\S+/.test(form.email.value);
-    const ok = form.name.value.trim() && okEmail && form.company.value.trim();
+    const okPhone = form.phone.value.replace(/\D/g,"").length >= 10;
+    form.phone.setAttribute("aria-invalid", okPhone ? "false" : "true");
+    const ok = form.name.value.trim() && okEmail && okPhone && form.company.value.trim();
     form.email.setAttribute("aria-invalid", okEmail ? "false" : "true");
     err.hidden = !!ok;
     if (ok) { form.reset(); location.hash = "thanks"; }
