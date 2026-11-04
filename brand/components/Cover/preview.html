@@ -1,0 +1,26 @@
+<!-- @dsCard height=300 -->
+<style>
+  .cv{position:relative;width:960px;height:300px;background:var(--bg);overflow:hidden}
+  .cv svg{position:absolute;left:0;top:0}
+  .amber{fill:var(--amber)} .deep{fill:var(--amber-deep)} .ink{fill:var(--ink)} .cut{fill:var(--bg)}
+  .cv .txt{position:absolute;left:48px;bottom:48px;max-width:440px}
+  .cv h1{margin:0;font-family:var(--font-display);font-weight:900;font-stretch:125%;font-size:84px;line-height:.95;color:var(--ink)}
+  .cv p{margin:12px 0 0;font-family:var(--font-body);font-size:14px;color:var(--ink-muted)}
+</style>
+<div class="cv">
+  <svg width="960" height="300" viewBox="0 0 960 300" aria-hidden="true">
+    <!-- blocks: amber 192x300 (space-24 x2), ink 192x156, amber-deep 96x144; all radius-0 -->
+    <!-- arrangement: one tall amber slab bleeding top and bottom with an ink block and a deep satellite to its right -->
+    <!-- pattern: literal motif row, the play triangle from the logo's X, cut out of the ink block at a space-12 pitch -->
+    <!-- scales: pitch space-12 (48px), triangles 24x32, gaps space-6; radius-0 throughout -->
+    <rect class="amber" x="576" y="0" width="192" height="300"/>
+    <rect class="ink" x="768" y="0" width="192" height="156"/>
+    <rect class="deep" x="864" y="156" width="96" height="144"/>
+    <g class="cut">
+      <polygon points="792,24 816,40 792,56"/><polygon points="840,24 864,40 840,56"/><polygon points="888,24 912,40 888,56"/>
+      <polygon points="792,72 816,88 792,104"/><polygon points="840,72 864,88 840,104"/><polygon points="888,72 912,88 888,104"/>
+    </g>
+    <polygon class="ink" points="624,102 720,150 624,198"/>
+  </svg>
+  <div class="txt"><h1>Onyx Media</h1><p>Video and ads for St. Louis home service companies.</p></div>
+</div>

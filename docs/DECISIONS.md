@@ -6,3 +6,4 @@
 | 2 | 2026-11-04 | 1 | Current platform assumed to be Wix (`-7` slug pattern) | Pending confirmation | Affects the Phase 5 platform choice |
 | 3 | 2026-11-04 | 1 | Phase 1 findings list | ⏸ Awaiting approval | `docs/phase-1-audit.md` |
 | 4 | 2026-11-04 | Prototype | Built a clickable site prototype as a private artifact (not deployed to onyxmediastl.com) | Done | `prototype/index.html`. Dark onyx base, tungsten-amber accent; primary CTA "Book a Free Strategy Call", secondary "See Our Work". All proof, prices and policies are placeholders |
+| 5 | 2026-11-04 | Brand | Brand guide created from the current logo (Onyx Media design system artifact) | Draft for review | Accent = logo amber #FFA502; Archivo (expanded for display) + JetBrains Mono; square corners, no shadows; play-triangle motif; target = owner-led home service companies; files in `brand/` |

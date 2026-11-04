@@ -1,0 +1,6 @@
+<!-- @dsCard group="Forms" height=330 subtitle="Default and error states" -->
+<form style="padding:24px;display:grid;gap:16px;max-width:520px" onsubmit="return false">
+  <div class="ox-field"><label for="ds-trade">Your trade</label><select id="ds-trade"><option>HVAC</option><option>Plumbing</option><option>Roofing</option><option>Remodeling</option><option>Landscaping</option></select></div>
+  <div class="ox-field ox-field--error"><label for="ds-email">Email</label><input id="ds-email" value="mike@" aria-invalid="true" aria-describedby="ds-email-msg"><span class="ox-field__msg" id="ds-email-msg">Enter a full email address, like mike@yourcompany.com.</span></div>
+  <div><button class="ox-btn ox-btn--primary" type="submit">Send and book my call <span class="ox-play"></span></button></div>
+</form>

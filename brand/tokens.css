@@ -1,0 +1,28 @@
+/* Onyx Media — generated from tokens.json */
+:root, [data-theme="dark"] {
+  --bg: #0b0b0c; --surface: #141416; --surface-high: #1d1d20; --line: #2e2e33; --line-strong: #6e6c66;
+  --ink: #f2f0eb; --ink-muted: #a8a59e; --amber: #ffa502; --amber-hover: #ffb833; --amber-deep: #b36f00;
+  --amber-text: #ffa502; --on-amber: #0b0b0c; --focus: #ffa502; --success: #4cc38a; --danger: #ff6b5b;
+  --shadow-none: none;
+}
+[data-theme="light"] {
+  --bg: #ffffff; --surface: #f4f3f0; --surface-high: #eae8e3; --line: #d6d3cc; --line-strong: #8a877f;
+  --ink: #0b0b0c; --ink-muted: #55534e; --amber-text: #8f5300; --focus: #0b0b0c; --success: #1e7a4a; --danger: #b3261e;
+}
+:root {
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px; --space-8: 32px;
+  --space-12: 48px; --space-16: 64px; --space-24: 96px; --space-32: 128px;
+  --radius-0: 0px; --radius-sm: 2px; --radius-pill: 999px;
+  --font-display: "Archivo", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+.display-xl { font-family: var(--font-display); font-size: 96px; line-height: 0.92; font-weight: 900; letter-spacing: -0.01em; }
+.display-l { font-family: var(--font-display); font-size: 64px; line-height: 0.95; font-weight: 900; letter-spacing: -0.005em; }
+.display-m { font-family: var(--font-display); font-size: 40px; line-height: 1; font-weight: 800; }
+.heading { font-family: var(--font-body); font-size: 24px; line-height: 1.2; font-weight: 700; }
+.body-l { font-family: var(--font-body); font-size: 20px; line-height: 1.5; font-weight: 400; }
+.body { font-family: var(--font-body); font-size: 17px; line-height: 1.6; font-weight: 400; }
+.button { font-family: var(--font-body); font-size: 16px; line-height: 1; font-weight: 700; }
+.eyebrow { font-family: var(--font-body); font-size: 13px; line-height: 1.2; font-weight: 700; letter-spacing: 0.32em; }
+.caption { font-family: var(--font-mono); font-size: 12px; line-height: 1.4; font-weight: 500; letter-spacing: 0.08em; }
