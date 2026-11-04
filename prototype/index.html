@@ -277,12 +277,6 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
 .playhead i{position:absolute;left:0;top:0;bottom:0;width:100%;background:var(--amber);transform-origin:left;animation:play 12s linear infinite}
 @keyframes play{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media (max-width:560px){.playhead{bottom:54px;left:20px;right:20px}}
-/* Case thumb playheads, staggered so they look like reels playing */
-.case .thumb{overflow:hidden}
-.thumb-bar{position:absolute;left:14px;right:14px;bottom:14px;height:3px;background:#FFA50233}
-.thumb-bar i{position:absolute;inset:0;background:var(--amber);transform-origin:left;animation:play 9s linear infinite}
-.case:nth-child(2) .thumb-bar i{animation-duration:11s;animation-delay:-4s}
-.case:nth-child(3) .thumb-bar i{animation-duration:7s;animation-delay:-2s}
 /* Trade spotlight: moves card to card */
 .trade{position:relative}
 .trade::before{content:"";position:absolute;left:0;top:0;height:2px;width:100%;background:var(--amber);transform:scaleX(0);transform-origin:left;transition:transform .5s ease}
@@ -303,7 +297,7 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
 .logo::after{content:"";position:absolute;top:0;bottom:0;width:30%;left:-40%;background:linear-gradient(100deg,transparent,#F2F0EB30,transparent);animation:glint 7s ease-in-out infinite}
 @keyframes glint{0%,80%{left:-40%}100%{left:120%}}
 @media (prefers-reduced-motion: reduce){
-  .btn .tri,.eyebrow .tri,.playhead i,.thumb-bar i,.cta-pattern,.logo::after{animation:none}
+  .btn .tri,.eyebrow .tri,.playhead i,.cta-pattern,.logo::after{animation:none}
   .trade::before,.trade .tri{transition:none}
 }
 
@@ -769,7 +763,7 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
   const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
   const tri = '<span class="tri"></span>';
   const caseHTML = c => `<article class="case" data-f="${c.f.join(" ")}">
-      ${c.img ? `<div class="thumb photo"><img src="${c.img}" alt="${esc(c.alt)}" loading="lazy">${tri}<span class="thumb-bar"><i></i></span></div>` : `<div class="slot thumb">${tri}${esc(c.client)} · vertical reel<span class="thumb-bar"><i></i></span></div>`}
+      ${c.img ? `<div class="thumb photo"><img src="${c.img}" alt="${esc(c.alt)}" loading="lazy">${tri}</div>` : `<div class="slot thumb">${tri}${esc(c.client)} · vertical reel</div>`}
       <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><span class="eyebrow">${esc(c.tag)}</span><span class="caption muted">${esc(c.note)}</span></div>
       <h3 class="display-m">${esc(c.client)}</h3>
       <dl><div><dt>Problem</dt><dd>${esc(c.problem)}</dd></div><div><dt>What we made</dt><dd>${esc(c.made)}</dd></div><div><dt>Result</dt><dd class="result">${esc(c.result)}</dd></div></dl>
