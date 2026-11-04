@@ -340,6 +340,9 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
 .thumb.photo > .tri{position:absolute;left:14px;top:14px;width:12px;height:16px}
 .media.photo{margin:0;overflow:hidden;background:var(--surface)}
 .media.photo img{width:100%;height:100%;object-fit:cover;display:block}
+@media (min-width:900px){#work-cases{grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 32px}}
+#work-cases .thumb{aspect-ratio:4/3}
+#work-cases .thumb img{object-position:center 18%}
 /* Gallery */
 .gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:170px;gap:8px}
 @media (min-width:860px){.gallery{grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:240px;gap:12px}}
@@ -593,7 +596,6 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
       <button class="chip" aria-pressed="false" data-f="social">Social content</button>
       <button class="chip" aria-pressed="false" data-f="brand">Brand video</button>
       <button class="chip" aria-pressed="false" data-f="ads">Paid ads</button>
-      <button class="chip" aria-pressed="false" data-f="realestate">Real estate</button>
     </div>
     <div class="cases" id="work-cases"></div>
   </section>
@@ -736,7 +738,11 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
     {f:["social","ads"], client:"Auto service center", tag:"Automotive · social + ads", note:"", img:"media/mtsc-service-bays.webp", alt:"Auto shop with vehicles on lifts in the service bays",
      problem:"[e.g. Empty bays midweek, customers choosing the dealer for routine service]",
      made:"[e.g. Tech-explains-the-repair reels and a service-special ad from one shoot day]",
-     result:"[Measured result]"}
+     result:"[Measured result]"},
+    {f:["ads"], client:"Chiropractic table upholsterer", tag:"Paid ads", note:"",
+     problem:"[e.g. A niche service that chiropractors only search for when a table is worn out]",
+     made:"[e.g. Meta and Google campaigns targeting chiropractic clinics, with before-and-after table creatives]",
+     result:"[Measured result: leads, booked jobs or cost per lead]"}
   ];
   const steps = [
     ["Discovery","A 15-minute call about your business, your area and what's bringing in jobs now. You leave with ideas whether you hire us or not.","Week 0"],
@@ -787,7 +793,7 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
 
   const fill = (id, html) => { document.getElementById(id).innerHTML = html; };
   fill("home-svc", svc.map(cardHTML).join(""));
-  fill("home-cases", cases.map(caseHTML).join(""));
+  fill("home-cases", cases.slice(0,3).map(caseHTML).join(""));
   fill("work-cases", cases.map(caseHTML).join(""));
   fill("home-steps", steps.map(stepHTML).join(""));
   fill("proc-steps", steps.map(stepHTML).join(""));
