@@ -32,3 +32,4 @@
 | 28 | 2026-11-19 | Site | Industries removed from the main menu; hub + all 32 industry pages linked from every footer, homepage trade cards and "See all industries" button | Done (local) | |
 | 29 | 2026-11-19 | Deploy | netlify.toml added with ignore = "exit 0" so pushes back up to GitHub without Netlify deploying | Active | Remove the ignore line and push once to go live |
 | 30 | 2026-11-19 | SEO | Areas hub page (off-menu, linked from footer and home); 7 new cities; 6 new industries (69 pages total) | Done | Netlify builds still paused |
+| 31 | 2026-11-19 | Site | Contact email added (from tools/contact-email.txt, committed by Max) to Contact page and every footer as a mailto link | Done | |
