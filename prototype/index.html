@@ -107,6 +107,15 @@ nav.main .btn{padding:14px 20px;font-size:15px}
 @media (max-width:560px){.reel .hud.bot span:last-child{display:none}.reel .center .tri{width:34px;height:46px}}
 @media (prefers-reduced-motion: reduce){.reel .light,.rec i{animation:none}}
 
+/* Hero slideshow */
+.slides{position:absolute;inset:0}
+.slide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.08);transition:opacity 1.2s ease}
+.slide.on{opacity:1;animation:kenburns 7s ease-out forwards}
+@keyframes kenburns{from{transform:scale(1.08)}to{transform:scale(1)}}
+.scrim{position:absolute;inset:0;background:linear-gradient(180deg,#0B0B0Ccc 0%,#0B0B0C00 22%,#0B0B0C00 62%,#0B0B0Ce6 100%);pointer-events:none}
+.reel .hud.bot{color:var(--ink)}
+.playhead i{animation-duration:5s}
+@media (prefers-reduced-motion: reduce){.slide{transition:none;transform:none}.slide.on{animation:none}}
 /* Placeholder slots */
 .slot{border:1px dashed #FFA50299;background:#FFA5020F;color:var(--amber-text);font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;display:grid;place-items:center;text-align:center;padding:1rem}
 
@@ -401,12 +410,11 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
       <ul class="quick"><li><span class="tri"></span>15 minutes</li><li><span class="tri"></span>Free, no pitch deck</li><li><span class="tri"></span>Leave with 3 video ideas</li></ul>
     </div>
     <div class="wrap">
-      <div class="reel" role="img" aria-label="Showreel placeholder. The final site plays a muted 60-second showreel loop here.">
-        <div class="light"></div><div class="corners"></div>
+      <div class="reel" role="region" aria-roledescription="slideshow" aria-label="Recent shoots">
+        <div class="slides"><img class="slide on" src="media/max-on-set-wide.webp" alt="Filming an engine bay on a gimbal" data-cap="On set · automotive" style="object-position:50% 40%"><img class="slide" src="media/roof-drone-overhead.webp" alt="Drone view of a roof replacement in progress" data-cap="Roof replacement · drone" style="object-position:50% 50%" loading="lazy"><img class="slide" src="media/kennel-play-yard.webp" alt="Dogs playing in a kennel's play yard" data-cap="Kennel · play yard" style="object-position:50% 60%" loading="lazy"><img class="slide" src="media/gorilla-crew-on-roof.webp" alt="Roofing crew working on a steep roof" data-cap="Crew on the roof" style="object-position:50% 35%" loading="lazy"><img class="slide" src="media/neighborhood-aerial.webp" alt="Aerial view of a home and neighborhood" data-cap="Neighborhood aerial" style="object-position:50% 50%" loading="lazy"><img class="slide" src="media/mtsc-service-bays.webp" alt="Auto shop service bays with vehicles on lifts" data-cap="Service bays · automotive" style="object-position:50% 45%" loading="lazy"></div><div class="scrim"></div><div class="corners"></div>
         <div class="hud top caption"><span class="rec"><i></i>REC · A-CAM</span><span id="tc">00:00:00:00</span></div>
-        <div class="center"><div><span class="tri"></span><p class="caption muted">Showreel · crews on real jobs · 60s muted loop</p></div></div>
         <div class="playhead"><i></i></div>
-        <div class="hud bot caption"><span>24 FPS · 2.39:1</span><span>Poster frame + reduced-motion fallback</span></div>
+        <div class="hud bot caption"><span id="slideCap" aria-live="polite">On set · automotive</span><span id="slideNum">01 / 06</span></div>
       </div>
     </div>
   </section>
@@ -855,6 +863,19 @@ footer.site{border-top:1px solid var(--line);padding-block:56px 40px;color:var(-
         setTimeout(() => cur.classList.remove("in"), 450);
       }, 320);
     }, 2600);
+  }
+
+  // Hero slideshow
+  const slides=[...document.querySelectorAll(".reel .slide")];
+  const cap=document.getElementById("slideCap"), num=document.getElementById("slideNum"), ph=document.querySelector(".playhead i");
+  if (slides.length>1 && !reduceMotion) {
+    let k=0;
+    setInterval(()=>{
+      if (document.hidden) return;
+      slides[k].classList.remove("on"); k=(k+1)%slides.length; slides[k].classList.add("on");
+      cap.textContent=slides[k].dataset.cap; num.textContent=String(k+1).padStart(2,"0")+" / "+String(slides.length).padStart(2,"0");
+      if (ph){ph.style.animation="none"; void ph.offsetWidth; ph.style.animation="";}
+    },5000);
   }
   // Spotlight that walks across the trade cards
   const trades = [...document.querySelectorAll(".trade")];
