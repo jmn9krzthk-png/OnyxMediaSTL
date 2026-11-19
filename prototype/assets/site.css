@@ -314,3 +314,15 @@ footer .logo img{width:150px}
   .btn .tri,.eyebrow .tri,.cta-pattern{animation:none}
   .trade::before,.trade .tri,.gallery img,.thumb img{transition:none}
 }
+
+/* Reviews */
+.reviews{columns:1;column-gap:16px}
+@media (min-width:760px){.reviews{columns:2}}
+@media (min-width:1100px){.reviews{columns:3}}
+.review{break-inside:avoid;margin:0 0 16px;background:var(--bg);border:1px solid var(--line);border-top:4px solid var(--amber);padding:26px;display:grid;gap:14px}
+.review blockquote{margin:0;display:grid;gap:10px;font-size:17px;line-height:1.55}
+.review blockquote p{max-width:none}
+.review figcaption{display:grid;gap:2px;border-top:1px solid var(--line);padding-top:12px}
+.review figcaption span{color:var(--muted);font-size:14px}
+.stars{color:var(--amber-deep);letter-spacing:2px}
+.g-badge{color:var(--amber-text)}

@@ -35,10 +35,23 @@ PRICE_ADS = "$[X]/mo + ad spend"
 CLIENTS = ["Victory Raceway", "Cool Touch Graphics", "Mountain Top Motor Company", "Mountain Top Service Center",
            "Vitale Law Firm", "Almost Home Kennels", "Gorilla Roofing", "K9 Kamp", "Kimco Concrete",
            "Midnight Motorsports", "Mission's Upholstery", "Timberland Band", "Trailblaze Media", "Wies Offsite",
-           "Meyer & Company Real Estate & Auctions", "Detail 360"]
+           "Meyer & Company Real Estate & Auctions", "Detail 360", "Hovis Racing", "McKenzie Chiropractic"]
 
-# Real Google reviews only. Paste them exactly as written: (quote, reviewer name, business or trade, stars)
-REVIEWS = []
+# Real Google reviews only, as the reviewer wrote them: (quote, reviewer name, business, stars or None).
+# Square brackets mark an editorial change to the reviewer's words.
+REVIEWS = [
+    ("Media has always been a big investment for our company and we have worked with several photographers, videographers, and content creators. Max has by far shined above anyone else we've worked with. He is fair, honest, punctual, and easy to work with. We have done years of media with him now and have yet to be disappointed once.\n\nMax has the Detail 360 stamp of approval for sure!!!\n\nOnyx Media absolutely rocks!!!",
+     "Brian Sieveking", "Detail 360", None),
+    ("Max and Onyx media has been a pinnacle of our racing team. He is in the process of taking us from a local racing team to a nationally known motorsports team. He is the best in the business.",
+     "Ethan Hovis", "Hovis Racing", None),
+    ("I highly recommend [Onyx Media] for all your media needs. The owner, Max, is very professional and helpful. I have used his service twice now, and was blown out of the water each time with how well he conducted business and the quality of his work. Whether it is coming up with ideas for content, or capturing the uniqueness to your story, Max has your best interest at heart. Give [Onyx Media] a call, you won’t be disappointed!",
+     "Shawn McKenzie", "McKenzie Chiropractic", None),
+    ("This media production company is top-notch! Max was awesome and such a pleasure to work with! We got some awesome footage and video of some amazing cars, and we couldn't have done this or created some stellar images without him and his media production company! If you're looking to spice up your marketing with NEXT-LEVEL photos and video, then look no further than Onyx Media STL! Great job, and thank you.",
+     "Joshua Fletcher", "Trailblaze Productions", None),
+    ("Max is amazing!! Not only is he personable, but he has an eye on how to make your business, vehicle, etc. stand out in a crowd with the photography and videography that he provides!!",
+     "Heather Patterson", "Detail 360", None),
+]
+INSTAGRAM = "https://www.instagram.com/onyxmediastl/"
 
 ROTATE = ["service calls", "full bays", "booked jobs", "install jobs", "repair orders"]
 
@@ -218,7 +231,7 @@ def footer():
     <div class="stack" style="gap:14px"><a class="logo" href="./"><img src="media/logo-light.webp" alt="Onyx Media" width="150" height="62"></a>
       <address class="nap"><span>Onyx Media · St. Charles, MO</span><span>Video, monthly content and paid ads for home service and automotive businesses</span><span>{PHONE} · {e(EMAIL_SHOWN)}</span></address></div>
     <div><h4>Services</h4><ul><li><a href="content-creation.html">Monthly content</a></li><li><a href="paid-advertising.html">Paid advertising</a></li><li><a href="work.html">Work</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
-    <div><h4>Follow</h4><ul><li><a href="https://www.facebook.com/Onyxhtz/">Facebook</a></li><li><span>Instagram [link]</span></li><li><span>YouTube [link]</span></li><li><span>Google reviews [link]</span></li></ul></div>
+    <div><h4>Follow</h4><ul><li><a href="https://www.facebook.com/Onyxhtz/">Facebook</a></li><li><a href="{INSTAGRAM}">Instagram</a></li><li><span>Google reviews [link]</span></li></ul></div>
     <div><h4>Areas we serve</h4><ul style="grid-template-columns:1fr 1fr;column-gap:16px">{areas}</ul></div>
   </div>
   <div class="legal caption"><span>© 2026 ONYX HTZ LLC</span><span>Privacy Policy · Terms</span></div>
@@ -352,17 +365,22 @@ def steps():
                       ("Shoot", "A half-day on real jobs or in the shop. Your crew keeps working."),
                       ("Post & optimize", "Reels go out on schedule, ads launch, and every month we keep what brings in calls.")])
 
-def reviews():
-    if REVIEWS:
-        cards = "".join(f'<figure class="card" style="margin:0"><span class="hl" aria-label="{s} out of 5 stars">{"★" * s}</span><blockquote style="margin:0;font-size:19px;line-height:1.5">“{e(q)}”</blockquote><figcaption class="caption muted">{e(n)} · {e(b)}</figcaption></figure>'
-                        for q, n, b, s in REVIEWS[:6])
+def review_card(q, n, b, stars):
+    paras = "".join(f"<p>{e(x)}</p>" for x in q.split("\n\n"))
+    star = f'<span class="stars" aria-label="{stars} out of 5 stars">{"★" * stars}</span>' if stars else '<span class="g-badge caption">Google review</span>'
+    return f'<figure class="review">{star}<blockquote>{paras}</blockquote><figcaption><strong>{e(n)}</strong><span>{e(b)}</span></figcaption></figure>'
+
+def reviews(limit=None):
+    items = REVIEWS[:limit] if limit else REVIEWS
+    if items:
+        cards = '<div class="reviews">' + "".join(review_card(*r) for r in items) + "</div>"
     else:
-        cards = "".join('<div class="slot" style="min-height:180px">Google review · real text, name and stars go here</div>' for _ in range(3))
+        cards = '<div class="grid-3">' + "".join('<div class="slot" style="min-height:180px">Google review · real text, name and stars go here</div>' for _ in range(3)) + "</div>"
     return f"""<section class="band bone"><div class="wrap">
   <div class="band-head"><div class="stack">{eyebrow("Google reviews")}<h2 class="display-l">From the owners.</h2></div>
-  <p class="body-l">Real reviews from real clients. <span class="tag">Rating: [X.X] ★ from [N] Google reviews</span></p></div>
-  <div class="grid-3">{cards}</div>
-  <div class="btns" style="margin-top:24px"><a class="btn text" href="#">Read all reviews on Google [link]</a></div>
+  <p class="body-l">What local business owners say after working with us.</p></div>
+  {cards}
+  <div class="btns" style="margin-top:28px"><a class="btn text" href="#">Read all reviews on Google [link]</a></div>
 </div></section>"""
 
 def about_teaser():
@@ -490,7 +508,7 @@ def about_page():
     <h2 class="heading">Why automotive</h2><p class="muted">We understand how shops and dealers sell: trust in the tech, transparency on the repair, and the car looking its best on camera.</p>
     <p class="form-note">Onyx Media is a brand of ONYX HTZ LLC. Paid advertising is delivered through Onyx Performance Advertising.</p>
     <div class="btns"><a class="btn primary" href="contact.html">Get Pricing {TRI}</a></div></div>
-</div></section>""" + client_wall() + cta_band()
+</div></section>""" + reviews() + client_wall() + cta_band()
     return page("about.html", "About Onyx Media | Max Fisher | St. Charles, MO", "Onyx Media is an owner-run video and paid ads studio in St. Charles, MO, for home service and automotive businesses.", body, "about.html")
 
 def contact_page():
@@ -522,7 +540,7 @@ def city_page(c):
         section(f"Why video in {n}", f"Be the {n} company people call first.", c["local"], service_cards()) + \
         section(f"Who we work with in {n}", "Trades, crews and shops.", f"We film {n} businesses on their own job sites, in their shops and on their lots.", trades(), "band bone") + \
         section("Recent shoots", "Shot on real jobs.", "A sample of our work around the area.", gallery()) + \
-        section("How it works", "Four steps. No runaround.", "", steps(), "band bone") + \
+        reviews(3) + \
         f"""<section class="band"><div class="wrap"><div class="band-head"><div class="stack">{eyebrow("Nearby")}<h2 class="display-l">We also serve.</h2></div><p class="body-l">Close to {e(n)} and on our regular routes.</p></div><ul class="areas">{near}<li><a href="./#areas">{TRI}All areas</a></li></ul></div></section>""" + \
         section("FAQ", f"{n} questions.", "", faq_html(faq), "band bone") + cta_band(f"Let's fill your schedule in {n}.")
     return page(city_file(c["slug"]), f"Video Production & Social Media Marketing in {n}, MO | Onyx Media",
