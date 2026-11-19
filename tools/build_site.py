@@ -30,7 +30,7 @@ PHONE_TEL = "+16363853995"
 _contact_file = pathlib.Path(__file__).resolve().parent / "contact-email.txt"
 EMAIL = os.environ.get("ONYX_CONTACT_EMAIL", "").strip() or (_contact_file.read_text().strip() if _contact_file.exists() else "")
 EMAIL_SHOWN = EMAIL or "[contact email]"
-CALENDLY_URL = "https://calendly.com/max-onyxmediastl/30min"   # e.g. "https://calendly.com/onyxmediastl/15min" — paste Max's 15-minute event link here
+CALENDLY_URL = "https://calendly.com/max-onyxmediastl/30min"   # e.g. "https://calendly.com/onyxmediastl/15min" — paste Max's 30-minute event link here
 HERO_VIDEO = None      # e.g. "media/hero-loop.mp4" — when set, plays instead of the photo slideshow
 
 # ---------------------------------------------------------------- data
@@ -308,7 +308,7 @@ def contact_form():
     <div class="field full"><label for="c-msg">What do you want more of?</label><textarea id="c-msg" name="message" placeholder="More install jobs, fuller bays, fewer price shoppers…"></textarea></div>
   </div></details>
   <p class="err" hidden>Add your name, a 10-digit mobile number and a full email address.</p>
-  <button class="btn primary" type="submit">Book my 15-minute call {TRI}</button>
+  <button class="btn primary" type="submit">Book my 30-minute call {TRI}</button>
 </form>"""
 
 # ---------------------------------------------------------------- pricing data (from Max, Nov 2026)
@@ -525,7 +525,7 @@ def step_grid(data):
     return '<div class="steps">' + "".join(f'<div class="step"><span class="n">0{i+1}</span><h3>{e(t)}</h3><p>{e(d)}</p></div>' for i, (t, d) in enumerate(data)) + "</div>"
 
 def steps():
-    return step_grid([("Call", "A 15-minute call about your business, your area and what's bringing in work now."),
+    return step_grid([("Call", "A 30-minute call about your business, your area and what's bringing in work now."),
                       ("Plan", "We build your monthly strategy and content calendar."),
                       ("Capture", "Photo and video on your job sites, in your shop or on your lot."),
                       ("Post & report", "Posts go live on schedule, often starting the next week. Every month you get a performance summary.")])
@@ -563,9 +563,9 @@ def areas_block(exclude=None):
   <ul class="areas">{items}</ul>
   <div class="btns" style="margin-top:20px"><a class="btn text" href="areas.html">All areas we serve</a></div></div></section>"""
 
-def cta_band(h="Let's fill your schedule.", p="15 minutes. We'll look at what you're posting now, what the competition in your area is doing, and what we'd film first."):
+def cta_band(h="Let's fill your schedule.", p="30 minutes. We'll look at what you're posting now, what the competition in your area is doing, and what we'd film first."):
     return f"""<section class="cta-band"><div class="cta-pattern" aria-hidden="true"></div><div class="wrap">
-  {eyebrow("Free 15-minute call")}<h2 class="display-xl">{e(h)}</h2><p>{e(p)}</p>
+  {eyebrow("Free 30-minute call")}<h2 class="display-xl">{e(h)}</h2><p>{e(p)}</p>
   <div class="btns"><a class="btn dark" href="contact.html">Contact Us {TRI}</a><a class="btn secondary" href="paid-advertising.html">Paid Advertising</a></div>
 </div></section>"""
 
@@ -668,7 +668,6 @@ def about_page():
     <p class="muted">Faith is a big reason I do this. I know God gave me this opportunity, and I want to steward it well, for my family, my clients and the people who trust us with their business.</p>
     <h2 class="heading">How we work</h2><p class="muted">The person who plans your shoot is the person behind the camera and the person reading your ad numbers. Nothing gets lost between teams, because there's only one.</p>
     <h2 class="heading">Why the trades</h2><p class="muted">We shoot around your schedule, on real jobs, so your crew keeps working while we roll. Homeowners trust what they can see: your trucks, your techs, your finished work.</p>
-    <h2 class="heading">Why automotive</h2><p class="muted">We understand how shops and dealers sell: trust in the tech, transparency on the repair, and the car looking its best on camera.</p>
     <p class="form-note">Onyx Media is a brand of ONYX HTZ LLC. Paid advertising is delivered through Onyx Performance Advertising.</p>
     <div class="btns"><a class="btn primary" href="contact.html">Contact Us {TRI}</a></div></div>
 </div></section>
@@ -684,13 +683,13 @@ def about_page():
     return page("about.html", "About Onyx Media | Max Fisher | Faith-Driven Video & Ads Studio | St. Charles, MO", "Onyx Media is an owner-run, faith-driven video and paid ads studio in St. Charles, MO, for home service and automotive businesses.", body, "about.html")
 
 def contact_page():
-    body = f"""<section class="page-head"><div class="wrap"><div class="stack" style="gap:20px;max-width:900px"><p class="crumbs"><a href="./">Home</a> / Contact</p>{eyebrow("Contact")}<h1 class="display-l">Book a free 15-minute call.</h1><p class="body-l">Pick a time, or send five quick details and Max will get back to you within one business day. Ask about current specials.</p></div></div></section>
+    body = f"""<section class="page-head"><div class="wrap"><div class="stack" style="gap:20px;max-width:900px"><p class="crumbs"><a href="./">Home</a> / Contact</p>{eyebrow("Contact")}<h1 class="display-l">Book a free 30-minute call.</h1><p class="body-l">Pick a time, or send five quick details and Max will get back to you within one business day. Ask about current specials.</p></div></div></section>
 <section class="band"><div class="wrap book">
-  <div class="stack">{eyebrow("Fastest: pick a time")}{(f'<div class="calendly-inline-widget" data-url="{e(CALENDLY_URL)}?hide_gdpr_banner=1" style="min-width:300px;height:680px"></div><script src="https://assets.calendly.com/assets/external/widget.js" async></script><p class="form-note">Calendar not loading? <a href="{e(CALENDLY_URL)}">Book on Calendly</a></p>') if CALENDLY_URL else '<div class="slot">Calendly booking calendar · 15-minute calls<br>Add the Calendly link in tools/build_site.py</div>'}
+  <div class="stack">{eyebrow("Fastest: pick a time")}{(f'<div class="calendly-inline-widget" data-url="{e(CALENDLY_URL)}?hide_gdpr_banner=1" style="min-width:300px;height:680px"></div><script src="https://assets.calendly.com/assets/external/widget.js" async></script><p class="form-note">Calendar not loading? <a href="{e(CALENDLY_URL)}">Book on Calendly</a></p>') if CALENDLY_URL else '<div class="slot">Calendly booking calendar · 30-minute calls<br>Add the Calendly link in tools/build_site.py</div>'}
   <address class="nap muted"><strong style="color:var(--ink)">Onyx Media</strong><span>St. Charles, MO · Serving the St. Louis metro</span><span>Call or text {PHONE}</span><span>{(f'<a href="mailto:{e(EMAIL)}">{e(EMAIL)}</a>' if EMAIL else e(EMAIL_SHOWN))}</span></address></div>
   {contact_form()}
 </div></section>"""
-    return page("contact.html", "Contact | Onyx Media St. Louis", "Contact Onyx Media for monthly video content and paid ads, and book a free 15-minute call.", body, "contact.html")
+    return page("contact.html", "Contact | Onyx Media St. Louis", "Contact Onyx Media for monthly video content and paid ads, and book a free 30-minute call.", body, "contact.html")
 
 def legal_page(path, title, h1, updated, sections):
     body = f"""<section class="page-head"><div class="wrap"><div class="stack" style="gap:16px;max-width:900px"><p class="crumbs"><a href="./">Home</a> / {e(h1)}</p><h1 class="display-l">{e(h1)}</h1><p class="form-note">Last updated {e(updated)}</p></div></div></section>
@@ -732,7 +731,7 @@ def terms_page():
 
 def thanks_page():
     body = f"""<section class="band"><div class="wrap stack" style="gap:22px">{eyebrow("Received")}<h1 class="display-l">Got it. Here's what happens next.</h1>
-<ol class="muted" style="display:grid;gap:10px;padding-left:20px;margin:0"><li>Max reviews your details and gets back to you within one business day.</li><li>You'll get a link to book your 15-minute call if you haven't already.</li><li>Before the call we look at your site, your Google profile and your competitors.</li></ol>
+<ol class="muted" style="display:grid;gap:10px;padding-left:20px;margin:0"><li>Max reviews your details and gets back to you within one business day.</li><li>You'll get a link to book your 30-minute call if you haven't already.</li><li>Before the call we look at your site, your Google profile and your competitors.</li></ol>
 <p class="form-note">Conversion events (GA4 + Meta) fire on this page once tracking is installed.</p>
 <div class="btns"><a class="btn secondary" href="work.html">See Our Work</a></div></div></section>"""
     return page("thank-you.html", "Thanks | Onyx Media", "Thanks for reaching out to Onyx Media.", body)
