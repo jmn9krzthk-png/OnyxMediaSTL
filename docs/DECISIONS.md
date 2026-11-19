@@ -39,3 +39,4 @@
 | 35 | 2026-11-19 | Site | Calendly chosen; contact page embeds it once CALENDLY_URL is set in tools/build_site.py | Pending link | |
 | 36 | 2026-11-19 | Legal | Draft Privacy Policy and Terms of Use pages (pricing stipulations, no-guarantee, Missouri law). Draft only; not legal advice | Draft | Attorney review recommended |
 | 37 | 2026-11-19 | Launch | _redirects for old Wix URLs; favicon + touch icon from logo | Done | Domain is registered at Wix; transfer planned |
+| 38 | 2026-11-19 | Site | Calendly embedded on Contact page (30-minute event link) | Done | Site copy still says 15-minute call; pending Max decision |

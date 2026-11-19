@@ -30,7 +30,7 @@ PHONE_TEL = "+16363853995"
 _contact_file = pathlib.Path(__file__).resolve().parent / "contact-email.txt"
 EMAIL = os.environ.get("ONYX_CONTACT_EMAIL", "").strip() or (_contact_file.read_text().strip() if _contact_file.exists() else "")
 EMAIL_SHOWN = EMAIL or "[contact email]"
-CALENDLY_URL = ""   # e.g. "https://calendly.com/onyxmediastl/15min" — paste Max's 15-minute event link here
+CALENDLY_URL = "https://calendly.com/max-onyxmediastl/30min"   # e.g. "https://calendly.com/onyxmediastl/15min" — paste Max's 15-minute event link here
 HERO_VIDEO = None      # e.g. "media/hero-loop.mp4" — when set, plays instead of the photo slideshow
 
 # ---------------------------------------------------------------- data
