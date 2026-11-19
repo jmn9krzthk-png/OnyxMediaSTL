@@ -33,3 +33,4 @@
 | 29 | 2026-11-19 | Deploy | netlify.toml added with ignore = "exit 0" so pushes back up to GitHub without Netlify deploying | Active | Remove the ignore line and push once to go live |
 | 30 | 2026-11-19 | SEO | Areas hub page (off-menu, linked from footer and home); 7 new cities; 6 new industries (69 pages total) | Done | Netlify builds still paused |
 | 31 | 2026-11-19 | Site | Contact email added (from tools/contact-email.txt, committed by Max) to Contact page and every footer as a mailto link | Done | |
+| 32 | 2026-11-19 | SEO | Footer now just links to Areas and Industries hubs; 20 more cities (37 total, incl. Jefferson County); city pages vary headline, section order, featured industries, FAQ, gallery and reviews; industry pages rotate gallery/reviews. Avg text overlap between city pages cut from ~65% to ~45% | Done | 89 pages; Netlify builds still paused |
