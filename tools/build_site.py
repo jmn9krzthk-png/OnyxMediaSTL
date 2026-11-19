@@ -166,7 +166,7 @@ def industry_file(slug): return f"{slug}-marketing-st-louis.html"
 IND_BY_SLUG = {i["slug"]: i for i in INDUSTRIES}
 
 NAV = [("content-creation.html", "Monthly Content"), ("paid-advertising.html", "Paid Advertising"),
-       ("industries.html", "Industries"), ("work.html", "Work"), ("about.html", "About")]
+       ("work.html", "Work"), ("about.html", "About")]
 
 # ---------------------------------------------------------------- helpers
 e = html.escape
@@ -241,6 +241,7 @@ def footer():
     <div><h4>Areas we serve</h4><ul style="grid-template-columns:1fr 1fr;column-gap:16px">{areas}</ul></div>
   </div>
   <div class="foot-review"><span>Worked with us?</span><a class="btn primary" href="{GOOGLE_REVIEW}">Leave a Google review {TRI}</a></div>
+  <div class="foot-ind"><h4><a href="industries.html">Industries we serve</a></h4><ul>{"".join(f'<li><a href="{industry_file(i["slug"])}">{e(i["name"])}</a></li>' for i in INDUSTRIES)}</ul></div>
   <div class="legal caption"><span>© 2026 ONYX HTZ LLC</span><span>Privacy Policy · Terms</span></div>
 </div></footer>"""
 

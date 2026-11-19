@@ -490,3 +490,9 @@ a.trade{text-decoration:none;color:inherit}
 .hero-grid{min-height:min(84vh,820px);padding-block:clamp(40px,6vw,80px) clamp(64px,7vw,96px)}
 .wwd-item h3{font-size:clamp(32px,2.8vw,44px)}
 .wwd-item h3{font-size:clamp(30px,2.5vw,38px)}
+.foot-ind{margin-top:32px;padding-top:24px;border-top:1px solid #2E2E33}
+.foot-ind h4{margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:.26em;text-transform:uppercase}
+.foot-ind h4 a{color:var(--on-dark);text-decoration:none}
+.foot-ind ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px}
+.foot-ind a{text-decoration:none}
+.foot-ind a:hover{color:var(--on-dark)}
