@@ -26,3 +26,5 @@
 | 22 | 2026-11-19 | Site | "Businesses we've filmed for" section removed site-wide | Done (local) | |
 | 23 | 2026-11-19 | Site | 32 industry SEO pages + Industries hub (no beauty, healthcare or medical) | Done (local) | tools/industries.py |
 | 24 | 2026-11-19 | Deploy | Stop pushing per change to save Netlify credits; commit locally, push once when approved | Active | |
+| 25 | 2026-11-19 | Site | Pricing tools simplified: compare table, terms lists and the 20% note removed from pages; ad options shown as Meta ads / Google ads / Meta + Google; one big monthly number | Done (local) | 20% rule still applied in the math; stipulations kept in AD_TERMS for the service agreement |
+| 26 | 2026-11-19 | Site | Faith: light references (footer line, home About teaser) and a "Faith first" section on About with values and Colossians 3:23 | Done (local) | Verse choice and wording need Max's confirmation |

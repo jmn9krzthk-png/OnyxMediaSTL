@@ -89,11 +89,6 @@
       var pctOn = spend >= threshold, fee = pctOn ? spend * pct : base;
       set("spend", fmt(spend)); set("spend2", fmt(spend)); set("fee", fmt(fee)); set("setup", fmt(setup));
       set("monthly", fmt(fee + spend)); set("first", fmt(fee + spend + setup));
-      out("feeNote").textContent = pctOn ? "20% of ad spend (applies at $7,000+)" : "flat monthly fee";
-      var note = out("note"), msg = "";
-      if (pctOn) msg = "At $7,000+ in ad spend, every package's fee is 20% of spend.";
-      else if (pick.value === "full") msg = "Bundle savings: $350/mo less than Meta + Google separately, and $225 less to set up.";
-      note.hidden = !msg; note.textContent = msg;
       range.style.background = "";
     }
     range.addEventListener("input", calc);

@@ -234,7 +234,8 @@ def footer():
 <footer class="site"><div class="wrap">
   <div class="foot-grid">
     <div class="stack" style="gap:14px"><a class="logo" href="./"><img src="media/logo-light.webp" alt="Onyx Media" width="150" height="62"></a>
-      <address class="nap"><span>Onyx Media · St. Charles, MO</span><span>Video, monthly content and paid ads for home service and automotive businesses</span><span>{PHONE} · {e(EMAIL_SHOWN)}</span></address></div>
+      <address class="nap"><span>Onyx Media · St. Charles, MO</span><span>Video, monthly content and paid ads for home service and automotive businesses</span><span>{PHONE} · {e(EMAIL_SHOWN)}</span></address>
+      <p class="faith-line">{TRI}Built on faith, honest work and doing right by people.</p></div>
     <div><h4>Services</h4><ul><li><a href="content-creation.html">Monthly content</a></li><li><a href="paid-advertising.html">Paid advertising</a></li><li><a href="industries.html">Industries</a></li><li><a href="work.html">Work</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
     <div><h4>Follow</h4><ul><li><a href="https://www.facebook.com/OnyxMediastl">Facebook</a></li><li><a href="{INSTAGRAM}">Instagram</a></li><li><a href="{GOOGLE_REVIEW}">Leave us a Google review</a></li></ul></div>
     <div><h4>Areas we serve</h4><ul style="grid-template-columns:1fr 1fr;column-gap:16px">{areas}</ul></div>
@@ -297,12 +298,12 @@ CONTENT_TERMS = ["Most plans are month to month. A special offer may come with a
                  "You own all finished content.", "First posts can go live as soon as the next week.",
                  "Quoted separately: additional platforms, event coverage, long-form video, paid ads, community management, and travel outside the service area."]
 AD_PLANS = [
-    dict(key="meta", name="Meta Lead Engine", platforms="Facebook + Instagram", fee=1150, setup=625),
-    dict(key="google", name="Google Capture", platforms="Google + Bing", fee=1150, setup=625),
-    dict(key="full", name="Full Accelerator", platforms="Meta + Google + Bing", fee=1950, setup=1025),
+    dict(key="meta", name="Meta ads", platforms="Facebook + Instagram", fee=1150, setup=625),
+    dict(key="google", name="Google ads", platforms="Google + Bing search", fee=1150, setup=625),
+    dict(key="full", name="Meta + Google", platforms="Both, combined", fee=1950, setup=1025),
 ]
 AD_RULES = dict(threshold=7000, pct=0.20, min=500, max=15000, step=100, default=2500)
-AD_TERMS = ["Ad spend is separate. You pay it directly to Meta, Google or Bing.",
+AD_TERMS = [  # kept for the service agreement / terms page; not shown on pricing sections"Ad spend is separate. You pay it directly to Meta, Google or Bing.",
             "At $7,000 or more in monthly ad spend, the management fee becomes 20% of ad spend for every package.",
             "Full Accelerator costs $350/mo less than buying Meta and Google separately ($2,300), and $225 less to set up ($1,250).",
             "No guarantees: results, leads and sales aren't guaranteed. Final scope is set in the service agreement."]
@@ -327,47 +328,31 @@ def content_planner():
   {'<p class="form-note"><span class="dot half"></span> Every other week</p>' if any(v == 0.5 for v in p["cal"].values()) else ""}</div>
 </div>"""
     side = f"""<aside class="plan-side"><h3 class="heading">Every plan includes</h3>{ticks(CONTENT_INCLUDES)}
-<h3 class="heading" style="margin-top:8px">Good to know</h3>{ticks(CONTENT_TERMS)}</aside>"""
-    rows = [("Price", [money(p["price"]) + "/mo" for p in CONTENT_PLANS]), ("Posting pace", [p["pace"] for p in CONTENT_PLANS]),
-            ("Posts per month", [p["posts"] for p in CONTENT_PLANS]), ("Short-form reels", [str(p["reels"]) for p in CONTENT_PLANS]),
-            ("Photo or graphic posts", [str(p["photos"]) for p in CONTENT_PLANS]), ("Posting days", [p["days"] for p in CONTENT_PLANS])]
-    table = '<div class="table-wrap"><table class="compare"><thead><tr><th scope="col">Compare plans</th>' + "".join(
-        f'<th scope="col">{p["name"]}' + (" <span class=\"tag\">Most popular</span>" if p.get("popular") else "") + "</th>" for p in CONTENT_PLANS) + "</tr></thead><tbody>" + \
-        "".join(f'<tr><th scope="row">{e(r)}</th>' + "".join(f"<td>{e(v)}</td>" for v in vals) + "</tr>" for r, vals in rows) + "</tbody></table></div>"
-    return f"""<div class="planner" data-planner><div class="plan-main"><div class="plan-tabs" role="tablist" aria-label="Content plans">{tabs}</div>{panels}</div>{side}</div>{table}"""
+<p class="form-note">Month to month. <strong>Ask about current specials.</strong></p></aside>"""
+    return f"""<div class="planner" data-planner><div class="plan-main"><div class="plan-tabs" role="tablist" aria-label="Content plans">{tabs}</div>{panels}</div>{side}</div>"""
 
 def ad_calculator():
     r = AD_RULES
     d = AD_PLANS[0]
     plans = "".join(f'<label class="ad-plan"><input type="radio" name="adplan" value="{p["key"]}" data-fee="{p["fee"]}" data-setup="{p["setup"]}"' + (" checked" if i == 0 else "")
-                    + f'><span><strong>{p["name"]}</strong><em>{p["platforms"]}</em><b>{money(p["fee"])}/mo · {money(p["setup"])} setup</b></span></label>'
+                    + f'><span><strong>{p["name"]}</strong><em>{p["platforms"]}</em></span></label>'
                     for i, p in enumerate(AD_PLANS))
     fee = d["fee"]; spend = r["default"]
     return f"""<div class="calc" data-calc data-threshold="{r["threshold"]}" data-pct="{r["pct"]}">
   <div class="calc-in">
-    <fieldset class="ad-plans"><legend class="caption">1 · Choose a package</legend>{plans}</fieldset>
-    <div class="spend"><label class="caption" for="adSpend">2 · Monthly ad spend</label>
+    <fieldset class="ad-plans three"><legend class="caption">Where do you want to advertise?</legend>{plans}</fieldset>
+    <div class="spend"><label class="caption" for="adSpend">Your monthly ad budget</label>
       <output class="spend-out" for="adSpend" data-out="spend">{money(spend)}</output>
-      <input id="adSpend" type="range" min="{r["min"]}" max="{r["max"]}" step="{r["step"]}" value="{spend}" aria-describedby="spendHelp">
-      <div class="range-ends caption"><span>{money(r["min"])}</span><span id="spendHelp">20% fee starts at {money(r["threshold"])}</span><span>{money(r["max"])}</span></div></div>
+      <input id="adSpend" type="range" min="{r["min"]}" max="{r["max"]}" step="{r["step"]}" value="{spend}">
+      <div class="range-ends caption"><span>{money(r["min"])}</span><span>{money(r["max"])}</span></div></div>
   </div>
   <div class="calc-out" aria-live="polite">
-    <p class="caption">Your estimate</p>
-    <dl>
-      <div><dt>Management fee <small data-out="feeNote">flat monthly fee</small></dt><dd data-out="fee">{money(fee)}</dd></div>
-      <div><dt>Ad spend <small>paid directly to the platforms</small></dt><dd data-out="spend2">{money(spend)}</dd></div>
-      <div class="total"><dt>Monthly total</dt><dd data-out="monthly">{money(fee + spend)}</dd></div>
-      <div><dt>One-time setup</dt><dd data-out="setup">{money(d["setup"])}</dd></div>
-      <div class="total first"><dt>First month</dt><dd data-out="first">{money(fee + spend + d["setup"])}</dd></div>
-    </dl>
-    <p class="calc-note" data-out="note" hidden></p>
-    <a class="btn primary" href="contact.html">Talk through this estimate {TRI}</a>
+    <p class="caption">Your monthly investment</p>
+    <p class="big-total" data-out="monthly">{money(fee + spend)}</p>
+    <p class="split-line">Our management <strong data-out="fee">{money(fee)}</strong> + your ad budget <strong data-out="spend2">{money(spend)}</strong>, paid directly to the platforms.</p>
+    <p class="split-line">First month <strong data-out="first">{money(fee + spend + d["setup"])}</strong>, including one-time setup.</p>
+    <a class="btn primary" href="contact.html">Talk through your numbers {TRI}</a>
   </div>
-</div>
-<div class="grid-2" style="margin-top:28px">
-  <div class="table-wrap"><table class="compare"><thead><tr><th scope="col">Package</th><th scope="col">Platforms</th><th scope="col">Monthly fee</th><th scope="col">One-time setup</th></tr></thead><tbody>
-  {"".join(f'<tr><th scope="row">{p["name"]}</th><td>{p["platforms"]}</td><td>{money(p["fee"])}</td><td>{money(p["setup"])}</td></tr>' for p in AD_PLANS)}</tbody></table></div>
-  <div>{ticks(AD_TERMS)}</div>
 </div>"""
 
 def pricing_section(which, cls="band", anchor=True):
@@ -378,7 +363,7 @@ def pricing_section(which, cls="band", anchor=True):
   {content_planner()}</div></section>"""
     return f"""<section class="{cls}" id="{"pricing" if anchor else "ads-pricing"}"><div class="wrap">
   <div class="band-head"><div class="stack">{eyebrow("Ad pricing")}<h2 class="display-l">See your monthly cost.</h2></div>
-  <p class="body-l">Pick a package and slide to your ad budget. Monthly is our fee plus your ad spend; first month adds the one-time setup.</p></div>
+  <p class="body-l">Pick where you want to advertise and slide to your budget.</p></div>
   {ad_calculator()}</div></section>"""
 
 # ---------------------------------------------------------------- sections
@@ -421,7 +406,7 @@ def service_cards():
   <a class="card feature" href="paid-advertising.html">{eyebrow("Paid advertising")}
     <h3 class="display-m">Turn your best video into booked jobs.</h3>
     <p>Monthly ad management on Facebook, Instagram, Google and Bing, paired with the content we create.</p>
-    {ticks(["Meta Lead Engine, Google Capture or Full Accelerator", "You pay ad spend directly to the platforms", "Live cost calculator on the page"])}
+    {ticks(["Meta ads, Google ads, or both", "Your ad budget goes straight to the platforms", "See your monthly cost instantly"])}
     <div class="foot"><span class="price">From {money(AD_PLANS[0]["fee"])}/mo</span><span>Calculate your cost →</span></div></a>
 </div>
 <p class="muted" style="margin-top:20px">Also available, quoted separately: event coverage, long-form video and brand films. Ask on your call.</p>"""
@@ -511,8 +496,8 @@ def reviews(limit=None):
 def about_teaser():
     return f"""<section class="band"><div class="wrap about">
   <figure class="max-photo"><img src="media/max-fisher-on-set.webp" alt="Max Fisher filming an engine bay with a gimbal-mounted camera" width="900" height="900" loading="lazy"><figcaption class="caption">{TRI}Max Fisher · Owner, Onyx Media</figcaption></figure>
-  <div class="stack" style="gap:22px">{eyebrow("About")}<h2 class="display-l">Owner-run. On every shoot.</h2>
-    <p class="body-l">I'm Max Fisher. I started Onyx Media in St. Charles to give home service companies and auto shops the kind of video and ads the big brands get, without the agency layers.</p>
+  <div class="stack" style="gap:22px">{eyebrow("About")}<h2 class="display-l">Owner-run. Faith-led. On every shoot.</h2>
+    <p class="body-l">I'm Max Fisher. I started Onyx Media in St. Charles to give home service companies and auto shops the kind of video and ads the big brands get, without the agency layers. We run this business on faith: honest pricing, showing up when we say we will, and treating your business like our own.</p>
     <div class="facts"><div><strong>St. Charles</strong><span>Based here, shooting across the metro</span></div><div><strong>Next week</strong><span>First posts can go live</span></div><div><strong>18</strong><span>Local businesses filmed</span></div></div>
     <div class="btns"><a class="btn text" href="about.html">More about Onyx</a></div></div>
 </div></section>"""
@@ -564,7 +549,6 @@ CONTENT_FAQ = [
     ("How fast can we start?", "First posts can go live as soon as the next week.", False),
     ("Is there a contract?", "Most plans are month to month. A special offer may come with a set term, which we state before you sign. Ask about current specials.", False),
     ("Who owns the content?", "You own all finished content.", False),
-    ("What costs extra?", "Additional platforms, event coverage, long-form video, paid ads, community management, and travel outside the service area are quoted separately.", False),
 ]
 
 def content_page():
@@ -582,22 +566,21 @@ def content_page():
                 body, "content-creation.html", extra_head=faq_ld(CONTENT_FAQ))
 
 ADS_FAQ = [
-    ("Which platforms do you run?", "Meta Lead Engine covers Facebook and Instagram. Google Capture covers Google and Bing. Full Accelerator covers all of them.", False),
-    ("Is ad spend included?", "No. Ad spend is separate, and you pay it directly to Meta, Google or Bing.", False),
-    ("What happens at higher budgets?", "At $7,000 or more in monthly ad spend, the management fee becomes 20% of ad spend for every package.", False),
-    ("Is there a setup fee?", "Yes, one time: $625 for Meta Lead Engine or Google Capture, $1,025 for Full Accelerator.", False),
-    ("Do you guarantee results?", "No. Results, leads and sales aren't guaranteed. Final scope is set in the service agreement.", False),
+    ("Where can you run my ads?", "Facebook and Instagram, Google and Bing search, or all of them combined.", False),
+    ("Is my ad budget included?", "No. Your ad budget is paid directly to the platforms, so every dollar goes to your ads.", False),
+    ("Is there a setup fee?", "Yes, a one-time setup when we start. The calculator includes it in your first month.", False),
     ("Do I need a content plan too?", "No, but ads perform best with fresh creative, so most clients run both.", False),
+    ("Is there a long-term contract?", "Most plans are month to month. Ask about current specials.", False),
 ]
 
 def ads_page():
-    steps_ads = step_grid([("Set up", "Ad accounts and tracking set up once, with a one-time setup fee."),
+    steps_ads = step_grid([("Set up", "Ad accounts and tracking set up right, once."),
                            ("Target", "The areas and customers you actually want, not everyone."),
                            ("Create", "Ads built around real footage of your crew, shop and finished work."),
                            ("Manage", "Monthly management and adjustments based on what's working.")])
     cases = '<div class="cases two">' + "".join(case_html(c) for c in CASES if "ads" in c["f"]) + "</div>"
     body = page_head("Paid advertising", "Turn your best video into booked jobs.",
-                     "Facebook, Instagram, Google and Bing ads for home service companies and auto shops. Management from $1,150/mo plus a one-time setup; you pay ad spend directly to the platforms.",
+                     "Facebook, Instagram and Google ads for home service companies and auto shops, built around real footage of your work. Management from $1,150/mo.",
                      "Paid advertising", "Calculate your cost") + \
         pricing_section("ads") + \
         section("How it works", "Ads that look like your business.", "Generic stock ads get scrolled past. Your own crew doesn't.", steps_ads, "band bone") + \
@@ -619,7 +602,12 @@ def work_page():
                 "Case studies and recent shoots from Onyx Media: social content and paid ads for home service and automotive businesses.", body, "work.html")
 
 def about_page():
-    body = page_head("About", "A St. Charles studio for St. Louis trades and shops.", "Onyx Media is Max Fisher's studio. We film, edit and run ads for home service companies and automotive businesses.", "About") + \
+    values = [("Faith first", "Everything we do starts there. It's why we keep our word, price honestly and treat people right."),
+              ("Work with all our heart", "Every shoot gets our best, whether it's a big brand film or a single reel."),
+              ("Honest and fair", "Clear pricing, no surprises, and straight answers about what will and won't work."),
+              ("Show up", "On time, prepared, and respectful of your crew, your customers and your job site.")]
+    vgrid = '<div class="values">' + "".join(f'<div class="value"><span class="n">0{k+1}</span><h3>{e(t)}</h3><p>{e(d)}</p></div>' for k, (t, d) in enumerate(values)) + "</div>"
+    body = page_head("About", "A St. Charles studio built on faith and hard work.", "Onyx Media is Max Fisher's studio. We film, edit and run ads for home service companies and automotive businesses, and we run it on faith.", "About") + \
         f"""<section class="band"><div class="wrap about">
   <figure class="max-photo"><img src="media/max-fisher-on-set.webp" alt="Max Fisher filming an engine bay with a gimbal-mounted camera" width="900" height="900"><figcaption class="caption">{TRI}Max Fisher · Owner, Onyx Media</figcaption></figure>
   <div class="stack" style="gap:20px"><p class="muted">[PLACEHOLDER: Max's story, 2 short paragraphs.]</p>
@@ -628,8 +616,17 @@ def about_page():
     <h2 class="heading">Why automotive</h2><p class="muted">We understand how shops and dealers sell: trust in the tech, transparency on the repair, and the car looking its best on camera.</p>
     <p class="form-note">Onyx Media is a brand of ONYX HTZ LLC. Paid advertising is delivered through Onyx Performance Advertising.</p>
     <div class="btns"><a class="btn primary" href="contact.html">Contact Us {TRI}</a></div></div>
+</div></section>
+<section class="band dark faith"><div class="wrap">
+  <div class="faith-grid">
+    <div class="stack" style="gap:22px">{eyebrow("What we stand on")}<h2 class="display-l">Faith first. Then the work.</h2>
+      <p class="body-l">Onyx Media is a faith-driven business. Our faith shapes how we treat clients, how we price, and the standard we hold every project to. We don't see it as separate from the work; it's the reason we work the way we do.</p>
+      <blockquote class="verse"><p>“Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.”</p><cite>Colossians 3:23</cite></blockquote>
+    </div>
+    {vgrid}
+  </div>
 </div></section>""" + reviews() + cta_band()
-    return page("about.html", "About Onyx Media | Max Fisher | St. Charles, MO", "Onyx Media is an owner-run video and paid ads studio in St. Charles, MO, for home service and automotive businesses.", body, "about.html")
+    return page("about.html", "About Onyx Media | Max Fisher | Faith-Driven Video & Ads Studio | St. Charles, MO", "Onyx Media is an owner-run, faith-driven video and paid ads studio in St. Charles, MO, for home service and automotive businesses.", body, "about.html")
 
 def contact_page():
     body = f"""<section class="page-head"><div class="wrap"><div class="stack" style="gap:20px;max-width:900px"><p class="crumbs"><a href="./">Home</a> / Contact</p>{eyebrow("Contact")}<h1 class="display-l">Book a free 15-minute call.</h1><p class="body-l">Pick a time, or send five quick details and Max will get back to you within one business day. Ask about current specials.</p></div></div></section>

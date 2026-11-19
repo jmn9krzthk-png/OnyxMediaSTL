@@ -435,3 +435,29 @@ a.trade{text-decoration:none;color:inherit}
 @media (max-width:480px){.display-l{font-size:clamp(26px,8.2vw,40px)}.cta-band .display-xl{font-size:clamp(28px,8.6vw,44px)}.display-l,.display-xl{hyphens:auto;-webkit-hyphens:auto}}
 .grid-2>*,.grid-3>*,.ind-grid>*{min-width:0}
 @media (max-width:480px){.card{padding:22px}.card .display-m{hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}}
+
+/* Simplified ad calculator */
+.ad-plans.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.ad-plans.three legend{grid-column:1/-1}
+.ad-plans.three .ad-plan span{grid-template-columns:1fr;height:100%;align-content:start}
+.ad-plans.three .ad-plan em{grid-column:1}
+@media (max-width:620px){.ad-plans.three{grid-template-columns:1fr}}
+.big-total{margin:0;font-family:var(--font-display);font-weight:900;font-stretch:125%;font-size:clamp(48px,7vw,76px);line-height:1;color:var(--amber);font-variant-numeric:tabular-nums}
+.split-line{color:var(--on-dark-muted);font-size:16px;max-width:none}
+.split-line strong{color:var(--on-dark)}
+.calc-out{gap:14px}
+
+/* Faith */
+.faith-line{margin:6px 0 0;display:flex;align-items:center;gap:8px;color:var(--on-dark);font-size:14px}
+.faith-line .tri{width:6px;height:9px}
+.faith-grid{display:grid;gap:40px}
+@media (min-width:980px){.faith-grid{grid-template-columns:1.1fr 1fr;gap:64px;align-items:start}}
+.verse{margin:8px 0 0;padding:22px 24px;border-left:6px solid var(--amber);background:#141416}
+.verse p{font-family:var(--font-display);font-weight:800;font-stretch:112%;font-size:clamp(20px,2.4vw,26px);line-height:1.25;color:var(--ink);max-width:none}
+.verse cite{display:block;margin-top:10px;font-style:normal;font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
+.values{display:grid;gap:1px;background:#2E2E33;border:1px solid #2E2E33}
+@media (min-width:600px){.values{grid-template-columns:1fr 1fr}}
+.value{background:var(--onyx);padding:24px;display:grid;gap:8px;align-content:start}
+.value .n{font-family:var(--font-display);font-weight:900;font-stretch:125%;font-size:28px;line-height:1;color:var(--amber)}
+.value h3{margin:0;font-family:var(--font-display);font-weight:800;font-stretch:112%;text-transform:uppercase;font-size:19px}
+.value p{color:var(--muted);font-size:15px}
