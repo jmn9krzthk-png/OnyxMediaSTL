@@ -326,3 +326,17 @@ footer .logo img{width:150px}
 .review figcaption span{color:var(--muted);font-size:14px}
 .stars{color:var(--amber-deep);letter-spacing:2px}
 .g-badge{color:var(--amber-text)}
+
+/* Balance: dark header and alternating onyx bands between the light ones */
+header.site{background:var(--onyx);border-bottom-color:#2E2E33}
+body::before{background:var(--onyx)}
+nav.main a:not(.btn){color:var(--on-dark-muted)}
+nav.main a:not(.btn):hover,nav.main a[aria-current="page"]{color:var(--on-dark)}
+.menu-btn{border-color:var(--on-dark);color:var(--on-dark)}
+.drawer{background:var(--onyx);border-top-color:#2E2E33}
+.drawer a:not(.btn){color:var(--on-dark);border-bottom-color:#2E2E33}
+.dark{--bg:#141416;--bone:#1D1D20;--surface:#1D1D20;--line:#2E2E33;--line-strong:#6E6C66;--ink:#F2F0EB;--muted:#B8B5AE;--amber-text:#FFA502;--focus:#FFA502;background:var(--onyx);color:var(--ink)}
+.dark .clients li{background:var(--onyx)}
+.dark .review{background:#141416}
+.foot-review{margin-top:36px;padding:20px 0;border-top:1px solid #2E2E33;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;color:var(--on-dark)}
+.foot-review span{font-family:var(--font-display);font-weight:800;font-stretch:112%;text-transform:uppercase;font-size:20px}

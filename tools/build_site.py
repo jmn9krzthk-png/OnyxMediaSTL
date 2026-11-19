@@ -52,6 +52,7 @@ REVIEWS = [
      "Heather Patterson", "Detail 360", None),
 ]
 INSTAGRAM = "https://www.instagram.com/onyxmediastl/"
+GOOGLE_REVIEW = "https://g.page/r/CQYfHVSfUBVMEAE/review"
 
 ROTATE = ["service calls", "full bays", "booked jobs", "install jobs", "repair orders"]
 
@@ -110,8 +111,8 @@ HOME_FAQ = [
     ("How much does it cost?", f"Monthly content plans start at {PRICE_CONTENT}. Paid ad management starts at {PRICE_ADS}. You get a fixed quote after a 15-minute call.", True),
     ("Will filming slow my crew down?", "No. We shoot on real jobs and work around your techs. Most shoot days are a half day, and owner interviews take about 30 minutes.", False),
     ("Do you only work in St. Charles?", "We're based in St. Charles and shoot across St. Charles, Lincoln, Warren and St. Louis counties. See the areas we serve below.", False),
-    ("Who owns the footage?", "You own the final edited videos and can use them anywhere. Raw footage policy to be confirmed.", True),
-    ("Do I have to sign a long contract?", "Monthly plans run on a [X]-month minimum, then month to month.", True),
+    ("Who owns the footage?", "You do. You own the final footage we deliver and can use it anywhere: your website, social, ads and trucks.", False),
+    ("Do I have to sign a long contract?", "No. Our standard plans don't lock you in for a set number of months. We sometimes run specials, so ask about current specials on your call.", False),
 ]
 
 CITIES = [
@@ -216,7 +217,7 @@ def header(active):
     drawer = "".join(f'<a href="{h}">{TRI}{e(t)}</a>' for h, t in NAV)
     return f"""<div class="proto caption"><div class="wrap"><span><b>Prototype</b> · Not live on onyxmediastl.com</span><span>[X] and dashed boxes = details still needed</span></div></div>
 <header class="site"><div class="wrap bar">
-  <a class="logo" href="./" aria-label="Onyx Media home"><img src="media/logo-dark.webp" alt="Onyx Media" width="128" height="53"></a>
+  <a class="logo" href="./" aria-label="Onyx Media home"><img src="media/logo-light.webp" alt="Onyx Media" width="128" height="53"></a>
   <nav class="main" aria-label="Main">{links}<a class="btn primary" href="contact.html">Get Pricing {TRI}</a></nav>
   <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="drawer">MENU</button>
 </div>
@@ -231,9 +232,10 @@ def footer():
     <div class="stack" style="gap:14px"><a class="logo" href="./"><img src="media/logo-light.webp" alt="Onyx Media" width="150" height="62"></a>
       <address class="nap"><span>Onyx Media · St. Charles, MO</span><span>Video, monthly content and paid ads for home service and automotive businesses</span><span>{PHONE} · {e(EMAIL_SHOWN)}</span></address></div>
     <div><h4>Services</h4><ul><li><a href="content-creation.html">Monthly content</a></li><li><a href="paid-advertising.html">Paid advertising</a></li><li><a href="work.html">Work</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
-    <div><h4>Follow</h4><ul><li><a href="https://www.facebook.com/Onyxhtz/">Facebook</a></li><li><a href="{INSTAGRAM}">Instagram</a></li><li><span>Google reviews [link]</span></li></ul></div>
+    <div><h4>Follow</h4><ul><li><a href="https://www.facebook.com/Onyxhtz/">Facebook</a></li><li><a href="{INSTAGRAM}">Instagram</a></li><li><a href="{GOOGLE_REVIEW}">Leave us a Google review</a></li></ul></div>
     <div><h4>Areas we serve</h4><ul style="grid-template-columns:1fr 1fr;column-gap:16px">{areas}</ul></div>
   </div>
+  <div class="foot-review"><span>Worked with us?</span><a class="btn primary" href="{GOOGLE_REVIEW}">Leave a Google review {TRI}</a></div>
   <div class="legal caption"><span>© 2026 ONYX HTZ LLC</span><span>Privacy Policy · Terms</span></div>
 </div></footer>"""
 
@@ -271,7 +273,7 @@ def quote_card(form_name, heading="Get your pricing", sub=None, preselect="Month
   </div>
   <p class="err" hidden>Add your name, a 10-digit mobile number and a full email address.</p>
   <button class="btn primary" type="submit">Get my pricing {TRI}</button>
-  <p class="form-note">Free 15-minute call. No pitch deck. Or call/text {PHONE}.</p>
+  <p class="form-note">Free 15-minute call. No long-term lock-in. <strong>Ask about current specials.</strong> Or call/text {PHONE}.</p>
 </form>"""
 
 def contact_form():
@@ -323,7 +325,7 @@ def hero():
 <div class="strip" aria-label="Industries we serve"><div class="wrap"><ul>{strip}</ul></div></div>"""
 
 def client_wall(head_text="Businesses we've filmed for"):
-    return f"""<section class="band"><div class="wrap">{eyebrow(head_text)}
+    return f"""<section class="band dark"><div class="wrap">{eyebrow(head_text)}
 <ul class="clients">{"".join(f"<li>{e(c)}</li>" for c in CLIENTS)}</ul></div></section>"""
 
 def service_cards():
@@ -376,11 +378,11 @@ def reviews(limit=None):
         cards = '<div class="reviews">' + "".join(review_card(*r) for r in items) + "</div>"
     else:
         cards = '<div class="grid-3">' + "".join('<div class="slot" style="min-height:180px">Google review · real text, name and stars go here</div>' for _ in range(3)) + "</div>"
-    return f"""<section class="band bone"><div class="wrap">
+    return f"""<section class="band dark"><div class="wrap">
   <div class="band-head"><div class="stack">{eyebrow("Google reviews")}<h2 class="display-l">From the owners.</h2></div>
   <p class="body-l">What local business owners say after working with us.</p></div>
   {cards}
-  <div class="btns" style="margin-top:28px"><a class="btn text" href="#">Read all reviews on Google [link]</a></div>
+  <div class="btns" style="margin-top:28px"><a class="btn primary" href="{GOOGLE_REVIEW}">Leave us a Google review {TRI}</a></div>
 </div></section>"""
 
 def about_teaser():
@@ -421,7 +423,7 @@ def home(fragment=False):
     body = hero() + client_wall() + \
         section("Services", "Two ways we bring in work.", "Most clients run both: content that builds trust, and ads that put it in front of buyers.", service_cards(), "band bone") + \
         section("Who we work with", "Built for the trades and the shop floor.", "Owner-led home service companies and automotive businesses. We know your busy season and your slow one.", trades()) + \
-        section("Recent shoots", "Shot on real jobs.", "On the roof, in the yard, on the lot. We film where the work happens.", gallery(), "band bone") + \
+        section("Recent shoots", "Shot on real jobs.", "On the roof, in the yard, on the lot. We film where the work happens.", gallery(), "band dark") + \
         section("Featured work", "What we made and what it did.", "Every project starts with a business problem.",
                 '<div class="cases">' + "".join(case_html(c) for c in CASES[:3]) + '</div><div class="btns" style="margin-top:28px"><a class="btn secondary" href="work.html">See all work</a></div>') + \
         reviews() + \
@@ -437,6 +439,8 @@ CONTENT_FAQ = [
     ("Do you post for us?", "Yes. We schedule and post to Instagram, Facebook, TikTok and YouTube Shorts, or hand files to your team if you prefer.", False),
     ("Who has to be on camera?", "Usually the owner and a tech or two. We coach you through it; most people get comfortable within the first shoot.", False),
     ("How fast is turnaround?", "First edits within [X] business days of the shoot.", True),
+    ("Is there a contract?", "Our standard plans don't lock you in for a set number of months. Ask about current specials on your call.", False),
+    ("Who owns the footage?", "You own the final footage we deliver.", False),
 ]
 
 def content_page():
@@ -466,6 +470,7 @@ ADS_FAQ = [
     ("How much should I spend on ads?", "It depends on your market and goals. We recommend a starting ad budget on the call; ad spend is paid directly to the platform.", False),
     ("How do I know it's working?", "Every lead goes to your email and a Google Sheet, and we report cost per lead and booked calls monthly.", False),
     ("Do I need to be on a content plan?", "No, but ads perform best with fresh creative. Most clients run both.", False),
+    ("Is there a long-term contract?", "No set-month lock-in on our standard plans. Ask about current specials on your call.", False),
 ]
 
 def ads_page():
@@ -493,7 +498,7 @@ def work_page():
     body = page_head("Work", "Problem. What we made. Result.", "Every case study names the business problem first, because that's how every project starts.", "Work") + \
         f'<section class="band"><div class="wrap"><div class="filters" role="group" aria-label="Filter work">{chips}</div><div class="cases two" id="work-cases">' + \
         "".join(case_html(c) for c in CASES) + "</div></div></section>" + \
-        section("Recent shoots", "More from the field.", "Roofs, kennels, job sites, studios and service bays.", gallery(), "band bone") + \
+        section("Recent shoots", "More from the field.", "Roofs, kennels, job sites, studios and service bays.", gallery(), "band dark") + \
         client_wall() + cta_band()
     return page("work.html", "Our Work | Video & Ads for Local Businesses | Onyx Media St. Louis",
                 "Case studies and recent shoots from Onyx Media: social content and paid ads for home service and automotive businesses.", body, "work.html")
@@ -532,14 +537,15 @@ def city_page(c):
     faq = [(f"Do you film in {n}?", f"Yes. We shoot on location in {n} and across {c['county']}. Our studio is in St. Charles.", False),
            (f"What kinds of {n} businesses do you work with?", "Home service companies (HVAC, plumbing, roofing, remodeling, landscaping, garage doors, pest control) and automotive businesses (repair shops, dealers, detailers, body shops).", False),
            ("How much does it cost?", f"Monthly content starts at {PRICE_CONTENT}; paid ads management starts at {PRICE_ADS}. You get a fixed quote after a 15-minute call.", True),
-           ("How fast can you start?", "Most clients have their first shoot within [X] weeks of the call.", True)]
+           ("How fast can you start?", "Most clients have their first shoot within [X] weeks of the call.", True),
+           ("Is there a contract?", "No set-month lock-in on our standard plans. Ask about current specials on your call.", False)]
     near = "".join(f'<li><a href="{city_file(s)}">{TRI}{e(CITY_BY_SLUG[s]["name"])}</a></li>' for s in c["near"])
     schema = {**BUSINESS, "areaServed": {"@type": "City", "name": f"{n}, MO"}}
     body = page_head(f"{n}, MO", f"Video production & social media marketing in {n}, MO.", c["intro"], n,
                      quote_card(f"city-{c['slug']}", heading=f"Pricing for {n} businesses")) + \
         section(f"Why video in {n}", f"Be the {n} company people call first.", c["local"], service_cards()) + \
         section(f"Who we work with in {n}", "Trades, crews and shops.", f"We film {n} businesses on their own job sites, in their shops and on their lots.", trades(), "band bone") + \
-        section("Recent shoots", "Shot on real jobs.", "A sample of our work around the area.", gallery()) + \
+        section("Recent shoots", "Shot on real jobs.", "A sample of our work around the area.", gallery(), "band dark") + \
         reviews(3) + \
         f"""<section class="band"><div class="wrap"><div class="band-head"><div class="stack">{eyebrow("Nearby")}<h2 class="display-l">We also serve.</h2></div><p class="body-l">Close to {e(n)} and on our regular routes.</p></div><ul class="areas">{near}<li><a href="./#areas">{TRI}All areas</a></li></ul></div></section>""" + \
         section("FAQ", f"{n} questions.", "", faq_html(faq), "band bone") + cta_band(f"Let's fill your schedule in {n}.")

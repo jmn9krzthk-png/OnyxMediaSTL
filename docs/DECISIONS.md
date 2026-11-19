@@ -19,3 +19,5 @@
 | 15 | 2026-11-19 | Site | Google reviews section built but empty | Pending | Reviews could not be pulled (Google blocked from session; none indexed). Paste real reviews into REVIEWS in the build script |
 | 16 | 2026-11-19 | Site | Contact email read from ONYX_CONTACT_EMAIL env var at build time | Pending | Shows "[contact email]" until set |
 | 17 | 2026-11-19 | Site | Added 5 real Google reviews (supplied by Max) on home, about (all) and city pages (top 3); Instagram linked; YouTube removed | Done | "ONYX HTZ" in Shawn McKenzie's review shown as "[Onyx Media]" — brackets mark the edit. Star ratings not shown until confirmed. Hovis Racing and McKenzie Chiropractic added to client list |
+| 18 | 2026-11-19 | Site | Brightness balanced: dark header, onyx bands for clients, gallery and reviews between light sections | Done | |
+| 19 | 2026-11-19 | Site | FAQ: no set-month lock-in on standard plans; specials exist (customer should ask); client owns final footage. Google review link in reviews section and footer | Done | Contact email still set via ONYX_CONTACT_EMAIL at build time |
