@@ -378,19 +378,28 @@ def hero():
   <div class="hero-media" aria-hidden="true">{media}</div><div class="hero-scrim"></div>
   <div class="wrap hero-grid">
     <div class="stack hero-copy" style="gap:26px">
-      {eyebrow("Home service & automotive video · St. Louis")}
+      {eyebrow("Video · Social media · Paid ads · St. Louis")}
       <h1 class="display-xl">More <span class="rot" id="rot"><span class="rot-word">{ROTATE[0]}</span></span> from the work you already do.</h1>
-      <p class="lead">We film your crew on real jobs, turn it into a month of content, and run the ads that make the phone ring. One local team for home service companies and auto shops across St. Louis and St. Charles County.</p>
+      <p class="lead"><strong>Onyx Media films your business, posts it every week, and runs the ads that make your phone ring.</strong> One local team for service businesses across St. Louis and St. Charles County.</p>
       <div class="hero-ctas">
         <a class="btn primary big" href="contact.html">Contact Us {TRI}</a>
         <a class="btn ghost-light big" href="paid-advertising.html">Paid Advertising</a>
       </div>
-      <ul class="quick"><li>{TRI}Content from {money(CONTENT_PLANS[0]["price"])}/mo</li><li>{TRI}Ads from {money(AD_PLANS[0]["fee"])}/mo</li><li>{TRI}Month to month</li></ul>
-    </div>
+          </div>
   </div>
   <div class="slide-cap caption" aria-hidden="true">{TRI}<span id="slideCap">{e(SLIDES[0][2])}</span></div>
-</section>
-<div class="strip" aria-label="Industries we serve"><div class="wrap"><ul>{strip}</ul></div></div>"""
+  <a class="scroll-cue" href="#what-we-do" aria-label="See what we do"><span></span></a>
+</section>"""
+
+def what_we_do():
+    cols = [("Film", "We capture photo and video on your job sites, in your shop or on your lot. Real crews, real work.", "Included in every plan", "content-creation.html", "See content plans"),
+            ("Post", "We edit, caption and post to Facebook and Instagram 2 to 5 times a week, so you show up every week.", f"From {money(CONTENT_PLANS[0]['price'])}/mo", "content-creation.html", "See content plans"),
+            ("Advertise", "We run Meta and Google ads that put your best work in front of the people ready to call.", f"From {money(AD_PLANS[0]['fee'])}/mo", "paid-advertising.html", "See ad pricing")]
+    items = "".join(f'<a class="wwd-item" href="{h}"><span class="wwd-n">0{k+1}</span><h3>{t}</h3><p>{e(d)}</p><span class="wwd-price">{e(pr)}</span><span class="btn text">{lk}</span></a>' for k, (t, d, pr, h, lk) in enumerate(cols))
+    return f"""<section class="band dark wwd" id="what-we-do"><div class="wrap">
+  <div class="wwd-head">{eyebrow("What Onyx Media does")}<h2 class="display-l">We film it. We post it. We make the phone ring.</h2></div>
+  <div class="wwd-grid">{items}</div>
+</div></section>"""
 
 def client_wall(head_text="Businesses we've filmed for"):
     return f"""<section class="band dark"><div class="wrap">{eyebrow(head_text)}
@@ -529,14 +538,12 @@ def page_head(eb, h1, lead, crumbs=None, pricing_label=None):
 
 # ---------------------------------------------------------------- pages
 def home(fragment=False):
-    body = hero() + \
-        section("Services", "Two ways we bring in work.", "Most clients run both: content that builds trust, and ads that put it in front of buyers.", service_cards(), "band bone") + \
-        section("Who we work with", "Built for the trades and the shop floor.", "Owner-led home service companies and automotive businesses. We know your busy season and your slow one.", trades()) + \
-        section("Recent shoots", "Shot on real jobs.", "On the roof, in the yard, on the lot. We film where the work happens.", gallery(), "band dark") + \
-        section("Featured work", "What we made and what it did.", "Every project starts with a business problem.",
-                '<div class="cases">' + "".join(case_html(c) for c in CASES[:3]) + '</div><div class="btns" style="margin-top:28px"><a class="btn secondary" href="work.html">See all work</a></div>') + \
+    body = hero() + what_we_do() + \
+        section("Recent shoots", "Shot on real jobs.", "On the roof, in the yard, on the lot. This is the kind of content we make for you every month.", gallery()) + \
         reviews() + \
-        section("How it works", "Four steps. No runaround.", "You always know what's next and when it ships.", steps()) + \
+        section("Featured work", "What we made and what it did.", "Every project starts with a business problem.",
+                '<div class="cases">' + "".join(case_html(c) for c in CASES[:3]) + '</div><div class="btns" style="margin-top:28px"><a class="btn secondary" href="work.html">See all work</a></div>', "band bone") + \
+        section("Who we work with", "Built for service businesses.", "Home services, automotive, pets and local service companies.", trades()) + \
         about_teaser() + areas_block() + \
         section("FAQ", "Straight answers.", "If yours isn't here, ask it on the call.", faq_html(HOME_FAQ)) + cta_band()
     return page("index.html", "Onyx Media | Video & Paid Ads for Home Service and Auto Businesses in St. Louis",
