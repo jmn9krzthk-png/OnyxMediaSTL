@@ -59,6 +59,48 @@
     });
   });
 
+
+  // Content plan picker
+  [].forEach.call(document.querySelectorAll("[data-planner]"), function (pl) {
+    var tabs = [].slice.call(pl.querySelectorAll(".plan-tab")), panels = [].slice.call(pl.querySelectorAll(".plan-panel"));
+    tabs.forEach(function (tab, idx) {
+      tab.addEventListener("click", function () { select(tab.getAttribute("data-plan")); });
+      tab.addEventListener("keydown", function (ev) {
+        var d = ev.key === "ArrowRight" ? 1 : ev.key === "ArrowLeft" ? -1 : 0;
+        if (d) { ev.preventDefault(); var n = tabs[(idx + d + tabs.length) % tabs.length]; n.focus(); select(n.getAttribute("data-plan")); }
+      });
+    });
+    function select(key) {
+      tabs.forEach(function (t) { var on = t.getAttribute("data-plan") === key; t.setAttribute("aria-selected", on ? "true" : "false"); t.tabIndex = on ? 0 : -1; });
+      panels.forEach(function (p) { p.hidden = p.getAttribute("data-panel") !== key; });
+    }
+  });
+
+  // Ad cost calculator
+  var fmt = function (n) { return "$" + Math.round(n).toLocaleString("en-US"); };
+  [].forEach.call(document.querySelectorAll("[data-calc]"), function (c) {
+    var threshold = +c.getAttribute("data-threshold"), pct = +c.getAttribute("data-pct");
+    var range = c.querySelector("input[type=range]"), radios = c.querySelectorAll("input[name=adplan]");
+    var out = function (k) { return c.querySelector('[data-out="' + k + '"]'); };
+    function set(k, v) { var el = out(k); if (el && el.textContent !== v) { el.textContent = v; el.classList.add("flash"); setTimeout(function () { el.classList.remove("flash"); }, 300); } }
+    function calc() {
+      var spend = +range.value, pick = c.querySelector("input[name=adplan]:checked");
+      var base = +pick.getAttribute("data-fee"), setup = +pick.getAttribute("data-setup");
+      var pctOn = spend >= threshold, fee = pctOn ? spend * pct : base;
+      set("spend", fmt(spend)); set("spend2", fmt(spend)); set("fee", fmt(fee)); set("setup", fmt(setup));
+      set("monthly", fmt(fee + spend)); set("first", fmt(fee + spend + setup));
+      out("feeNote").textContent = pctOn ? "20% of ad spend (applies at $7,000+)" : "flat monthly fee";
+      var note = out("note"), msg = "";
+      if (pctOn) msg = "At $7,000+ in ad spend, every package's fee is 20% of spend.";
+      else if (pick.value === "full") msg = "Bundle savings: $350/mo less than Meta + Google separately, and $225 less to set up.";
+      note.hidden = !msg; note.textContent = msg;
+      range.style.background = "";
+    }
+    range.addEventListener("input", calc);
+    [].forEach.call(radios, function (r) { r.addEventListener("change", calc); });
+    calc();
+  });
+
   // Lead forms: validate, send to Netlify Forms, then go to the thank-you page
   [].forEach.call(document.querySelectorAll("form.js-lead"), function (form) {
     form.addEventListener("submit", function (ev) {

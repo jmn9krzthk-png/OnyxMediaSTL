@@ -14,7 +14,9 @@ Outputs:
   prototype/sitemap.xml, robots.txt
   build/artifact-index.html the home page as a fragment, for the Claude preview link
 """
-import html, json, os, pathlib
+import html, json, os, pathlib, sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from industries import INDUSTRIES, GROUPS
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "prototype"
@@ -28,8 +30,6 @@ PHONE_TEL = "+16363853995"
 EMAIL = os.environ.get("ONYX_CONTACT_EMAIL", "").strip()
 EMAIL_SHOWN = EMAIL or "[contact email]"
 HERO_VIDEO = None      # e.g. "media/hero-loop.mp4" — when set, plays instead of the photo slideshow
-PRICE_CONTENT = "$[X]/mo"
-PRICE_ADS = "$[X]/mo + ad spend"
 
 # ---------------------------------------------------------------- data
 CLIENTS = ["Victory Raceway", "Cool Touch Graphics", "Mountain Top Motor Company", "Mountain Top Service Center",
@@ -65,13 +65,13 @@ SLIDES = [  # (file, alt, caption)  — no client names on photos
     ("mtsc-service-bays", "Auto shop service bays with vehicles on lifts", "Service bays · automotive"),
 ]
 
-TRADES = [
-    ("HVAC & plumbing", "Fill the schedule before the first cold snap and the first heat wave."),
-    ("Roofing & exteriors", "Win storm season with proof on the roof, not just yard signs."),
-    ("Remodeling", "Before-and-after video that sells the bigger kitchen, bath or basement."),
-    ("Landscaping & outdoor", "Book spring installs in February with the crews homeowners already see."),
-    ("Garage doors & pest", "Be the first name a homeowner trusts when something breaks or bites."),
-    ("Automotive", "Repair shops, dealers, detailers, tint and wrap, body shops. Fill the bays."),
+TRADES = [  # (title, text, industry slug)
+    ("HVAC & plumbing", "Fill the schedule before the first cold snap and the first heat wave.", "hvac"),
+    ("Roofing & exteriors", "Win storm season with proof on the roof, not just yard signs.", "roofing"),
+    ("Remodeling", "Before-and-after video that sells the bigger kitchen, bath or basement.", "remodeling"),
+    ("Landscaping & outdoor", "Book spring installs in February with the crews homeowners already see.", "landscaping"),
+    ("Garage doors & pest", "Be the first name a homeowner trusts when something breaks or bites.", "garage-doors"),
+    ("Automotive", "Repair shops, dealers, detailers, tint and wrap, body shops. Fill the bays.", "auto-repair"),
 ]
 
 GALLERY = [  # (file, alt, caption, css class)
@@ -108,11 +108,12 @@ CASES = [  # filters: social, ads
 ]
 
 HOME_FAQ = [
-    ("How much does it cost?", f"Monthly content plans start at {PRICE_CONTENT}. Paid ad management starts at {PRICE_ADS}. You get a fixed quote after a 15-minute call.", True),
-    ("Will filming slow my crew down?", "No. We shoot on real jobs and work around your techs. Most shoot days are a half day, and owner interviews take about 30 minutes.", False),
+    ("How much does it cost?", "Monthly content plans are $795, $1,395 or $2,195 a month. Paid ad management starts at $1,150 a month plus a one-time setup, and you pay ad spend directly to the platforms. Both service pages have full pricing.", False),
+    ("Will filming slow my crew down?", "No. We capture on real jobs and work around your techs.", False),
     ("Do you only work in St. Charles?", "We're based in St. Charles and shoot across St. Charles, Lincoln, Warren and St. Louis counties. See the areas we serve below.", False),
-    ("Who owns the footage?", "You do. You own the final footage we deliver and can use it anywhere: your website, social, ads and trucks.", False),
-    ("Do I have to sign a long contract?", "No. Our standard plans don't lock you in for a set number of months. We sometimes run specials, so ask about current specials on your call.", False),
+    ("Who owns the content?", "You do. You own all finished content and can use it anywhere.", False),
+    ("Do I have to sign a long contract?", "No. Most plans are month to month. A special offer may come with a set term, which we state before you sign. Ask about current specials.", False),
+    ("How fast can we start?", "First posts can go live as soon as the next week.", False),
 ]
 
 CITIES = [
@@ -161,8 +162,11 @@ CITY_BY_SLUG = {c["slug"]: c for c in CITIES}
 
 def city_file(slug): return f"video-production-{slug}-mo.html"
 
-NAV = [("content-creation.html", "Monthly Content"), ("paid-advertising.html", "Paid Ads"),
-       ("work.html", "Work"), ("about.html", "About"), ("./#areas", "Areas")]
+def industry_file(slug): return f"{slug}-marketing-st-louis.html"
+IND_BY_SLUG = {i["slug"]: i for i in INDUSTRIES}
+
+NAV = [("content-creation.html", "Monthly Content"), ("paid-advertising.html", "Paid Advertising"),
+       ("industries.html", "Industries"), ("work.html", "Work"), ("about.html", "About")]
 
 # ---------------------------------------------------------------- helpers
 e = html.escape
@@ -218,21 +222,21 @@ def header(active):
     return f"""<div class="proto caption"><div class="wrap"><span><b>Prototype</b> · Not live on onyxmediastl.com</span><span>[X] and dashed boxes = details still needed</span></div></div>
 <header class="site"><div class="wrap bar">
   <a class="logo" href="./" aria-label="Onyx Media home"><img src="media/logo-light.webp" alt="Onyx Media" width="128" height="53"></a>
-  <nav class="main" aria-label="Main">{links}<a class="btn primary" href="contact.html">Get Pricing {TRI}</a></nav>
+  <nav class="main" aria-label="Main">{links}<a class="btn primary nav-cta" href="contact.html"><span class="nav-cta-dot" aria-hidden="true"></span>Contact Us {TRI}</a></nav>
   <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="drawer">MENU</button>
 </div>
-<div class="wrap drawer" id="drawer" hidden>{drawer}<a class="btn primary" href="contact.html">Get Pricing {TRI}</a></div>
+<div class="wrap drawer" id="drawer" hidden>{drawer}<a class="btn primary" href="contact.html">Contact Us {TRI}</a></div>
 </header>"""
 
 def footer():
     areas = "".join(f'<li><a href="{city_file(c["slug"])}">{e(c["name"])}</a></li>' for c in CITIES)
-    return f"""<div class="callbar" id="callbar"><a class="btn primary" href="contact.html">Get pricing {TRI}</a><span class="callbar-num"><span class="caption">Call / text</span><strong>{PHONE}</strong></span></div>
+    return f"""<div class="callbar" id="callbar"><a class="btn primary" href="contact.html">Contact Us {TRI}</a><span class="callbar-num"><span class="caption">Call / text</span><strong>{PHONE}</strong></span></div>
 <footer class="site"><div class="wrap">
   <div class="foot-grid">
     <div class="stack" style="gap:14px"><a class="logo" href="./"><img src="media/logo-light.webp" alt="Onyx Media" width="150" height="62"></a>
       <address class="nap"><span>Onyx Media · St. Charles, MO</span><span>Video, monthly content and paid ads for home service and automotive businesses</span><span>{PHONE} · {e(EMAIL_SHOWN)}</span></address></div>
-    <div><h4>Services</h4><ul><li><a href="content-creation.html">Monthly content</a></li><li><a href="paid-advertising.html">Paid advertising</a></li><li><a href="work.html">Work</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
-    <div><h4>Follow</h4><ul><li><a href="https://www.facebook.com/Onyxhtz/">Facebook</a></li><li><a href="{INSTAGRAM}">Instagram</a></li><li><a href="{GOOGLE_REVIEW}">Leave us a Google review</a></li></ul></div>
+    <div><h4>Services</h4><ul><li><a href="content-creation.html">Monthly content</a></li><li><a href="paid-advertising.html">Paid advertising</a></li><li><a href="industries.html">Industries</a></li><li><a href="work.html">Work</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
+    <div><h4>Follow</h4><ul><li><a href="https://www.facebook.com/OnyxMediastl">Facebook</a></li><li><a href="{INSTAGRAM}">Instagram</a></li><li><a href="{GOOGLE_REVIEW}">Leave us a Google review</a></li></ul></div>
     <div><h4>Areas we serve</h4><ul style="grid-template-columns:1fr 1fr;column-gap:16px">{areas}</ul></div>
   </div>
   <div class="foot-review"><span>Worked with us?</span><a class="btn primary" href="{GOOGLE_REVIEW}">Leave a Google review {TRI}</a></div>
@@ -252,29 +256,6 @@ def page(path, title, desc, body, active=None, extra_head="", fragment=False):
 BIZ_OPTIONS = ["HVAC", "Plumbing", "Electrical", "Roofing & exteriors", "Remodeling", "Landscaping & outdoor",
                "Garage doors", "Pest control", "Auto repair / service", "Dealership", "Detailing, tint & wrap",
                "Body / collision", "Other"]
-
-def quote_card(form_name, heading="Get your pricing", sub=None, preselect="Monthly content"):
-    opts = "".join(f"<option>{e(o)}</option>" for o in BIZ_OPTIONS)
-    need = "".join(f'<label><input type="radio" name="need" value="{v}"' + (" checked" if v == preselect else "") + f'><span>{v}</span></label>'
-                   for v in ["Monthly content", "Paid ads", "Both", "Not sure"])
-    sub = sub or "Tell us what you need. Max texts you pricing and a time for a 15-minute call."
-    return f"""<form class="quote-card js-lead" name="{form_name}" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="thank-you.html" novalidate>
-  <input type="hidden" name="form-name" value="{form_name}">
-  <p class="hp"><label>Leave this empty <input name="bot-field" tabindex="-1"></label></p>
-  <h2 class="display-m">{e(heading)}</h2>
-  <p class="form-note">{e(sub)}</p>
-  <div class="price-lines"><div><span>Monthly content</span><strong>from {PRICE_CONTENT}</strong></div><div><span>Paid advertising</span><strong>from {PRICE_ADS}</strong></div></div>
-  <fieldset class="choice"><legend>What do you need?</legend>{need}</fieldset>
-  <div class="fields two">
-    <div class="field full"><label for="{form_name}-biz">Your business</label><select id="{form_name}-biz" name="business_type">{opts}</select></div>
-    <div class="field"><label for="{form_name}-name">Name <span class="req">*</span></label><input id="{form_name}-name" name="name" autocomplete="name" required></div>
-    <div class="field"><label for="{form_name}-phone">Mobile <span class="req">*</span></label><input id="{form_name}-phone" name="phone" type="tel" autocomplete="tel" required></div>
-    <div class="field full"><label for="{form_name}-email">Email <span class="req">*</span></label><input id="{form_name}-email" name="email" type="email" autocomplete="email" required></div>
-  </div>
-  <p class="err" hidden>Add your name, a 10-digit mobile number and a full email address.</p>
-  <button class="btn primary" type="submit">Get my pricing {TRI}</button>
-  <p class="form-note">Free 15-minute call. No long-term lock-in. <strong>Ask about current specials.</strong> Or call/text {PHONE}.</p>
-</form>"""
 
 def contact_form():
     opts = "".join(f"<option>{e(o)}</option>" for o in BIZ_OPTIONS)
@@ -301,6 +282,105 @@ def contact_form():
   <button class="btn primary" type="submit">Book my 15-minute call {TRI}</button>
 </form>"""
 
+# ---------------------------------------------------------------- pricing data (from Max, Nov 2026)
+CONTENT_PLANS = [
+    dict(key="essential", name="Essential", price=795, pace="2 per week", posts="about 9", reels=3, photos=6,
+         days="Tue, Thu", cal={"Tue": 1, "Thu": 1}),
+    dict(key="growth", name="Growth", price=1395, popular=True, pace="3–4 per week (averages 3.5)", posts="about 15", reels=6, photos=9,
+         days="Mon, Wed, Fri, plus Saturday every other week", cal={"Mon": 1, "Wed": 1, "Fri": 1, "Sat": 0.5}),
+    dict(key="domination", name="Domination", price=2195, pace="5 per week", posts="about 22", reels=10, photos=12,
+         days="Mon–Fri", cal={"Mon": 1, "Tue": 1, "Wed": 1, "Thu": 1, "Fri": 1}),
+]
+CONTENT_INCLUDES = ["Monthly strategy and content calendar", "Professional photo and video capture", "Editing",
+                    "Captions", "Facebook + Instagram scheduling and publishing", "Monthly performance summary"]
+CONTENT_TERMS = ["Most plans are month to month. A special offer may come with a set term, stated before signing.",
+                 "You own all finished content.", "First posts can go live as soon as the next week.",
+                 "Quoted separately: additional platforms, event coverage, long-form video, paid ads, community management, and travel outside the service area."]
+AD_PLANS = [
+    dict(key="meta", name="Meta Lead Engine", platforms="Facebook + Instagram", fee=1150, setup=625),
+    dict(key="google", name="Google Capture", platforms="Google + Bing", fee=1150, setup=625),
+    dict(key="full", name="Full Accelerator", platforms="Meta + Google + Bing", fee=1950, setup=1025),
+]
+AD_RULES = dict(threshold=7000, pct=0.20, min=500, max=15000, step=100, default=2500)
+AD_TERMS = ["Ad spend is separate. You pay it directly to Meta, Google or Bing.",
+            "At $7,000 or more in monthly ad spend, the management fee becomes 20% of ad spend for every package.",
+            "Full Accelerator costs $350/mo less than buying Meta and Google separately ($2,300), and $225 less to set up ($1,250).",
+            "No guarantees: results, leads and sales aren't guaranteed. Final scope is set in the service agreement."]
+
+def money(n): return "${:,.0f}".format(n)
+
+def content_planner():
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    default = "growth"
+    tabs = "".join(f'<button type="button" class="plan-tab" role="tab" data-plan="{p["key"]}" aria-selected="{"true" if p["key"] == default else "false"}">'
+                   + (f'<span class="badge">Most popular</span>' if p.get("popular") else "")
+                   + f'<span class="pt-name">{p["name"]}</span><span class="pt-price">{money(p["price"])}<small>/mo</small></span><span class="pt-pace">{e(p["pace"].split(" (")[0])}</span></button>'
+                   for p in CONTENT_PLANS)
+    panels = ""
+    for p in CONTENT_PLANS:
+        cal = "".join(f'<li class="{"on" if p["cal"].get(d) == 1 else "half" if p["cal"].get(d) else ""}"><span>{d}</span></li>' for d in days)
+        panels += f"""<div class="plan-panel" role="tabpanel" data-panel="{p["key"]}"{"" if p["key"] == default else " hidden"}>
+  <div class="pp-top"><div><span class="eyebrow">{p["name"]}</span><p class="pp-price">{money(p["price"])}<small>/mo</small></p></div>
+  <a class="btn primary" href="contact.html">Start with {p["name"]} {TRI}</a></div>
+  <dl class="stats"><div><dt>Posts per month</dt><dd>{e(p["posts"])}</dd></div><div><dt>Short-form reels</dt><dd>{p["reels"]}</dd></div><div><dt>Photo or graphic posts</dt><dd>{p["photos"]}</dd></div><div><dt>Posting pace</dt><dd>{e(p["pace"])}</dd></div></dl>
+  <div class="week"><p class="caption">Posting days · {e(p["days"])}</p><ul aria-hidden="true">{cal}</ul>
+  {'<p class="form-note"><span class="dot half"></span> Every other week</p>' if any(v == 0.5 for v in p["cal"].values()) else ""}</div>
+</div>"""
+    side = f"""<aside class="plan-side"><h3 class="heading">Every plan includes</h3>{ticks(CONTENT_INCLUDES)}
+<h3 class="heading" style="margin-top:8px">Good to know</h3>{ticks(CONTENT_TERMS)}</aside>"""
+    rows = [("Price", [money(p["price"]) + "/mo" for p in CONTENT_PLANS]), ("Posting pace", [p["pace"] for p in CONTENT_PLANS]),
+            ("Posts per month", [p["posts"] for p in CONTENT_PLANS]), ("Short-form reels", [str(p["reels"]) for p in CONTENT_PLANS]),
+            ("Photo or graphic posts", [str(p["photos"]) for p in CONTENT_PLANS]), ("Posting days", [p["days"] for p in CONTENT_PLANS])]
+    table = '<div class="table-wrap"><table class="compare"><thead><tr><th scope="col">Compare plans</th>' + "".join(
+        f'<th scope="col">{p["name"]}' + (" <span class=\"tag\">Most popular</span>" if p.get("popular") else "") + "</th>" for p in CONTENT_PLANS) + "</tr></thead><tbody>" + \
+        "".join(f'<tr><th scope="row">{e(r)}</th>' + "".join(f"<td>{e(v)}</td>" for v in vals) + "</tr>" for r, vals in rows) + "</tbody></table></div>"
+    return f"""<div class="planner" data-planner><div class="plan-main"><div class="plan-tabs" role="tablist" aria-label="Content plans">{tabs}</div>{panels}</div>{side}</div>{table}"""
+
+def ad_calculator():
+    r = AD_RULES
+    d = AD_PLANS[0]
+    plans = "".join(f'<label class="ad-plan"><input type="radio" name="adplan" value="{p["key"]}" data-fee="{p["fee"]}" data-setup="{p["setup"]}"' + (" checked" if i == 0 else "")
+                    + f'><span><strong>{p["name"]}</strong><em>{p["platforms"]}</em><b>{money(p["fee"])}/mo · {money(p["setup"])} setup</b></span></label>'
+                    for i, p in enumerate(AD_PLANS))
+    fee = d["fee"]; spend = r["default"]
+    return f"""<div class="calc" data-calc data-threshold="{r["threshold"]}" data-pct="{r["pct"]}">
+  <div class="calc-in">
+    <fieldset class="ad-plans"><legend class="caption">1 · Choose a package</legend>{plans}</fieldset>
+    <div class="spend"><label class="caption" for="adSpend">2 · Monthly ad spend</label>
+      <output class="spend-out" for="adSpend" data-out="spend">{money(spend)}</output>
+      <input id="adSpend" type="range" min="{r["min"]}" max="{r["max"]}" step="{r["step"]}" value="{spend}" aria-describedby="spendHelp">
+      <div class="range-ends caption"><span>{money(r["min"])}</span><span id="spendHelp">20% fee starts at {money(r["threshold"])}</span><span>{money(r["max"])}</span></div></div>
+  </div>
+  <div class="calc-out" aria-live="polite">
+    <p class="caption">Your estimate</p>
+    <dl>
+      <div><dt>Management fee <small data-out="feeNote">flat monthly fee</small></dt><dd data-out="fee">{money(fee)}</dd></div>
+      <div><dt>Ad spend <small>paid directly to the platforms</small></dt><dd data-out="spend2">{money(spend)}</dd></div>
+      <div class="total"><dt>Monthly total</dt><dd data-out="monthly">{money(fee + spend)}</dd></div>
+      <div><dt>One-time setup</dt><dd data-out="setup">{money(d["setup"])}</dd></div>
+      <div class="total first"><dt>First month</dt><dd data-out="first">{money(fee + spend + d["setup"])}</dd></div>
+    </dl>
+    <p class="calc-note" data-out="note" hidden></p>
+    <a class="btn primary" href="contact.html">Talk through this estimate {TRI}</a>
+  </div>
+</div>
+<div class="grid-2" style="margin-top:28px">
+  <div class="table-wrap"><table class="compare"><thead><tr><th scope="col">Package</th><th scope="col">Platforms</th><th scope="col">Monthly fee</th><th scope="col">One-time setup</th></tr></thead><tbody>
+  {"".join(f'<tr><th scope="row">{p["name"]}</th><td>{p["platforms"]}</td><td>{money(p["fee"])}</td><td>{money(p["setup"])}</td></tr>' for p in AD_PLANS)}</tbody></table></div>
+  <div>{ticks(AD_TERMS)}</div>
+</div>"""
+
+def pricing_section(which, cls="band", anchor=True):
+    if which == "content":
+        return f"""<section class="{cls}" id="{"pricing" if anchor else "content-pricing"}"><div class="wrap">
+  <div class="band-head"><div class="stack">{eyebrow("Content pricing")}<h2 class="display-l">Pick your posting pace.</h2></div>
+  <p class="body-l">Three monthly plans. Tap a plan to see exactly what you get and which days you post.</p></div>
+  {content_planner()}</div></section>"""
+    return f"""<section class="{cls}" id="{"pricing" if anchor else "ads-pricing"}"><div class="wrap">
+  <div class="band-head"><div class="stack">{eyebrow("Ad pricing")}<h2 class="display-l">See your monthly cost.</h2></div>
+  <p class="body-l">Pick a package and slide to your ad budget. Monthly is our fee plus your ad spend; first month adds the one-time setup.</p></div>
+  {ad_calculator()}</div></section>"""
+
 # ---------------------------------------------------------------- sections
 def hero():
     if HERO_VIDEO:
@@ -312,13 +392,16 @@ def hero():
     return f"""<section class="hero">
   <div class="hero-media" aria-hidden="true">{media}</div><div class="hero-scrim"></div>
   <div class="wrap hero-grid">
-    <div class="stack" style="gap:24px">
+    <div class="stack hero-copy" style="gap:26px">
       {eyebrow("Home service & automotive video · St. Louis")}
       <h1 class="display-xl">More <span class="rot" id="rot"><span class="rot-word">{ROTATE[0]}</span></span> from the work you already do.</h1>
       <p class="lead">We film your crew on real jobs, turn it into a month of content, and run the ads that make the phone ring. One local team for home service companies and auto shops across St. Louis and St. Charles County.</p>
-      <ul class="quick"><li>{TRI}15-minute call</li><li>{TRI}Free, no pitch deck</li><li>{TRI}Leave with 3 video ideas</li></ul>
+      <div class="hero-ctas">
+        <a class="btn primary big" href="contact.html">Contact Us {TRI}</a>
+        <a class="btn ghost-light big" href="paid-advertising.html">Paid Advertising</a>
+      </div>
+      <ul class="quick"><li>{TRI}Content from {money(CONTENT_PLANS[0]["price"])}/mo</li><li>{TRI}Ads from {money(AD_PLANS[0]["fee"])}/mo</li><li>{TRI}Month to month</li></ul>
     </div>
-    {quote_card("quick-quote")}
   </div>
   <div class="slide-cap caption" aria-hidden="true">{TRI}<span id="slideCap">{e(SLIDES[0][2])}</span></div>
 </section>
@@ -332,19 +415,62 @@ def service_cards():
     return f"""<div class="grid-2">
   <a class="card feature" href="content-creation.html">{eyebrow("Monthly content creation")}
     <h3 class="display-m">Show up every week without lifting a camera.</h3>
-    <p>One shoot day a month becomes a month of reels, edited, captioned and posted for you.</p>
-    {ticks(["[X] reels per month for Reels, TikTok and Shorts", "Captions, hooks and a posting schedule", "Monthly report on what brought in calls"])}
-    <div class="foot"><span class="price">From {PRICE_CONTENT}</span><span>See the plan →</span></div></a>
+    <p>We plan, capture, edit, caption and post to Facebook and Instagram, 2 to 5 times a week.</p>
+    {ticks(["3 to 10 short-form reels a month", "6 to 12 photo or graphic posts a month", "Monthly strategy, calendar and performance summary"])}
+    <div class="foot"><span class="price">From {money(CONTENT_PLANS[0]["price"])}/mo</span><span>See plans →</span></div></a>
   <a class="card feature" href="paid-advertising.html">{eyebrow("Paid advertising")}
     <h3 class="display-m">Turn your best video into booked jobs.</h3>
-    <p>Meta and Google ads built from the footage we shoot, aimed at the ZIP codes your customers live in.</p>
-    {ticks(["Campaign setup, targeting and tracking", "Fresh creative tested every month", "Every lead to your email and a Google Sheet"])}
-    <div class="foot"><span class="price">From {PRICE_ADS}</span><span>See how it works →</span></div></a>
+    <p>Monthly ad management on Facebook, Instagram, Google and Bing, paired with the content we create.</p>
+    {ticks(["Meta Lead Engine, Google Capture or Full Accelerator", "You pay ad spend directly to the platforms", "Live cost calculator on the page"])}
+    <div class="foot"><span class="price">From {money(AD_PLANS[0]["fee"])}/mo</span><span>Calculate your cost →</span></div></a>
 </div>
-<p class="muted" style="margin-top:20px">Also available: brand and commercial video, recruiting video, and strategy sessions. Ask on your call.</p>"""
+<p class="muted" style="margin-top:20px">Also available, quoted separately: event coverage, long-form video and brand films. Ask on your call.</p>"""
 
 def trades():
-    return '<div class="trades">' + "".join(f'<div class="trade">{TRI}<h3>{e(t)}</h3><p>{e(d)}</p></div>' for t, d in TRADES) + "</div>"
+    return '<div class="trades">' + "".join(f'<a class="trade" href="{industry_file(sl)}">{TRI}<h3>{e(t)}</h3><p>{e(d)}</p></a>' for t, d, sl in TRADES) + "</div>" + \
+        f'<div class="btns" style="margin-top:24px"><a class="btn secondary" href="industries.html">See all {len(INDUSTRIES)} industries we serve</a></div>'
+
+def industry_links(exclude=None, limit=None):
+    items = [i for i in INDUSTRIES if i["slug"] != exclude][:limit]
+    return '<ul class="areas">' + "".join(f'<li><a href="{industry_file(i["slug"])}">{TRI}{e(i["name"])}</a></li>' for i in items) + "</ul>"
+
+def industries_hub():
+    groups = ""
+    for key, label in GROUPS:
+        items = [i for i in INDUSTRIES if i["group"] == key]
+        groups += f'<section class="band{" bone" if key in ("auto", "pro") else ""}"><div class="wrap"><div class="band-head"><div class="stack">{eyebrow(label)}<h2 class="display-l">{e(label)}.</h2></div><span></span></div>' + \
+            '<div class="ind-grid">' + "".join(f'<a class="card" href="{industry_file(i["slug"])}"><h3 class="display-m" style="font-size:22px">{e(i["name"])}</h3><p>{e(i["intro"].split(". ")[0])}.</p><span class="btn text">See {e(i["name"].lower())} marketing</span></a>' for i in items) + "</div></div></section>"
+    body = page_head("Industries", "Video and ads for service businesses.", "Home services, automotive, pets and local professional services across St. Louis and St. Charles County. Pick your industry to see what we film and what it costs.", "Industries") + groups + cta_band()
+    return page("industries.html", "Industries We Serve | Video & Social Media Marketing for Service Businesses | Onyx Media St. Louis",
+                "Video production, monthly social content and paid ads for home service, automotive, pet and local service businesses in St. Louis and St. Charles County.", body, "industries.html")
+
+def industry_page(i):
+    n = i["name"]; noun = i["noun"]
+    shots = ticks(i["shots"])
+    ideas = '<div class="grid-3">' + "".join(f'<div class="card"><span class="eyebrow">Idea {k+1}</span><h3 class="display-m" style="font-size:24px">{e(t)}</h3><p>{e(d)}</p></div>' for k, (t, d) in enumerate(i["ideas"])) + "</div>"
+    case = ""
+    if i.get("case") is not None:
+        case = section("Recent work", f"Work for {noun}.", "", '<div class="cases two" style="max-width:640px">' + case_html(CASES[i["case"]]) + "</div>")
+    faq = [(f"Do you work with {noun} in St. Louis?", f"Yes. We create content and run ads for {noun} across St. Louis, St. Charles County and nearby areas. Our studio is in St. Charles.", False),
+           (f"What content works best for {noun}?", " ".join(f"{t}: {d}" for t, d in i["ideas"]), False),
+           ("How much does it cost?", "Monthly content plans are $795, $1,395 or $2,195 a month. Ad management is $1,150 or $1,950 a month plus a one-time setup, and you pay ad spend directly to the platforms.", False),
+           ("Is there a contract?", "Most plans are month to month. A special offer may come with a set term, stated before signing. Ask about current specials.", False),
+           ("How fast can we start?", "First posts can go live as soon as the next week.", False)]
+    city_list = '<ul class="areas">' + "".join(f'<li><a href="{city_file(c["slug"])}">{TRI}{e(c["name"])}</a></li>' for c in CITIES) + "</ul>"
+    body = page_head(f"Marketing for {n.lower()}", f"Video & social media marketing for {noun} in St. Louis.", i["intro"], f"Industries / {n}", "See pricing") + \
+        section("What we film", f"Content built for {noun}.", i["season"], shots) + \
+        section("Content ideas", f"Videos that bring in more {i['jobs']}.", "A few of the formats we plan into your monthly calendar.", ideas, "band bone") + \
+        case + pricing_section("content") + pricing_section("ads", "band bone", anchor=False) + \
+        section("Recent shoots", "Shot on real jobs.", "A sample of our work around St. Louis.", gallery(), "band dark") + reviews(3) + \
+        section("Where we work", f"Serving {noun} across the metro.", "We come to your job sites, shop or office.", city_list) + \
+        section("FAQ", f"Questions from {noun}.", "", faq_html(faq), "band bone") + \
+        section("Other industries", "We also work with.", "", industry_links(i["slug"], 10) + '<div class="btns" style="margin-top:20px"><a class="btn text" href="industries.html">All industries</a></div>') + \
+        cta_band(f"Let's bring in more {i['jobs']}.")
+    schema = {"@context": "https://schema.org", "@type": "Service", "serviceType": f"Video production and social media marketing for {noun}",
+              "provider": {k: v for k, v in BUSINESS.items() if k != "@context"}, "areaServed": "St. Louis, MO"}
+    return page(industry_file(i["slug"]), f"Video & Social Media Marketing for {n} in St. Louis | Onyx Media",
+                f"Video production, monthly social content and paid ads for {noun} in St. Louis and St. Charles County. Content from $795/mo, ads from $1,150/mo.",
+                body, None, extra_head=ld(schema) + faq_ld(faq))
 
 def gallery():
     return '<div class="gallery">' + "".join(
@@ -363,9 +489,9 @@ def step_grid(data):
 
 def steps():
     return step_grid([("Call", "A 15-minute call about your business, your area and what's bringing in work now."),
-                      ("Plan", "We map 90 days around your season: what to film and where the ads run."),
-                      ("Shoot", "A half-day on real jobs or in the shop. Your crew keeps working."),
-                      ("Post & optimize", "Reels go out on schedule, ads launch, and every month we keep what brings in calls.")])
+                      ("Plan", "We build your monthly strategy and content calendar."),
+                      ("Capture", "Photo and video on your job sites, in your shop or on your lot."),
+                      ("Post & report", "Posts go live on schedule, often starting the next week. Every month you get a performance summary.")])
 
 def review_card(q, n, b, stars):
     paras = "".join(f"<p>{e(x)}</p>" for x in q.split("\n\n"))
@@ -374,10 +500,7 @@ def review_card(q, n, b, stars):
 
 def reviews(limit=None):
     items = REVIEWS[:limit] if limit else REVIEWS
-    if items:
-        cards = '<div class="reviews">' + "".join(review_card(*r) for r in items) + "</div>"
-    else:
-        cards = '<div class="grid-3">' + "".join('<div class="slot" style="min-height:180px">Google review · real text, name and stars go here</div>' for _ in range(3)) + "</div>"
+    cards = '<div class="reviews">' + "".join(review_card(*r) for r in items) + "</div>"
     return f"""<section class="band dark"><div class="wrap">
   <div class="band-head"><div class="stack">{eyebrow("Google reviews")}<h2 class="display-l">From the owners.</h2></div>
   <p class="body-l">What local business owners say after working with us.</p></div>
@@ -390,7 +513,7 @@ def about_teaser():
   <figure class="max-photo"><img src="media/max-fisher-on-set.webp" alt="Max Fisher filming an engine bay with a gimbal-mounted camera" width="900" height="900" loading="lazy"><figcaption class="caption">{TRI}Max Fisher · Owner, Onyx Media</figcaption></figure>
   <div class="stack" style="gap:22px">{eyebrow("About")}<h2 class="display-l">Owner-run. On every shoot.</h2>
     <p class="body-l">I'm Max Fisher. I started Onyx Media in St. Charles to give home service companies and auto shops the kind of video and ads the big brands get, without the agency layers.</p>
-    <div class="facts"><div><strong>St. Charles</strong><span>Based here, shooting across the metro</span></div><div><strong>1 shoot day</strong><span>Covers a month of content</span></div><div><strong>16+</strong><span>Local businesses filmed</span></div></div>
+    <div class="facts"><div><strong>St. Charles</strong><span>Based here, shooting across the metro</span></div><div><strong>Next week</strong><span>First posts can go live</span></div><div><strong>18</strong><span>Local businesses filmed</span></div></div>
     <div class="btns"><a class="btn text" href="about.html">More about Onyx</a></div></div>
 </div></section>"""
 
@@ -404,7 +527,7 @@ def areas_block(exclude=None):
 def cta_band(h="Let's fill your schedule.", p="15 minutes. We'll look at what you're posting now, what the competition in your area is doing, and what we'd film first."):
     return f"""<section class="cta-band"><div class="cta-pattern" aria-hidden="true"></div><div class="wrap">
   {eyebrow("Free 15-minute call")}<h2 class="display-xl">{e(h)}</h2><p>{e(p)}</p>
-  <div class="btns"><a class="btn dark" href="contact.html">Get My Pricing {TRI}</a><a class="btn secondary" href="work.html">See Our Work</a></div>
+  <div class="btns"><a class="btn dark" href="contact.html">Contact Us {TRI}</a><a class="btn secondary" href="paid-advertising.html">Paid Advertising</a></div>
 </div></section>"""
 
 def section(title_eyebrow, h2, lead, inner, cls="band"):
@@ -413,14 +536,15 @@ def section(title_eyebrow, h2, lead, inner, cls="band"):
   <div class="band-head"><div class="stack">{eyebrow(title_eyebrow)}<h2 class="display-l">{e(h2)}</h2></div>{lead_html}</div>
   {inner}</div></section>"""
 
-def page_head(eb, h1, lead, crumbs=None, form=None):
+def page_head(eb, h1, lead, crumbs=None, pricing_label=None):
     cr = f'<p class="crumbs"><a href="./">Home</a> / {e(crumbs)}</p>' if crumbs else ""
-    left = f'<div class="stack" style="gap:20px">{cr}{eyebrow(eb)}<h1 class="display-l">{e(h1)}</h1><p class="body-l">{e(lead)}</p></div>'
-    return f'<section class="page-head' + (" with-form" if form else "") + f'"><div class="wrap">{left}{form or ""}</div></section>'
+    acts = f'<div class="btns"><a class="btn primary" href="contact.html">Contact Us {TRI}</a>' + \
+           (f'<a class="btn secondary" href="#pricing">{e(pricing_label)}</a>' if pricing_label else "") + "</div>"
+    return f'<section class="page-head"><div class="wrap"><div class="stack" style="gap:20px;max-width:900px">{cr}{eyebrow(eb)}<h1 class="display-l">{e(h1)}</h1><p class="body-l">{e(lead)}</p>{acts}</div></div></section>'
 
 # ---------------------------------------------------------------- pages
 def home(fragment=False):
-    body = hero() + client_wall() + \
+    body = hero() + \
         section("Services", "Two ways we bring in work.", "Most clients run both: content that builds trust, and ads that put it in front of buyers.", service_cards(), "band bone") + \
         section("Who we work with", "Built for the trades and the shop floor.", "Owner-led home service companies and automotive businesses. We know your busy season and your slow one.", trades()) + \
         section("Recent shoots", "Shot on real jobs.", "On the roof, in the yard, on the lot. We film where the work happens.", gallery(), "band dark") + \
@@ -431,65 +555,56 @@ def home(fragment=False):
         about_teaser() + areas_block() + \
         section("FAQ", "Straight answers.", "If yours isn't here, ask it on the call.", faq_html(HOME_FAQ)) + cta_band()
     return page("index.html", "Onyx Media | Video & Paid Ads for Home Service and Auto Businesses in St. Louis",
-                "St. Charles video production, monthly social content and paid ads for home service companies and automotive shops across St. Louis.",
+                "St. Charles video production, monthly social content from $795/mo and paid ads from $1,150/mo for home service companies and automotive shops across St. Louis.",
                 body, active=None, extra_head=ld(BUSINESS) + faq_ld(HOME_FAQ), fragment=fragment)
 
 CONTENT_FAQ = [
-    ("What do I get each month?", "A planned shoot day, [X] edited short-form videos, captions, a posting schedule and a monthly report.", True),
-    ("Do you post for us?", "Yes. We schedule and post to Instagram, Facebook, TikTok and YouTube Shorts, or hand files to your team if you prefer.", False),
-    ("Who has to be on camera?", "Usually the owner and a tech or two. We coach you through it; most people get comfortable within the first shoot.", False),
-    ("How fast is turnaround?", "First edits within [X] business days of the shoot.", True),
-    ("Is there a contract?", "Our standard plans don't lock you in for a set number of months. Ask about current specials on your call.", False),
-    ("Who owns the footage?", "You own the final footage we deliver.", False),
+    ("What does every plan include?", "A monthly strategy and content calendar, professional photo and video capture, editing, captions, Facebook + Instagram scheduling and publishing, and a monthly performance summary.", False),
+    ("Which platforms do you post to?", "Facebook and Instagram are included. Additional platforms are quoted separately.", False),
+    ("How fast can we start?", "First posts can go live as soon as the next week.", False),
+    ("Is there a contract?", "Most plans are month to month. A special offer may come with a set term, which we state before you sign. Ask about current specials.", False),
+    ("Who owns the content?", "You own all finished content.", False),
+    ("What costs extra?", "Additional platforms, event coverage, long-form video, paid ads, community management, and travel outside the service area are quoted separately.", False),
 ]
 
 def content_page():
-    pkgs = f"""<div class="pkg">
-  <div><span class="eyebrow">Starter</span><p class="display-m">$[X]/mo</p>{ticks(["1 shoot day", "[X] reels", "Captions + posting"])}</div>
-  <div class="best"><span class="badge">Most popular</span><span class="eyebrow">Growth</span><p class="display-m">$[X]/mo</p>{ticks(["1 shoot day", "[X] reels + photos", "Posting + monthly report", "Ad-ready cuts"])}</div>
-  <div><span class="eyebrow">Full system</span><p class="display-m">$[X]/mo</p>{ticks(["2 shoot days", "[X] reels + photos", "Paid ads managed", "Monthly strategy call"])}</div>
-</div>"""
     split = f"""<div class="split"><figure><img src="media/max-on-set-wide.webp" alt="Filming an engine bay on a gimbal" loading="lazy"></figure>
-<div class="stack">{eyebrow("A shoot day")}<h2 class="display-l">Half a day. A month of content.</h2>
-{ticks(["We send a shot list a week ahead", "We film on real jobs, in the shop or on the lot", "Owner and tech talking-heads in about 30 minutes", "Your crew keeps working the whole time"])}</div></div>"""
+<div class="stack">{eyebrow("How a month works")}<h2 class="display-l">Planned, captured, posted.</h2>
+{ticks(["We build your monthly strategy and content calendar", "We capture photo and video on your job sites, in your shop or on your lot", "We edit, write captions, and schedule to Facebook and Instagram", "You get a performance summary every month"])}</div></div>"""
     body = page_head("Monthly content creation", "Show up every week without lifting a camera.",
-                     "One shoot day a month turns into a month of short-form video for your home service or auto business: planned, filmed, edited, captioned and posted.",
-                     "Monthly content", quote_card("content-quote", preselect="Monthly content")) + \
-        section("What you get", "Everything, done for you.", "You run the business. We make sure people see it.",
-                ticks(["Monthly planning around your season and offers", "One shoot day on your job sites or in your shop", "[X] edited reels for Reels, TikTok and YouTube Shorts",
-                       "Captions, hooks and on-screen text", "Scheduling and posting", "A monthly report on views, followers and calls"])) + \
+                     "Monthly photo and video content for home service and automotive businesses: planned, captured, edited, captioned and posted to Facebook and Instagram. Plans from $795/mo.",
+                     "Monthly content", "See content pricing") + \
+        pricing_section("content") + \
         f'<section class="band bone"><div class="wrap">{split}</div></section>' + \
-        section("Plans", "Monthly content plans.", "Final counts and prices to be confirmed.", pkgs) + \
-        section("FAQ", "Monthly content questions.", "", faq_html(CONTENT_FAQ), "band bone") + cta_band()
-    return page("content-creation.html", "Monthly Social Media Content for Contractors & Auto Shops | Onyx Media St. Louis",
-                "Monthly short-form video content for home service and automotive businesses in St. Louis and St. Charles County. One shoot day, a month of reels.",
+        section("FAQ", "Monthly content questions.", "", faq_html(CONTENT_FAQ)) + cta_band()
+    return page("content-creation.html", "Monthly Social Media Content for Contractors & Auto Shops | From $795/mo | Onyx Media",
+                "Monthly photo and video content for home service and automotive businesses in St. Louis and St. Charles County. Three plans from $795/mo, month to month.",
                 body, "content-creation.html", extra_head=faq_ld(CONTENT_FAQ))
 
 ADS_FAQ = [
-    ("Which platforms do you run?", "Meta (Facebook and Instagram) and Google. We pick based on how your customers search for you.", False),
-    ("How much should I spend on ads?", "It depends on your market and goals. We recommend a starting ad budget on the call; ad spend is paid directly to the platform.", False),
-    ("How do I know it's working?", "Every lead goes to your email and a Google Sheet, and we report cost per lead and booked calls monthly.", False),
-    ("Do I need to be on a content plan?", "No, but ads perform best with fresh creative. Most clients run both.", False),
-    ("Is there a long-term contract?", "No set-month lock-in on our standard plans. Ask about current specials on your call.", False),
+    ("Which platforms do you run?", "Meta Lead Engine covers Facebook and Instagram. Google Capture covers Google and Bing. Full Accelerator covers all of them.", False),
+    ("Is ad spend included?", "No. Ad spend is separate, and you pay it directly to Meta, Google or Bing.", False),
+    ("What happens at higher budgets?", "At $7,000 or more in monthly ad spend, the management fee becomes 20% of ad spend for every package.", False),
+    ("Is there a setup fee?", "Yes, one time: $625 for Meta Lead Engine or Google Capture, $1,025 for Full Accelerator.", False),
+    ("Do you guarantee results?", "No. Results, leads and sales aren't guaranteed. Final scope is set in the service agreement.", False),
+    ("Do I need a content plan too?", "No, but ads perform best with fresh creative, so most clients run both.", False),
 ]
 
 def ads_page():
-    steps_ads = step_grid([("Set up", "Ad accounts, pixel and conversion tracking, done right the first time."),
-                           ("Target", "The ZIP codes and customers you actually want, not everyone."),
-                           ("Create", "Ads cut from real footage of your crew, shop and finished work."),
-                           ("Improve", "Monthly testing: keep what books calls, cut what doesn't.")])
+    steps_ads = step_grid([("Set up", "Ad accounts and tracking set up once, with a one-time setup fee."),
+                           ("Target", "The areas and customers you actually want, not everyone."),
+                           ("Create", "Ads built around real footage of your crew, shop and finished work."),
+                           ("Manage", "Monthly management and adjustments based on what's working.")])
     cases = '<div class="cases two">' + "".join(case_html(c) for c in CASES if "ads" in c["f"]) + "</div>"
     body = page_head("Paid advertising", "Turn your best video into booked jobs.",
-                     "Meta and Google ads for home service companies and auto shops, built from footage of your real work and tracked to calls and form fills.",
-                     "Paid advertising", quote_card("ads-quote", preselect="Paid ads")) + \
-        section("How it works", "Ads that look like your business.", "Generic stock ads get scrolled past. Your own crew doesn't.", steps_ads) + \
-        section("What you get", "Clear numbers every month.", f"Management from {PRICE_ADS}.",
-                ticks(["Campaign setup and conversion tracking", "Service-area targeting by ZIP code", "New creative from our shoots every month",
-                       "Every lead sent to your email and a Google Sheet", "Monthly report: spend, cost per lead, booked calls"]), "band bone") + \
+                     "Facebook, Instagram, Google and Bing ads for home service companies and auto shops. Management from $1,150/mo plus a one-time setup; you pay ad spend directly to the platforms.",
+                     "Paid advertising", "Calculate your cost") + \
+        pricing_section("ads") + \
+        section("How it works", "Ads that look like your business.", "Generic stock ads get scrolled past. Your own crew doesn't.", steps_ads, "band bone") + \
         section("Ad work", "Recent ad clients.", "Results are being added as clients approve them.", cases) + \
         section("FAQ", "Paid ads questions.", "", faq_html(ADS_FAQ), "band bone") + cta_band()
-    return page("paid-advertising.html", "Facebook & Google Ads for Contractors & Auto Shops | Onyx Media St. Louis",
-                "Paid ad management for home service and automotive businesses in St. Louis and St. Charles County, built from real video of your work.",
+    return page("paid-advertising.html", "Facebook, Google & Bing Ads for Contractors & Auto Shops | From $1,150/mo | Onyx Media",
+                "Paid ad management for home service and automotive businesses in St. Louis and St. Charles County. Three packages from $1,150/mo with a live cost calculator.",
                 body, "paid-advertising.html", extra_head=faq_ld(ADS_FAQ))
 
 def work_page():
@@ -499,7 +614,7 @@ def work_page():
         f'<section class="band"><div class="wrap"><div class="filters" role="group" aria-label="Filter work">{chips}</div><div class="cases two" id="work-cases">' + \
         "".join(case_html(c) for c in CASES) + "</div></div></section>" + \
         section("Recent shoots", "More from the field.", "Roofs, kennels, job sites, studios and service bays.", gallery(), "band dark") + \
-        client_wall() + cta_band()
+        cta_band()
     return page("work.html", "Our Work | Video & Ads for Local Businesses | Onyx Media St. Louis",
                 "Case studies and recent shoots from Onyx Media: social content and paid ads for home service and automotive businesses.", body, "work.html")
 
@@ -512,22 +627,22 @@ def about_page():
     <h2 class="heading">Why the trades</h2><p class="muted">We shoot around your schedule, on real jobs, so your crew keeps working while we roll. Homeowners trust what they can see: your trucks, your techs, your finished work.</p>
     <h2 class="heading">Why automotive</h2><p class="muted">We understand how shops and dealers sell: trust in the tech, transparency on the repair, and the car looking its best on camera.</p>
     <p class="form-note">Onyx Media is a brand of ONYX HTZ LLC. Paid advertising is delivered through Onyx Performance Advertising.</p>
-    <div class="btns"><a class="btn primary" href="contact.html">Get Pricing {TRI}</a></div></div>
-</div></section>""" + reviews() + client_wall() + cta_band()
+    <div class="btns"><a class="btn primary" href="contact.html">Contact Us {TRI}</a></div></div>
+</div></section>""" + reviews() + cta_band()
     return page("about.html", "About Onyx Media | Max Fisher | St. Charles, MO", "Onyx Media is an owner-run video and paid ads studio in St. Charles, MO, for home service and automotive businesses.", body, "about.html")
 
 def contact_page():
-    body = page_head("Contact", "Get pricing and book a 15-minute call.", "Pick a time, or send five quick details and Max will text you pricing within one business day.", "Contact") + \
-        f"""<section class="band"><div class="wrap book">
+    body = f"""<section class="page-head"><div class="wrap"><div class="stack" style="gap:20px;max-width:900px"><p class="crumbs"><a href="./">Home</a> / Contact</p>{eyebrow("Contact")}<h1 class="display-l">Book a free 15-minute call.</h1><p class="body-l">Pick a time, or send five quick details and Max will get back to you within one business day. Ask about current specials.</p></div></div></section>
+<section class="band"><div class="wrap book">
   <div class="stack">{eyebrow("Fastest: pick a time")}<div class="slot">Scheduler embed · 15-minute slots<br>Calendly / Cal.com / Google booking: tool to be confirmed</div>
   <address class="nap muted"><strong style="color:var(--ink)">Onyx Media</strong><span>St. Charles, MO · Serving the St. Louis metro</span><span>Call or text {PHONE}</span><span>{e(EMAIL_SHOWN)}</span></address></div>
   {contact_form()}
 </div></section>"""
-    return page("contact.html", "Get Pricing | Onyx Media St. Louis", "Get pricing for monthly video content and paid ads, and book a free 15-minute call with Onyx Media.", body, "contact.html")
+    return page("contact.html", "Contact | Onyx Media St. Louis", "Contact Onyx Media for monthly video content and paid ads, and book a free 15-minute call.", body, "contact.html")
 
 def thanks_page():
     body = f"""<section class="band"><div class="wrap stack" style="gap:22px">{eyebrow("Received")}<h1 class="display-l">Got it. Here's what happens next.</h1>
-<ol class="muted" style="display:grid;gap:10px;padding-left:20px;margin:0"><li>Max reviews your details today and texts you pricing within one business day.</li><li>You'll get a link to book your 15-minute call if you haven't already.</li><li>Before the call we look at your site, your Google profile and your competitors.</li></ol>
+<ol class="muted" style="display:grid;gap:10px;padding-left:20px;margin:0"><li>Max reviews your details and gets back to you within one business day.</li><li>You'll get a link to book your 15-minute call if you haven't already.</li><li>Before the call we look at your site, your Google profile and your competitors.</li></ol>
 <p class="form-note">Conversion events (GA4 + Meta) fire on this page once tracking is installed.</p>
 <div class="btns"><a class="btn secondary" href="work.html">See Our Work</a></div></div></section>"""
     return page("thank-you.html", "Thanks | Onyx Media", "Thanks for reaching out to Onyx Media.", body)
@@ -536,21 +651,21 @@ def city_page(c):
     n = c["name"]
     faq = [(f"Do you film in {n}?", f"Yes. We shoot on location in {n} and across {c['county']}. Our studio is in St. Charles.", False),
            (f"What kinds of {n} businesses do you work with?", "Home service companies (HVAC, plumbing, roofing, remodeling, landscaping, garage doors, pest control) and automotive businesses (repair shops, dealers, detailers, body shops).", False),
-           ("How much does it cost?", f"Monthly content starts at {PRICE_CONTENT}; paid ads management starts at {PRICE_ADS}. You get a fixed quote after a 15-minute call.", True),
-           ("How fast can you start?", "Most clients have their first shoot within [X] weeks of the call.", True),
-           ("Is there a contract?", "No set-month lock-in on our standard plans. Ask about current specials on your call.", False)]
+           ("How much does it cost?", "Monthly content plans are $795, $1,395 or $2,195 a month. Ad management is $1,150 or $1,950 a month plus a one-time setup, and you pay ad spend directly to the platforms.", False),
+           ("How fast can you start?", "First posts can go live as soon as the next week.", False),
+           ("Is there a contract?", "Most plans are month to month. A special offer may come with a set term, stated before signing. Ask about current specials.", False)]
     near = "".join(f'<li><a href="{city_file(s)}">{TRI}{e(CITY_BY_SLUG[s]["name"])}</a></li>' for s in c["near"])
     schema = {**BUSINESS, "areaServed": {"@type": "City", "name": f"{n}, MO"}}
-    body = page_head(f"{n}, MO", f"Video production & social media marketing in {n}, MO.", c["intro"], n,
-                     quote_card(f"city-{c['slug']}", heading=f"Pricing for {n} businesses")) + \
+    body = page_head(f"{n}, MO", f"Video production & social media marketing in {n}, MO.", c["intro"], n, "See pricing") + \
         section(f"Why video in {n}", f"Be the {n} company people call first.", c["local"], service_cards()) + \
+        pricing_section("content", "band bone") + pricing_section("ads", "band", anchor=False) + \
         section(f"Who we work with in {n}", "Trades, crews and shops.", f"We film {n} businesses on their own job sites, in their shops and on their lots.", trades(), "band bone") + \
         section("Recent shoots", "Shot on real jobs.", "A sample of our work around the area.", gallery(), "band dark") + \
         reviews(3) + \
         f"""<section class="band"><div class="wrap"><div class="band-head"><div class="stack">{eyebrow("Nearby")}<h2 class="display-l">We also serve.</h2></div><p class="body-l">Close to {e(n)} and on our regular routes.</p></div><ul class="areas">{near}<li><a href="./#areas">{TRI}All areas</a></li></ul></div></section>""" + \
         section("FAQ", f"{n} questions.", "", faq_html(faq), "band bone") + cta_band(f"Let's fill your schedule in {n}.")
     return page(city_file(c["slug"]), f"Video Production & Social Media Marketing in {n}, MO | Onyx Media",
-                f"Video production, monthly social content and paid ads for home service and automotive businesses in {n}, MO. Local team based in St. Charles.",
+                f"Video production, monthly social content (from $795/mo) and paid ads (from $1,150/mo) for home service and automotive businesses in {n}, MO.",
                 body, None, extra_head=ld(schema) + faq_ld(faq))
 
 # ---------------------------------------------------------------- write
@@ -560,6 +675,9 @@ def main():
              "work.html": work_page(), "about.html": about_page(), "contact.html": contact_page(), "thank-you.html": thanks_page()}
     for c in CITIES:
         pages[city_file(c["slug"])] = city_page(c)
+    pages["industries.html"] = industries_hub()
+    for i in INDUSTRIES:
+        pages[industry_file(i["slug"])] = industry_page(i)
     for name, text in pages.items():
         (OUT / name).write_text(text)
     (ART / "artifact-index.html").write_text(home(fragment=True))

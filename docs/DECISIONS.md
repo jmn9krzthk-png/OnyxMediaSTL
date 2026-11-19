@@ -21,3 +21,8 @@
 | 17 | 2026-11-19 | Site | Added 5 real Google reviews (supplied by Max) on home, about (all) and city pages (top 3); Instagram linked; YouTube removed | Done | "ONYX HTZ" in Shawn McKenzie's review shown as "[Onyx Media]" — brackets mark the edit. Star ratings not shown until confirmed. Hovis Racing and McKenzie Chiropractic added to client list |
 | 18 | 2026-11-19 | Site | Brightness balanced: dark header, onyx bands for clients, gallery and reviews between light sections | Done | |
 | 19 | 2026-11-19 | Site | FAQ: no set-month lock-in on standard plans; specials exist (customer should ask); client owns final footage. Google review link in reviews section and footer | Done | Contact email still set via ONYX_CONTACT_EMAIL at build time |
+| 20 | 2026-11-19 | Site | Hero form removed; hero has Contact Us + Paid Advertising buttons; header CTA "Contact Us" | Done (local) | Only the Contact page has a form now |
+| 21 | 2026-11-19 | Site | Real pricing: content plan picker (Essential $795 / Growth $1,395 / Domination $2,195) and ad calculator (Meta/Google $1,150 + $625 setup, Full $1,950 + $1,025; 20% of spend at $7,000+). On content, ads, every city and every industry page | Done (local) | Calculator verified against Max's example table |
+| 22 | 2026-11-19 | Site | "Businesses we've filmed for" section removed site-wide | Done (local) | |
+| 23 | 2026-11-19 | Site | 32 industry SEO pages + Industries hub (no beauty, healthcare or medical) | Done (local) | tools/industries.py |
+| 24 | 2026-11-19 | Deploy | Stop pushing per change to save Netlify credits; commit locally, push once when approved | Active | |
