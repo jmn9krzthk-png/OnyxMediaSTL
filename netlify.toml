@@ -1,10 +1,6 @@
-# Netlify settings for onyxmediastl.
-#
-# BUILDS ARE PAUSED: the `ignore` command below exits 0, which tells Netlify to
-# skip every build/deploy for pushes while we work. This saves deploy credits.
-# To go live again, delete the `ignore` line (or this whole [build] block's ignore)
-# and push once.
+# Netlify settings for onyxmediastl.com
+# Static site: no build step; Netlify publishes the prototype/ folder.
+# To pause deploys again (saves credits), add:  ignore = "exit 0"  under [build].
 [build]
   publish = "prototype"
   command = ""
-  ignore = "exit 0"

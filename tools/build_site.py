@@ -23,8 +23,8 @@ OUT = ROOT / "prototype"
 ART = ROOT / "build"
 
 # ---------------------------------------------------------------- settings
-SITE_URL = "https://onyxmediastl.netlify.app"   # change to https://onyxmediastl.com at launch
-INDEXABLE = False      # keep search engines out until placeholders are replaced
+SITE_URL = "https://onyxmediastl.com"
+INDEXABLE = True
 PHONE = "636.385.3995"
 PHONE_TEL = "+16363853995"
 _contact_file = pathlib.Path(__file__).resolve().parent / "contact-email.txt"
@@ -247,8 +247,7 @@ def head(title, desc, path, extra=""):
 def header(active):
     links = "".join(f'<a href="{h}"' + (' aria-current="page"' if h == active else "") + f'>{e(t)}</a>' for h, t in NAV)
     drawer = "".join(f'<a href="{h}">{TRI}{e(t)}</a>' for h, t in NAV)
-    return f"""<div class="proto caption"><div class="wrap"><span><b>Prototype</b> · Not live on onyxmediastl.com</span><span>[X] and dashed boxes = details still needed</span></div></div>
-<header class="site"><div class="wrap bar">
+    return f"""<header class="site"><div class="wrap bar">
   <a class="logo" href="./" aria-label="Onyx Media home"><img src="media/logo-light.webp" alt="Onyx Media" width="128" height="53"></a>
   <nav class="main" aria-label="Main">{links}<a class="btn primary nav-cta" href="contact.html"><span class="nav-cta-dot" aria-hidden="true"></span>Contact Us {TRI}</a></nav>
   <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="drawer">MENU</button>

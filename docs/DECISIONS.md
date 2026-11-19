@@ -41,3 +41,4 @@
 | 37 | 2026-11-19 | Launch | _redirects for old Wix URLs; favicon + touch icon from logo | Done | Domain is registered at Wix; transfer planned |
 | 38 | 2026-11-19 | Site | Calendly embedded on Contact page (30-minute event link) | Done | Site copy still says 15-minute call; pending Max decision |
 | 39 | 2026-11-19 | Site | "Why automotive" removed from About; call length changed to 30 minutes site-wide to match Calendly (30min event) | Done (local, not pushed) | |
+| 40 | 2026-11-19 | Launch | GO LIVE: prototype banner removed, SITE_URL=https://onyxmediastl.com, indexing on, Netlify build pause removed, pushed | Done | Next: Netlify custom domain, Cloudflare DNS, transfer, Workspace billing |
