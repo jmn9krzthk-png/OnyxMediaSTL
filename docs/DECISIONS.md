@@ -31,3 +31,4 @@
 | 27 | 2026-11-19 | Home | Homepage re-oriented: taller cinematic hero with a one-sentence "what we do", amber industry strip removed, new Film / Post / Advertise band right under the hero, then gallery, reviews, work, industries, about, areas, FAQ. "How it works" and service cards dropped from home | Done (local) | |
 | 28 | 2026-11-19 | Site | Industries removed from the main menu; hub + all 32 industry pages linked from every footer, homepage trade cards and "See all industries" button | Done (local) | |
 | 29 | 2026-11-19 | Deploy | netlify.toml added with ignore = "exit 0" so pushes back up to GitHub without Netlify deploying | Active | Remove the ignore line and push once to go live |
+| 30 | 2026-11-19 | SEO | Areas hub page (off-menu, linked from footer and home); 7 new cities; 6 new industries (69 pages total) | Done | Netlify builds still paused |

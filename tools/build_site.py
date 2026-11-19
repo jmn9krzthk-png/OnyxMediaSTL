@@ -157,6 +157,34 @@ CITIES = [
          intro="We shoot across the St. Louis metro for home service companies and automotive businesses that want one local team for video and ads.",
          local="The St. Louis market is crowded with contractors and shops. Consistent video and well-aimed ads are how a local business stands out without a national budget.",
          near=["chesterfield", "st-charles", "st-peters"]),
+    dict(slug="cottleville", name="Cottleville", county="St. Charles County",
+         intro="Cottleville sits between St. Peters and O'Fallon in St. Charles County, a short drive from our studio. We film here for home service companies and auto shops.",
+         local="Cottleville is a close-knit community where reputation travels fast. Video of your real crew doing careful work gives neighbors something to share.",
+         near=["st-peters", "o-fallon", "weldon-spring"]),
+    dict(slug="dardenne-prairie", name="Dardenne Prairie", county="St. Charles County",
+         intro="Dardenne Prairie sits between O'Fallon and Lake Saint Louis in western St. Charles County. We shoot here for contractors, outdoor companies and auto businesses.",
+         local="Newer homes and growing families mean a steady stream of homeowners looking for someone they can trust. Consistent local content makes that someone you.",
+         near=["o-fallon", "lake-saint-louis", "wentzville"]),
+    dict(slug="weldon-spring", name="Weldon Spring", county="St. Charles County",
+         intro="Weldon Spring sits along I-64 near the Missouri River in southern St. Charles County. We film here for home service and automotive businesses.",
+         local="Weldon Spring homeowners care about their properties and expect quality. Before-and-after video shows them yours.",
+         near=["cottleville", "chesterfield", "st-charles"]),
+    dict(slug="ballwin", name="Ballwin", county="St. Louis County",
+         intro="Ballwin is in west St. Louis County along Manchester Road. We travel here for contractors, service companies and auto shops.",
+         local="West county homeowners compare plenty of options before they call. Real video of your work is what puts you on the short list.",
+         near=["chesterfield", "kirkwood", "maryland-heights"]),
+    dict(slug="kirkwood", name="Kirkwood", county="St. Louis County",
+         intro="Kirkwood is a historic suburb in St. Louis County with a busy downtown. We film here for home service companies, remodelers and auto businesses.",
+         local="Kirkwood's older homes keep contractors busy with repairs, updates and remodels. Show the craftsmanship and you'll earn the bigger jobs.",
+         near=["ballwin", "st-louis", "chesterfield"]),
+    dict(slug="florissant", name="Florissant", county="St. Louis County",
+         intro="Florissant is in north St. Louis County near I-270. We travel here for trades and automotive businesses that want steady content and ads.",
+         local="Florissant has a lot of established neighborhoods and loyal customers. Showing up online every week keeps your business the one they call.",
+         near=["st-louis", "maryland-heights", "st-charles"]),
+    dict(slug="maryland-heights", name="Maryland Heights", county="St. Louis County",
+         intro="Maryland Heights sits along I-270 in west St. Louis County, just across the river from St. Charles. We film here for service companies and auto businesses.",
+         local="With homes and businesses side by side, Maryland Heights companies can reach both. Targeted ads put you in front of the right ones.",
+         near=["st-charles", "chesterfield", "florissant"]),
 ]
 CITY_BY_SLUG = {c["slug"]: c for c in CITIES}
 
@@ -236,9 +264,9 @@ def footer():
     <div class="stack" style="gap:14px"><a class="logo" href="./"><img src="media/logo-light.webp" alt="Onyx Media" width="150" height="62"></a>
       <address class="nap"><span>Onyx Media · St. Charles, MO</span><span>Video, monthly content and paid ads for home service and automotive businesses</span><span>{PHONE} · {(f'<a href="mailto:{e(EMAIL)}">{e(EMAIL)}</a>' if EMAIL else e(EMAIL_SHOWN))}</span></address>
       <p class="faith-line">{TRI}Built on faith, honest work and doing right by people.</p></div>
-    <div><h4>Services</h4><ul><li><a href="content-creation.html">Monthly content</a></li><li><a href="paid-advertising.html">Paid advertising</a></li><li><a href="industries.html">Industries</a></li><li><a href="work.html">Work</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
+    <div><h4>Services</h4><ul><li><a href="content-creation.html">Monthly content</a></li><li><a href="paid-advertising.html">Paid advertising</a></li><li><a href="industries.html">Industries</a></li><li><a href="areas.html">Areas</a></li><li><a href="work.html">Work</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
     <div><h4>Follow</h4><ul><li><a href="https://www.facebook.com/OnyxMediastl">Facebook</a></li><li><a href="{INSTAGRAM}">Instagram</a></li><li><a href="{GOOGLE_REVIEW}">Leave us a Google review</a></li></ul></div>
-    <div><h4>Areas we serve</h4><ul style="grid-template-columns:1fr 1fr;column-gap:16px">{areas}</ul></div>
+    <div><h4><a href="areas.html" style="color:inherit;text-decoration:none">Areas we serve</a></h4><ul style="grid-template-columns:1fr 1fr;column-gap:16px">{areas}</ul></div>
   </div>
   <div class="foot-review"><span>Worked with us?</span><a class="btn primary" href="{GOOGLE_REVIEW}">Leave a Google review {TRI}</a></div>
   <div class="foot-ind"><h4><a href="industries.html">Industries we serve</a></h4><ul>{"".join(f'<li><a href="{industry_file(i["slug"])}">{e(i["name"])}</a></li>' for i in INDUSTRIES)}</ul></div>
@@ -429,6 +457,18 @@ def industry_links(exclude=None, limit=None):
     items = [i for i in INDUSTRIES if i["slug"] != exclude][:limit]
     return '<ul class="areas">' + "".join(f'<li><a href="{industry_file(i["slug"])}">{TRI}{e(i["name"])}</a></li>' for i in items) + "</ul>"
 
+def areas_hub():
+    counties = {}
+    for c in CITIES:
+        counties.setdefault(c["county"], []).append(c)
+    blocks = ""
+    for k, (county, cs) in enumerate(counties.items()):
+        blocks += f'<section class="band{" bone" if k % 2 else ""}"><div class="wrap"><div class="band-head"><div class="stack">{eyebrow(county)}<h2 class="display-l">{e(county.replace("the ", "").title() if county.startswith("the ") else county)}.</h2></div><span></span></div>' + \
+            '<div class="ind-grid">' + "".join(f'<a class="card" href="{city_file(c["slug"])}"><h3 class="display-m" style="font-size:24px">{e(c["name"])}, MO</h3><p>{e(c["intro"].split(". ")[0])}.</p><span class="btn text">Video & ads in {e(c["name"])}</span></a>' for c in cs) + "</div></div></section>"
+    body = page_head("Areas we serve", "Video and ads across the St. Louis metro.", "We're based in St. Charles and come to you: your job sites, your shop, your lot. Pick your city to see what we do there.", "Areas") + blocks + cta_band()
+    return page("areas.html", "Areas We Serve | Video Production & Social Media Marketing Around St. Louis | Onyx Media",
+                "Onyx Media serves St. Charles, St. Louis, Lincoln and Warren counties with video production, monthly social content and paid ads for service businesses.", body, "areas.html")
+
 def industries_hub():
     groups = ""
     for key, label in GROUPS:
@@ -517,7 +557,8 @@ def areas_block(exclude=None):
     return f"""<section class="band bone" id="areas"><div class="wrap">
   <div class="band-head"><div class="stack">{eyebrow("Areas we serve")}<h2 class="display-l">Local to St. Charles County and beyond.</h2></div>
   <p class="body-l">We drive to you. Shoots happen on your job sites, in your shop or on your lot.</p></div>
-  <ul class="areas">{items}</ul></div></section>"""
+  <ul class="areas">{items}</ul>
+  <div class="btns" style="margin-top:20px"><a class="btn text" href="areas.html">All areas we serve</a></div></div></section>"""
 
 def cta_band(h="Let's fill your schedule.", p="15 minutes. We'll look at what you're posting now, what the competition in your area is doing, and what we'd film first."):
     return f"""<section class="cta-band"><div class="cta-pattern" aria-hidden="true"></div><div class="wrap">
@@ -681,6 +722,7 @@ def main():
     for c in CITIES:
         pages[city_file(c["slug"])] = city_page(c)
     pages["industries.html"] = industries_hub()
+    pages["areas.html"] = areas_hub()
     for i in INDUSTRIES:
         pages[industry_file(i["slug"])] = industry_page(i)
     for name, text in pages.items():
