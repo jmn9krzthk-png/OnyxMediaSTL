@@ -5,9 +5,8 @@ Every page is assembled from the shared pieces below (head, header, footer,
 forms, cards). To add a city page, a case study or a review, edit the data
 lists near the top and run:  python3 tools/build_site.py
 
-The public contact email is read from the ONYX_CONTACT_EMAIL environment
-variable so it is not stored in this script:
-  ONYX_CONTACT_EMAIL=you@yourdomain.com python3 tools/build_site.py
+The public contact email is read from tools/contact-email.txt (one line), or
+from the ONYX_CONTACT_EMAIL environment variable, so it is not typed into this script.
 
 Outputs:
   prototype/*.html          full pages for Netlify (publish directory: prototype)
@@ -27,7 +26,8 @@ SITE_URL = "https://onyxmediastl.netlify.app"   # change to https://onyxmediastl
 INDEXABLE = False      # keep search engines out until placeholders are replaced
 PHONE = "636.385.3995"
 PHONE_TEL = "+16363853995"
-EMAIL = os.environ.get("ONYX_CONTACT_EMAIL", "").strip()
+_contact_file = pathlib.Path(__file__).resolve().parent / "contact-email.txt"
+EMAIL = os.environ.get("ONYX_CONTACT_EMAIL", "").strip() or (_contact_file.read_text().strip() if _contact_file.exists() else "")
 EMAIL_SHOWN = EMAIL or "[contact email]"
 HERO_VIDEO = None      # e.g. "media/hero-loop.mp4" — when set, plays instead of the photo slideshow
 
@@ -234,7 +234,7 @@ def footer():
 <footer class="site"><div class="wrap">
   <div class="foot-grid">
     <div class="stack" style="gap:14px"><a class="logo" href="./"><img src="media/logo-light.webp" alt="Onyx Media" width="150" height="62"></a>
-      <address class="nap"><span>Onyx Media · St. Charles, MO</span><span>Video, monthly content and paid ads for home service and automotive businesses</span><span>{PHONE} · {e(EMAIL_SHOWN)}</span></address>
+      <address class="nap"><span>Onyx Media · St. Charles, MO</span><span>Video, monthly content and paid ads for home service and automotive businesses</span><span>{PHONE} · {(f'<a href="mailto:{e(EMAIL)}">{e(EMAIL)}</a>' if EMAIL else e(EMAIL_SHOWN))}</span></address>
       <p class="faith-line">{TRI}Built on faith, honest work and doing right by people.</p></div>
     <div><h4>Services</h4><ul><li><a href="content-creation.html">Monthly content</a></li><li><a href="paid-advertising.html">Paid advertising</a></li><li><a href="industries.html">Industries</a></li><li><a href="work.html">Work</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
     <div><h4>Follow</h4><ul><li><a href="https://www.facebook.com/OnyxMediastl">Facebook</a></li><li><a href="{INSTAGRAM}">Instagram</a></li><li><a href="{GOOGLE_REVIEW}">Leave us a Google review</a></li></ul></div>
@@ -640,7 +640,7 @@ def contact_page():
     body = f"""<section class="page-head"><div class="wrap"><div class="stack" style="gap:20px;max-width:900px"><p class="crumbs"><a href="./">Home</a> / Contact</p>{eyebrow("Contact")}<h1 class="display-l">Book a free 15-minute call.</h1><p class="body-l">Pick a time, or send five quick details and Max will get back to you within one business day. Ask about current specials.</p></div></div></section>
 <section class="band"><div class="wrap book">
   <div class="stack">{eyebrow("Fastest: pick a time")}<div class="slot">Scheduler embed · 15-minute slots<br>Calendly / Cal.com / Google booking: tool to be confirmed</div>
-  <address class="nap muted"><strong style="color:var(--ink)">Onyx Media</strong><span>St. Charles, MO · Serving the St. Louis metro</span><span>Call or text {PHONE}</span><span>{e(EMAIL_SHOWN)}</span></address></div>
+  <address class="nap muted"><strong style="color:var(--ink)">Onyx Media</strong><span>St. Charles, MO · Serving the St. Louis metro</span><span>Call or text {PHONE}</span><span>{(f'<a href="mailto:{e(EMAIL)}">{e(EMAIL)}</a>' if EMAIL else e(EMAIL_SHOWN))}</span></address></div>
   {contact_form()}
 </div></section>"""
     return page("contact.html", "Contact | Onyx Media St. Louis", "Contact Onyx Media for monthly video content and paid ads, and book a free 15-minute call.", body, "contact.html")
