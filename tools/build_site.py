@@ -30,6 +30,7 @@ PHONE_TEL = "+16363853995"
 _contact_file = pathlib.Path(__file__).resolve().parent / "contact-email.txt"
 EMAIL = os.environ.get("ONYX_CONTACT_EMAIL", "").strip() or (_contact_file.read_text().strip() if _contact_file.exists() else "")
 EMAIL_SHOWN = EMAIL or "[contact email]"
+CALENDLY_URL = ""   # e.g. "https://calendly.com/onyxmediastl/15min" — paste Max's 15-minute event link here
 HERO_VIDEO = None      # e.g. "media/hero-loop.mp4" — when set, plays instead of the photo slideshow
 
 # ---------------------------------------------------------------- data
@@ -42,15 +43,15 @@ CLIENTS = ["Victory Raceway", "Cool Touch Graphics", "Mountain Top Motor Company
 # Square brackets mark an editorial change to the reviewer's words.
 REVIEWS = [
     ("Media has always been a big investment for our company and we have worked with several photographers, videographers, and content creators. Max has by far shined above anyone else we've worked with. He is fair, honest, punctual, and easy to work with. We have done years of media with him now and have yet to be disappointed once.\n\nMax has the Detail 360 stamp of approval for sure!!!\n\nOnyx Media absolutely rocks!!!",
-     "Brian Sieveking", "Detail 360", None),
+     "Brian Sieveking", "Detail 360", 5),
     ("Max and Onyx media has been a pinnacle of our racing team. He is in the process of taking us from a local racing team to a nationally known motorsports team. He is the best in the business.",
-     "Ethan Hovis", "Hovis Racing", None),
+     "Ethan Hovis", "Hovis Racing", 5),
     ("I highly recommend [Onyx Media] for all your media needs. The owner, Max, is very professional and helpful. I have used his service twice now, and was blown out of the water each time with how well he conducted business and the quality of his work. Whether it is coming up with ideas for content, or capturing the uniqueness to your story, Max has your best interest at heart. Give [Onyx Media] a call, you won’t be disappointed!",
-     "Shawn McKenzie", "McKenzie Chiropractic", None),
+     "Shawn McKenzie", "McKenzie Chiropractic", 5),
     ("This media production company is top-notch! Max was awesome and such a pleasure to work with! We got some awesome footage and video of some amazing cars, and we couldn't have done this or created some stellar images without him and his media production company! If you're looking to spice up your marketing with NEXT-LEVEL photos and video, then look no further than Onyx Media STL! Great job, and thank you.",
-     "Joshua Fletcher", "Trailblaze Productions", None),
+     "Joshua Fletcher", "Trailblaze Productions", 5),
     ("Max is amazing!! Not only is he personable, but he has an eye on how to make your business, vehicle, etc. stand out in a crowd with the photography and videography that he provides!!",
-     "Heather Patterson", "Detail 360", None),
+     "Heather Patterson", "Detail 360", 5),
 ]
 INSTAGRAM = "https://www.instagram.com/onyxmediastl/"
 GOOGLE_REVIEW = "https://g.page/r/CQYfHVSfUBVMEAE/review"
@@ -87,25 +88,20 @@ GALLERY = [  # (file, alt, caption, css class)
     ("gorilla-roof-drone", "Drone view of a roof tear-off", "Roof tear-off · drone", ""),
 ]
 
-CASES = [  # filters: social, ads
+CASES = [  # filters: social, ads. No client names on photos or titles.
     dict(f=["social"], title="Dog training company", tag="Social content", img="k9kamp-owner",
          alt="Business owner smiling in front of his company van",
          problem="A dog trainer whose results speak for themselves, but whose feed didn't show them.",
-         made="Talking-head reels with the owner, filmed during real training sessions with the dogs.",
-         result="[RESULT: real numbers only]"),
+         made="Talking-head reels with the owner, filmed during real training sessions with the dogs."),
     dict(f=["social", "ads"], title="Roofing contractor", tag="Roofing · social + ads", img="gorilla-crew-on-roof",
          alt="Roofing crew installing underlayment on a steep roof",
-         problem="[The business problem in one sentence]",
-         made="[What we shot: crew-on-the-roof reels, drone, Meta ad creatives]", result="[Measured result]"),
+         made="Crew-on-the-roof video, drone footage of tear-offs and finished roofs, and Meta ad creatives built from it."),
     dict(f=["social", "ads"], title="Auto service center", tag="Automotive · social + ads", img="mtsc-service-bays",
          alt="Auto shop with vehicles on lifts in the service bays",
-         problem="[e.g. Empty bays midweek, customers choosing the dealer for routine service]",
-         made="[e.g. Tech-explains-the-repair reels and a service-special ad from one shoot day]", result="[Measured result]"),
+         made="Photo and video in the shop and service bays, used for social content and Meta ads."),
     dict(f=["ads"], title="Chiropractic table upholsterer", tag="Paid ads", img="upholstery-owners",
          alt="Husband-and-wife owners of an upholstery business standing outdoors",
-         problem="[e.g. A niche service chiropractors only search for when a table is worn out]",
-         made="[e.g. Meta and Google campaigns targeting chiropractic clinics, with before-and-after creatives]",
-         result="[Measured result: leads, booked jobs or cost per lead]"),
+         made="Paid ad campaigns for a specialty service, supported by photo content of the owners and their work."),
 ]
 
 HOME_FAQ = [
@@ -244,6 +240,8 @@ def head(title, desc, path, extra=""):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@500&display=swap">
 <link rel="stylesheet" href="assets/site.css">
+<link rel="icon" type="image/png" href="media/favicon.png">
+<link rel="apple-touch-icon" href="media/apple-touch-icon.png">
 {extra}"""
 
 def header(active):
@@ -271,7 +269,7 @@ def footer():
     <div><h4>Where we work</h4><ul><li><a href="areas.html">Areas we serve →</a></li><li><a href="industries.html">Industries we serve →</a></li></ul></div>
   </div>
   <div class="foot-review"><span>Worked with us?</span><a class="btn primary" href="{GOOGLE_REVIEW}">Leave a Google review {TRI}</a></div>
-  <div class="legal caption"><span>© 2026 ONYX HTZ LLC</span><span>Privacy Policy · Terms</span></div>
+  <div class="legal caption"><span>© 2026 ONYX HTZ LLC</span><span><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms</a></span></div>
 </div></footer>"""
 
 def page(path, title, desc, body, active=None, extra_head="", fragment=False):
@@ -520,7 +518,7 @@ def case_html(c):
     return f"""<article class="case" data-f="{' '.join(c['f'])}">
   <div class="thumb"><img src="media/{c['img']}.webp" alt="{e(c['alt'])}" loading="lazy">{TRI}</div>
   {eyebrow(c['tag'])}<h3 class="display-m">{e(c['title'])}</h3>
-  <dl><div><dt>Problem</dt><dd>{e(c['problem'])}</dd></div><div><dt>What we made</dt><dd>{e(c['made'])}</dd></div><div><dt>Result</dt><dd class="result">{e(c['result'])}</dd></div></dl>
+  <dl>{f"<div><dt>The challenge</dt><dd>{e(c['problem'])}</dd></div>" if c.get('problem') else ""}<div><dt>What we made</dt><dd>{e(c['made'])}</dd></div></dl>
 </article>"""
 
 def step_grid(data):
@@ -552,7 +550,7 @@ def about_teaser():
     return f"""<section class="band"><div class="wrap about">
   <figure class="max-photo"><img src="media/max-fisher-on-set.webp" alt="Max Fisher filming an engine bay with a gimbal-mounted camera" width="900" height="900" loading="lazy"><figcaption class="caption">{TRI}Max Fisher · Owner, Onyx Media</figcaption></figure>
   <div class="stack" style="gap:22px">{eyebrow("About")}<h2 class="display-l">Owner-run. Faith-led. On every shoot.</h2>
-    <p class="body-l">I'm Max Fisher. I started Onyx Media in St. Charles to give home service companies and auto shops the kind of video and ads the big brands get, without the agency layers. We run this business on faith: honest pricing, showing up when we say we will, and treating your business like our own.</p>
+    <p class="body-l">I'm Max Fisher. I've been an entrepreneur since I was 12, and I got into media filming my own vehicle. I started Onyx Media to give local service businesses the kind of video and ads the big brands get. I believe God gave me this opportunity, and I run it to steward it well: honest pricing, showing up, and treating your business like my own.</p>
     <div class="facts"><div><strong>St. Charles</strong><span>Based here, shooting across the metro</span></div><div><strong>Next week</strong><span>First posts can go live</span></div><div><strong>18</strong><span>Local businesses filmed</span></div></div>
     <div class="btns"><a class="btn text" href="about.html">More about Onyx</a></div></div>
 </div></section>"""
@@ -588,7 +586,7 @@ def home(fragment=False):
     body = hero() + what_we_do() + \
         section("Recent shoots", "Shot on real jobs.", "On the roof, in the yard, on the lot. This is the kind of content we make for you every month.", gallery()) + \
         reviews() + \
-        section("Featured work", "What we made and what it did.", "Every project starts with a business problem.",
+        section("Featured work", "What we made and what it did.", "A few of the local businesses we create for.",
                 '<div class="cases">' + "".join(case_html(c) for c in CASES[:3]) + '</div><div class="btns" style="margin-top:28px"><a class="btn secondary" href="work.html">See all work</a></div>', "band bone") + \
         section("Who we work with", "Built for service businesses.", "Home services, automotive, pets and local service companies.", trades()) + \
         about_teaser() + areas_block() + \
@@ -638,7 +636,7 @@ def ads_page():
                      "Paid advertising", "Calculate your cost") + \
         pricing_section("ads") + \
         section("How it works", "Ads that look like your business.", "Generic stock ads get scrolled past. Your own crew doesn't.", steps_ads, "band bone") + \
-        section("Ad work", "Recent ad clients.", "Results are being added as clients approve them.", cases) + \
+        section("Ad work", "Recent ad clients.", "", cases) + \
         section("FAQ", "Paid ads questions.", "", faq_html(ADS_FAQ), "band bone") + cta_band()
     return page("paid-advertising.html", "Facebook, Google & Bing Ads for Contractors & Auto Shops | From $1,150/mo | Onyx Media",
                 "Paid ad management for home service and automotive businesses in St. Louis and St. Charles County. Three packages from $1,150/mo with a live cost calculator.",
@@ -647,7 +645,7 @@ def ads_page():
 def work_page():
     chips = "".join(f'<button class="chip" aria-pressed="' + ("true" if k == "all" else "false") + f'" data-f="{k}">{t}</button>'
                     for k, t in [("all", "All"), ("social", "Social content"), ("ads", "Paid ads")])
-    body = page_head("Work", "Problem. What we made. Result.", "Every case study names the business problem first, because that's how every project starts.", "Work") + \
+    body = page_head("Work", "Real businesses. Real footage.", "A look at what we've made for local service businesses.", "Work") + \
         f'<section class="band"><div class="wrap"><div class="filters" role="group" aria-label="Filter work">{chips}</div><div class="cases two" id="work-cases">' + \
         "".join(case_html(c) for c in CASES) + "</div></div></section>" + \
         section("Recent shoots", "More from the field.", "Roofs, kennels, job sites, studios and service bays.", gallery(), "band dark") + \
@@ -664,7 +662,10 @@ def about_page():
     body = page_head("About", "A St. Charles studio built on faith and hard work.", "Onyx Media is Max Fisher's studio. We film, edit and run ads for home service companies and automotive businesses, and we run it on faith.", "About") + \
         f"""<section class="band"><div class="wrap about">
   <figure class="max-photo"><img src="media/max-fisher-on-set.webp" alt="Max Fisher filming an engine bay with a gimbal-mounted camera" width="900" height="900"><figcaption class="caption">{TRI}Max Fisher · Owner, Onyx Media</figcaption></figure>
-  <div class="stack" style="gap:20px"><p class="muted">[PLACEHOLDER: Max's story, 2 short paragraphs.]</p>
+  <div class="stack" style="gap:20px"><h2 class="heading">My story</h2>
+    <p class="muted">I'm Max Fisher. I've been entrepreneurial since I was 12, flipping speakers on Marketplace. I got into media because I wanted to shoot my own vehicle, and I never stopped.</p>
+    <p class="muted">I spent half a year working under another local media company, and I saw a big opportunity: local service businesses doing great work that nobody ever got to see. Onyx Media exists to change that.</p>
+    <p class="muted">Faith is a big reason I do this. I know God gave me this opportunity, and I want to steward it well, for my family, my clients and the people who trust us with their business.</p>
     <h2 class="heading">How we work</h2><p class="muted">The person who plans your shoot is the person behind the camera and the person reading your ad numbers. Nothing gets lost between teams, because there's only one.</p>
     <h2 class="heading">Why the trades</h2><p class="muted">We shoot around your schedule, on real jobs, so your crew keeps working while we roll. Homeowners trust what they can see: your trucks, your techs, your finished work.</p>
     <h2 class="heading">Why automotive</h2><p class="muted">We understand how shops and dealers sell: trust in the tech, transparency on the repair, and the car looking its best on camera.</p>
@@ -685,11 +686,49 @@ def about_page():
 def contact_page():
     body = f"""<section class="page-head"><div class="wrap"><div class="stack" style="gap:20px;max-width:900px"><p class="crumbs"><a href="./">Home</a> / Contact</p>{eyebrow("Contact")}<h1 class="display-l">Book a free 15-minute call.</h1><p class="body-l">Pick a time, or send five quick details and Max will get back to you within one business day. Ask about current specials.</p></div></div></section>
 <section class="band"><div class="wrap book">
-  <div class="stack">{eyebrow("Fastest: pick a time")}<div class="slot">Scheduler embed · 15-minute slots<br>Calendly / Cal.com / Google booking: tool to be confirmed</div>
+  <div class="stack">{eyebrow("Fastest: pick a time")}{(f'<div class="calendly-inline-widget" data-url="{e(CALENDLY_URL)}?hide_gdpr_banner=1" style="min-width:300px;height:680px"></div><script src="https://assets.calendly.com/assets/external/widget.js" async></script><p class="form-note">Calendar not loading? <a href="{e(CALENDLY_URL)}">Book on Calendly</a></p>') if CALENDLY_URL else '<div class="slot">Calendly booking calendar · 15-minute calls<br>Add the Calendly link in tools/build_site.py</div>'}
   <address class="nap muted"><strong style="color:var(--ink)">Onyx Media</strong><span>St. Charles, MO · Serving the St. Louis metro</span><span>Call or text {PHONE}</span><span>{(f'<a href="mailto:{e(EMAIL)}">{e(EMAIL)}</a>' if EMAIL else e(EMAIL_SHOWN))}</span></address></div>
   {contact_form()}
 </div></section>"""
     return page("contact.html", "Contact | Onyx Media St. Louis", "Contact Onyx Media for monthly video content and paid ads, and book a free 15-minute call.", body, "contact.html")
+
+def legal_page(path, title, h1, updated, sections):
+    body = f"""<section class="page-head"><div class="wrap"><div class="stack" style="gap:16px;max-width:900px"><p class="crumbs"><a href="./">Home</a> / {e(h1)}</p><h1 class="display-l">{e(h1)}</h1><p class="form-note">Last updated {e(updated)}</p></div></div></section>
+<section class="band"><div class="wrap legal-copy">""" + "".join(f"<h2 class=\"heading\">{e(h)}</h2>" + "".join(f"<p>{x}</p>" for x in ps) for h, ps in sections) + "</div></section>"
+    return page(path, f"{title} | Onyx Media", f"{title} for onyxmediastl.com, operated by ONYX HTZ LLC (Onyx Media).", body)
+
+def privacy_page():
+    contact = f"{e(EMAIL_SHOWN)} or {PHONE}"
+    S = [
+        ("Who we are", ["Onyx Media is a brand of ONYX HTZ LLC, based in St. Charles, Missouri (\"Onyx Media,\" \"we,\" \"us\"). This policy explains what information we collect through onyxmediastl.com and how we use it."]),
+        ("Information you give us", ["When you fill out a form or book a call, we collect what you enter, such as your name, email, phone number, company, business type, budget, timeline and message. When you book through Calendly, Calendly collects your booking details under its own privacy policy."]),
+        ("Information collected automatically", ["Like most websites, our hosting provider and any analytics or advertising tools we use (such as Google Analytics or the Meta Pixel) may collect technical information such as your IP address, browser, device, pages visited and how you arrived at our site. These tools may use cookies or similar technologies."]),
+        ("How we use information", ["To respond to your inquiry, schedule calls, provide quotes and deliver our services.", "To understand how our website is used and to improve it.", "To measure and improve our advertising, including showing ads to people who have visited our site."]),
+        ("How we share information", ["We do not sell your personal information. We share it only with service providers that help us run our business (for example website hosting, form handling, scheduling, email, analytics and advertising platforms), or when required by law."]),
+        ("Your choices", ["You can ask us to access, correct or delete the personal information you've given us by contacting us. You can block or delete cookies in your browser settings, and you can opt out of interest-based ads through your Google and Meta ad settings."]),
+        ("Data retention and security", ["We keep inquiry information as long as needed to respond to you and run our business, and we use reasonable measures to protect it. No method of transmission over the internet is completely secure."]),
+        ("Children", ["Our website is not directed to children under 13, and we do not knowingly collect their personal information."]),
+        ("Changes", ["We may update this policy from time to time. The date at the top shows when it was last changed."]),
+        ("Contact", [f"Questions about this policy: {contact}. ONYX HTZ LLC, St. Charles, MO."]),
+    ]
+    return legal_page("privacy.html", "Privacy Policy", "Privacy Policy", "November 2026", S)
+
+def terms_page():
+    contact = f"{e(EMAIL_SHOWN)} or {PHONE}"
+    S = [
+        ("Agreement", ["These terms apply to your use of onyxmediastl.com, operated by ONYX HTZ LLC, doing business as Onyx Media. By using the site you agree to them. Services we provide to clients are governed by a separate written service agreement, which controls if it conflicts with these terms."]),
+        ("Pricing and estimates", ["Prices and calculator results on this site are estimates for general information and may change. Final pricing and scope are set in your service agreement.",
+                                   "Paid advertising: ad spend is separate from our management fee and is paid directly by the client to the ad platforms (such as Meta, Google and Bing). Packages include a one-time setup fee. At $7,000 or more in monthly ad spend, the management fee becomes 20% of ad spend for every package.",
+                                   "Content plans: most plans are month to month. A special offer may come with a set term, which is stated before signing. Additional platforms, event coverage, long-form video, paid ads, community management and travel outside our service area are quoted separately."]),
+        ("No guarantees", ["Marketing results depend on many factors outside our control. We do not guarantee specific results, leads, rankings or sales."]),
+        ("Ownership", ["Clients own the finished content we deliver under their service agreement. Everything else on this website, including text, photos, video and design, belongs to Onyx Media or its clients and may not be copied without permission."]),
+        ("Reviews and examples", ["Reviews on this site are from real clients. Photos and examples show work we created; captions describe the type of work and may not name the client."]),
+        ("Third-party links and tools", ["Our site links to and uses third-party services such as Calendly, Google and Meta. We are not responsible for their content or policies."]),
+        ("Limitation of liability", ["The site is provided \"as is.\" To the extent allowed by law, Onyx Media is not liable for indirect or consequential damages arising from use of this website."]),
+        ("Governing law", ["These terms are governed by the laws of the State of Missouri."]),
+        ("Contact", [f"Questions about these terms: {contact}."]),
+    ]
+    return legal_page("terms.html", "Terms of Use", "Terms of Use", "November 2026", S)
 
 def thanks_page():
     body = f"""<section class="band"><div class="wrap stack" style="gap:22px">{eyebrow("Received")}<h1 class="display-l">Got it. Here's what happens next.</h1>
@@ -742,6 +781,8 @@ def main():
         pages[city_file(c["slug"])] = city_page(c)
     pages["industries.html"] = industries_hub()
     pages["areas.html"] = areas_hub()
+    pages["privacy.html"] = privacy_page()
+    pages["terms.html"] = terms_page()
     for i in INDUSTRIES:
         pages[industry_file(i["slug"])] = industry_page(i)
     for name, text in pages.items():

@@ -1,0 +1,9 @@
+# Old Wix pages -> new pages (301 permanent)
+/services-7      /content-creation.html   301
+/services        /content-creation.html   301
+/contact-7       /contact.html            301
+/about-us        /about.html              301
+/packages        /content-creation.html   301
+/pricing         /content-creation.html   301
+/portfolio       /work.html               301
+/blank*          /                        301

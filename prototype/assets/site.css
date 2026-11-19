@@ -496,3 +496,7 @@ a.trade{text-decoration:none;color:inherit}
 .foot-ind ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px}
 .foot-ind a{text-decoration:none}
 .foot-ind a:hover{color:var(--on-dark)}
+.legal-copy{max-width:760px;display:grid;gap:12px}
+.legal-copy h2{margin-top:18px}
+.legal-copy p{color:var(--muted)}
+.legal a{color:inherit}
