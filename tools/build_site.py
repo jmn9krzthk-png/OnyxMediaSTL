@@ -263,7 +263,7 @@ def footer():
     <div class="stack" style="gap:14px"><a class="logo" href="./"><img src="media/logo-light.webp" alt="Onyx Media" width="150" height="62"></a>
       <address class="nap"><span>Onyx Media · St. Charles, MO</span><span>Video, monthly content and paid ads for home service and automotive businesses</span><span>{PHONE} · {(f'<a href="mailto:{e(EMAIL)}">{e(EMAIL)}</a>' if EMAIL else e(EMAIL_SHOWN))}</span></address>
       <p class="faith-line">{TRI}Built on faith, honest work and doing right by people.</p></div>
-    <div><h4>Services</h4><ul><li><a href="content-creation.html">Monthly content</a></li><li><a href="paid-advertising.html">Paid advertising</a></li><li><a href="industries.html">Industries</a></li><li><a href="areas.html">Areas</a></li><li><a href="work.html">Work</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
+    <div><h4>Services</h4><ul><li><a href="content-creation.html">Monthly content</a></li><li><a href="paid-advertising.html">Paid advertising</a></li><li><a href="industries.html">Industries</a></li><li><a href="areas.html">Areas</a></li><li><a href="work.html">Work</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li><li><a href="audit.html">Free content &amp; ads audit</a></li></ul></div>
     <div><h4>Follow</h4><ul><li><a href="https://www.facebook.com/OnyxMediastl">Facebook</a></li><li><a href="{INSTAGRAM}">Instagram</a></li><li><a href="{GOOGLE_REVIEW}">Leave us a Google review</a></li></ul></div>
     <div><h4>Where we work</h4><ul><li><a href="areas.html">Areas we serve →</a></li><li><a href="industries.html">Industries we serve →</a></li></ul></div>
   </div>
@@ -287,9 +287,9 @@ BIZ_OPTIONS = ["HVAC", "Plumbing", "Electrical", "Roofing & exteriors", "Remodel
 
 def contact_form():
     opts = "".join(f"<option>{e(o)}</option>" for o in BIZ_OPTIONS)
-    return f"""<form class="quote-card js-lead" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="thank-you.html" novalidate>
-  <input type="hidden" name="form-name" value="contact">
-  <p class="hp"><label>Leave this empty <input name="bot-field" tabindex="-1"></label></p>
+    return f"""<form class="quote-card js-lead" name="contact" method="POST" action="/api/contact" data-success="thank-you.html" novalidate>
+  <input type="hidden" name="t" value="">
+  <p class="hp" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
   {eyebrow("Send 5 quick details")}
   <div class="fields two">
     <div class="field"><label for="c-name">Name <span class="req">*</span></label><input id="c-name" name="name" autocomplete="name" required></div>
@@ -306,7 +306,7 @@ def contact_form():
     <div class="field full"><label for="c-site">Website</label><input id="c-site" name="website" type="url" placeholder="https://"></div>
     <div class="field full"><label for="c-msg">What do you want more of?</label><textarea id="c-msg" name="message" placeholder="More install jobs, fuller bays, fewer price shoppers…"></textarea></div>
   </div></details>
-  <p class="err" hidden>Add your name, a 10-digit mobile number and a full email address.</p>
+  <p class="err" role="alert" hidden>Add your name, a 10-digit mobile number and a full email address.</p>
   <button class="btn primary" type="submit">Book my 30-minute call {TRI}</button>
 </form>"""
 
@@ -410,7 +410,7 @@ def hero():
       <p class="lead"><strong>Onyx Media films your business, posts it every week, and runs the ads that make your phone ring.</strong> One local team for service businesses across St. Louis and St. Charles County.</p>
       <div class="hero-ctas">
         <a class="btn primary big" href="contact.html">Contact Us {TRI}</a>
-        <a class="btn ghost-light big" href="paid-advertising.html">Paid Advertising</a>
+        <a class="btn ghost-light big" href="audit.html">Get a Free Audit</a>
       </div>
           </div>
   </div>
@@ -687,6 +687,10 @@ def contact_page():
   <div class="stack">{eyebrow("Fastest: pick a time")}{(f'<div class="calendly-inline-widget" data-url="{e(CALENDLY_URL)}?hide_gdpr_banner=1" style="min-width:300px;height:680px"></div><script src="https://assets.calendly.com/assets/external/widget.js" async></script><p class="form-note">Calendar not loading? <a href="{e(CALENDLY_URL)}">Book on Calendly</a></p>') if CALENDLY_URL else '<div class="slot">Calendly booking calendar · 30-minute calls<br>Add the Calendly link in tools/build_site.py</div>'}
   <address class="nap muted"><strong style="color:var(--ink)">Onyx Media</strong><span>St. Charles, MO · Serving the St. Louis metro</span><span>Call or text {PHONE}</span><span>{(f'<a href="mailto:{e(EMAIL)}">{e(EMAIL)}</a>' if EMAIL else e(EMAIL_SHOWN))}</span></address></div>
   {contact_form()}
+</div></section>
+<section class="band bone"><div class="wrap audit-teaser">
+  <div class="stack" style="gap:12px">{eyebrow("Not ready for a call?")}<h2 class="display-m">Get a free content &amp; ads audit.</h2><p class="body-l">Send us your links. We'll review your website, social pages, Google profile and ads, and send back the top things we'd fix or film first.</p></div>
+  <div class="btns"><a class="btn primary" href="audit.html">Request my free audit {TRI}</a></div>
 </div></section>"""
     return page("contact.html", "Contact | Onyx Media St. Louis", "Contact Onyx Media for monthly video content and paid ads, and book a free 30-minute call.", body, "contact.html")
 
@@ -735,6 +739,74 @@ def thanks_page():
 <div class="btns"><a class="btn secondary" href="work.html">See Our Work</a></div></div></section>"""
     return page("thank-you.html", "Thanks | Onyx Media", "Thanks for reaching out to Onyx Media.", body)
 
+# ---------------------------------------------------------------- audit request (free content & ads audit)
+NO_SITEMAP = {"thank-you.html", "audit-thank-you.html"}
+# Keep in sync with AD_SPEND in netlify/functions/audit.js
+AD_SPEND_OPTIONS = ["Not running ads", "Under $500", "$500–$1,500", "$1,500–$3,000", "$3,000–$7,000", "$7,000+"]
+
+def audit_form():
+    biz = "".join(f"<option>{e(o)}</option>" for o in BIZ_OPTIONS)
+    spend = "".join(f"<option>{e(o)}</option>" for o in AD_SPEND_OPTIONS)
+    return f"""<form class="quote-card js-lead" name="audit" method="POST" action="/api/audit" data-success="audit-thank-you.html" data-need-link="true" novalidate>
+  <input type="hidden" name="t" value="">
+  <p class="hp" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+  {eyebrow("Request your free audit")}
+  <div class="fields two">
+    <div class="field"><label for="a-name">Your name <span class="req">*</span></label><input id="a-name" name="name" autocomplete="name" required></div>
+    <div class="field"><label for="a-biz">Business name <span class="req">*</span></label><input id="a-biz" name="business" autocomplete="organization" required></div>
+    <div class="field"><label for="a-email">Email <span class="req">*</span></label><input id="a-email" name="email" type="email" autocomplete="email" required></div>
+    <div class="field"><label for="a-phone">Mobile <span class="req">*</span></label><input id="a-phone" name="phone" type="tel" autocomplete="tel" required></div>
+    <div class="field full"><label for="a-ind">Industry</label><select id="a-ind" name="industry">{biz}</select></div>
+  </div>
+  <p class="form-note" style="margin:6px 0 0">Your links (add at least one)</p>
+  <div class="fields two">
+    <div class="field full"><label for="a-site">Website</label><input id="a-site" name="website" type="url" inputmode="url" placeholder="yourbusiness.com" autocomplete="url"></div>
+    <div class="field"><label for="a-fb">Facebook page</label><input id="a-fb" name="facebook_url" type="url" inputmode="url" placeholder="facebook.com/…"></div>
+    <div class="field"><label for="a-ig">Instagram</label><input id="a-ig" name="instagram_url" type="url" inputmode="url" placeholder="instagram.com/…"></div>
+    <div class="field full"><label for="a-gbp">Google Business Profile link</label><input id="a-gbp" name="google_business_url" type="url" inputmode="url" placeholder="Paste your Google Maps / g.page link"></div>
+  </div>
+  <div class="fields two">
+    <fieldset class="choice"><legend>Running ads now?</legend><label><input type="radio" name="runs_ads" value="yes"><span>Yes</span></label><label><input type="radio" name="runs_ads" value="no"><span>No</span></label></fieldset>
+    <div class="field"><label for="a-spend">Monthly ad spend</label><select id="a-spend" name="monthly_ad_spend">{spend}</select></div>
+    <div class="field full"><label for="a-goal">Biggest goal for the next 6 months</label><textarea id="a-goal" name="biggest_goal" placeholder="More booked jobs, fill the slow season, hire techs, launch a new service…"></textarea></div>
+  </div>
+  <p class="err" role="alert" hidden>Add your name, business name, a 10-digit mobile number, a full email address and at least one link.</p>
+  <button class="btn primary" type="submit">Request my free audit {TRI}</button>
+  <p class="form-note">Free, no obligation. We'll email it to you within 3 business days.</p>
+</form>"""
+
+def audit_page():
+    gets = ["Website check: speed on a phone, clear calls to action, how easy it is to call or book",
+            "Facebook and Instagram review: how often you post, what's working, what's missing",
+            "Google Business Profile: photos, reviews, categories and posts",
+            "Ads check (if you run them): targeting, creative and wasted spend",
+            "How you stack up against 2–3 local competitors",
+            "The top 3 things we'd fix or film first"]
+    body = f"""<section class="page-head with-form"><div class="wrap">
+  <div class="stack" style="gap:20px"><p class="crumbs"><a href="./">Home</a> / Free audit</p>{eyebrow("Free · No obligation")}
+    <h1 class="display-l">Get a free content &amp; ads audit.</h1>
+    <p class="body-l">Send us your links. We'll look at your website, social pages, Google profile and ads the way your customers see them, and send back a short, plain-English audit.</p>
+    <div class="stack" style="gap:12px"><span class="eyebrow">{TRI}What you get</span>{ticks(gets)}</div>
+    <p class="form-note">Prefer to talk? Call or text {PHONE}, or <a href="contact.html">book a 30-minute call</a>.</p>
+  </div>
+  {audit_form()}
+</div></section>
+""" + section("How it works", "Three steps. No pitch deck.", "", '<ol class="steps three">' + "".join(
+        f'<li class="step"><span class="n">0{i+1}</span><h3>{e(t)}</h3><p>{e(d)}</p></li>' for i, (t, d) in enumerate([
+            ("Send your links", "Two minutes. Your website, Facebook, Instagram and Google profile, whichever you have."),
+            ("We dig in", "We review everything and compare you with a few competitors near you."),
+            ("You get the audit", "A short write-up by email with what to fix first. Use it with us or on your own.")])) + "</ol>", "band") + \
+        cta_band("Rather just talk it through?", "30 minutes. We'll look at what you're posting now and what we'd film first.")
+    return page("audit.html", "Free Content & Ads Audit | Onyx Media St. Louis",
+                "Get a free audit of your website, Facebook, Instagram, Google Business Profile and ads from Onyx Media in St. Louis.",
+                body, "audit.html")
+
+def audit_thanks_page():
+    body = f"""<section class="band"><div class="wrap stack" style="gap:22px">{eyebrow("Audit requested")}<h1 class="display-l">Got it. Your audit is in the queue.</h1>
+<ol class="muted" style="display:grid;gap:10px;padding-left:20px;margin:0"><li>Check your inbox for a confirmation email (look in spam if you don't see it).</li><li>We review your website, social pages, Google profile and ads.</li><li>Within 3 business days, you'll get your audit by email.</li></ol>
+<div class="btns"><a class="btn primary" href="contact.html">Book a 30-minute call {TRI}</a><a class="btn secondary" href="work.html">See Our Work</a></div></div></section>"""
+    return page("audit-thank-you.html", "Audit Requested | Onyx Media", "Thanks for requesting a free audit from Onyx Media.", body)
+
 H1_VARIANTS = ["Video production & social media marketing in {n}, MO.", "{n}, MO video production and social media marketing.",
                "Social media video and ads for {n}, MO businesses."]
 WHY_VARIANTS = [("Why video in {n}", "Be the {n} company people call first."), ("Local to {n}", "Show {n} the work behind your name."),
@@ -774,7 +846,8 @@ def city_page(c):
 def main():
     OUT.mkdir(exist_ok=True); ART.mkdir(exist_ok=True)
     pages = {"index.html": home(), "content-creation.html": content_page(), "paid-advertising.html": ads_page(),
-             "work.html": work_page(), "about.html": about_page(), "contact.html": contact_page(), "thank-you.html": thanks_page()}
+             "work.html": work_page(), "about.html": about_page(), "contact.html": contact_page(), "thank-you.html": thanks_page(),
+             "audit.html": audit_page(), "audit-thank-you.html": audit_thanks_page()}
     for c in CITIES:
         pages[city_file(c["slug"])] = city_page(c)
     pages["industries.html"] = industries_hub()
@@ -786,9 +859,9 @@ def main():
     for name, text in pages.items():
         (OUT / name).write_text(text)
     (ART / "artifact-index.html").write_text(home(fragment=True))
-    urls = "".join(f"<url><loc>{SITE_URL}/" + ("" if p == "index.html" else p) + "</loc></url>" for p in pages if p != "thank-you.html")
+    urls = "".join(f"<url><loc>{SITE_URL}/" + ("" if p == "index.html" else p) + "</loc></url>" for p in pages if p not in NO_SITEMAP)
     (OUT / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>\n')
-    (OUT / "robots.txt").write_text(("User-agent: *\nAllow: /\n" if INDEXABLE else "User-agent: *\nDisallow: /\n") + f"Sitemap: {SITE_URL}/sitemap.xml\n")
+    (OUT / "robots.txt").write_text(("User-agent: *\nAllow: /\nDisallow: /admin/\n" if INDEXABLE else "User-agent: *\nDisallow: /\n") + f"Sitemap: {SITE_URL}/sitemap.xml\n")
     print(f"built {len(pages)} pages")
 
 if __name__ == "__main__":

@@ -96,26 +96,50 @@
     calc();
   });
 
-  // Lead forms: validate, send to Netlify Forms, then go to the thank-you page
+  // Lead forms: validate in the browser, post to our Netlify Function, then go to the success page.
+  // The server re-checks everything; this is only for quick feedback.
   [].forEach.call(document.querySelectorAll("form.js-lead"), function (form) {
+    var t = form.querySelector("[name=t]");
+    if (t) t.value = String(Date.now()); // time-on-page check against bots
+    var err = form.querySelector(".err"), btn = form.querySelector("button[type=submit]");
+    var defaultMsg = err ? err.textContent : "";
+    function fail(msg) { if (err) { err.textContent = msg || defaultMsg; err.hidden = false; } }
+    function mark(el, ok) { if (el) el.setAttribute("aria-invalid", ok ? "false" : "true"); return ok; }
+    var looksLikeLink = function (v) { return /\S+\.\S{2,}/.test(v.trim()); };
+
     form.addEventListener("submit", function (ev) {
       ev.preventDefault();
-      var err = form.querySelector(".err");
-      var email = form.querySelector("[name=email]"), phone = form.querySelector("[name=phone]"), name = form.querySelector("[name=name]");
-      var okEmail = /\S+@\S+\.\S+/.test(email.value);
-      var okPhone = phone.value.replace(/\D/g, "").length >= 10;
-      var okName = name.value.trim().length > 0;
-      email.setAttribute("aria-invalid", okEmail ? "false" : "true");
-      phone.setAttribute("aria-invalid", okPhone ? "false" : "true");
-      name.setAttribute("aria-invalid", okName ? "false" : "true");
-      if (!(okEmail && okPhone && okName)) { if (err) err.hidden = false; return; }
+      var email = form.querySelector("[name=email]"), phone = form.querySelector("[name=phone]");
+      var ok = mark(email, /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.value.trim()));
+      ok = mark(phone, phone.value.replace(/\D/g, "").length >= 10) && ok;
+      [].forEach.call(form.querySelectorAll("input[required]:not([name=email]):not([name=phone])"), function (el) {
+        ok = mark(el, el.value.trim().length > 0) && ok;
+      });
+      var links = [].slice.call(form.querySelectorAll("input[type=url]"));
+      links.forEach(function (el) { mark(el, !el.value.trim() || looksLikeLink(el.value)); if (el.value.trim() && !looksLikeLink(el.value)) ok = false; });
+      if (form.hasAttribute("data-need-link") && !links.some(function (el) { return el.value.trim(); })) {
+        links.forEach(function (el) { mark(el, false); }); ok = false;
+      }
+      if (!ok) { fail(); return; }
       if (err) err.hidden = true;
-      var body = new URLSearchParams(new FormData(form)).toString();
-      var go = function () { window.location.href = "thank-you.html"; };
-      try {
-        fetch("/", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: body })
-          .then(go, go);
-      } catch (e) { go(); }
+
+      var data = {};
+      new FormData(form).forEach(function (v, k) { data[k] = v; });
+      if (btn) btn.disabled = true;
+      fetch(form.getAttribute("action"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify(data)
+      }).then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (j) {
+          if (res.ok && j.ok) { window.location.href = form.getAttribute("data-success") || "thank-you.html"; return; }
+          fail(j.error || "Something went wrong. Please call or text 636.385.3995.");
+          if (btn) btn.disabled = false;
+        });
+      }).catch(function () {
+        fail("Couldn't send. Check your connection and try again, or call or text 636.385.3995.");
+        if (btn) btn.disabled = false;
+      });
     });
   });
 })();
