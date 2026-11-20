@@ -105,7 +105,7 @@ CASES = [  # filters: social, ads. No client names on photos or titles.
 ]
 
 HOME_FAQ = [
-    ("How much does it cost?", "Monthly content plans are $795, $1,395 or $2,195 a month. Paid ad management starts at $1,150 a month plus a one-time setup, and you pay ad spend directly to the platforms. Both service pages have full pricing.", False),
+    ("How much does it cost?", "Monthly content plans are $795, $1,495 or $2,195 a month. Paid ad management starts at $1,150 a month plus a one-time setup, and you pay ad spend directly to the platforms. Both service pages have full pricing.", False),
     ("Will filming slow my crew down?", "No. We capture on real jobs and work around your techs.", False),
     ("Do you only work in St. Charles?", "We're based in St. Charles and shoot across St. Charles, Lincoln, Warren and St. Louis counties. See the areas we serve below.", False),
     ("Who owns the content?", "You do. You own all finished content and can use it anywhere.", False),
@@ -314,7 +314,7 @@ def contact_form():
 CONTENT_PLANS = [
     dict(key="essential", name="Essential", price=795, pace="2 per week", posts="about 9", reels=3, photos=6,
          days="Tue, Thu", cal={"Tue": 1, "Thu": 1}),
-    dict(key="growth", name="Growth", price=1395, popular=True, pace="3–4 per week (averages 3.5)", posts="about 15", reels=6, photos=9,
+    dict(key="growth", name="Growth", price=1495, popular=True, pace="3–4 per week (averages 3.5)", posts="about 15", reels=6, photos=9,
          days="Mon, Wed, Fri, plus Saturday every other week", cal={"Mon": 1, "Wed": 1, "Fri": 1, "Sat": 0.5}),
     dict(key="domination", name="Domination", price=2195, pace="5 per week", posts="about 22", reels=10, photos=12,
          days="Mon–Fri", cal={"Mon": 1, "Tue": 1, "Wed": 1, "Thu": 1, "Fri": 1}),
@@ -486,7 +486,7 @@ def industry_page(i):
         case = section("Recent work", f"Work for {noun}.", "", '<div class="cases two" style="max-width:640px">' + case_html(CASES[i["case"]]) + "</div>")
     faq = [(f"Do you work with {noun} in St. Louis?", f"Yes. We create content and run ads for {noun} across St. Louis, St. Charles County and nearby areas. Our studio is in St. Charles.", False),
            (f"What content works best for {noun}?", " ".join(f"{t}: {d}" for t, d in i["ideas"]), False),
-           ("How much does it cost?", "Monthly content plans are $795, $1,395 or $2,195 a month. Ad management is $1,150 or $1,950 a month plus a one-time setup, and you pay ad spend directly to the platforms.", False),
+           ("How much does it cost?", "Monthly content plans are $795, $1,495 or $2,195 a month. Ad management is $1,150 or $1,950 a month plus a one-time setup, and you pay ad spend directly to the platforms.", False),
            ("Is there a contract?", "Most plans are month to month. A special offer may come with a set term, stated before signing. Ask about current specials.", False),
            ("How fast can we start?", "First posts can go live as soon as the next week.", False)]
     city_list = '<ul class="areas">' + "".join(f'<li><a href="{city_file(c["slug"])}">{TRI}{e(c["name"])}</a></li>' for c in CITIES[:9]) + f'<li><a href="areas.html">{TRI}All {len(CITIES)} areas</a></li></ul>'
@@ -748,7 +748,7 @@ def city_page(c):
         q, a = CITY_NOTE[c["slug"]]; faq.append((q, a, False))
     if focus:
         faq.append((f"Which {n} businesses do you work with most?", f"Across {n} we often work with " + ", ".join(i["noun"] for i in focus[:-1]) + f" and {focus[-1]['noun']}, plus other home service, automotive and local service businesses.", False))
-    faq += [("How much does it cost?", "Monthly content plans are $795, $1,395 or $2,195 a month. Ad management is $1,150 or $1,950 a month plus a one-time setup, and you pay ad spend directly to the platforms.", False),
+    faq += [("How much does it cost?", "Monthly content plans are $795, $1,495 or $2,195 a month. Ad management is $1,150 or $1,950 a month plus a one-time setup, and you pay ad spend directly to the platforms.", False),
             ("How fast can you start?", "First posts can go live as soon as the next week.", False),
             ("Is there a contract?", "Most plans are month to month. A special offer may come with a set term, stated before signing. Ask about current specials.", False)]
     near = "".join(f'<li><a href="{city_file(s)}">{TRI}{e(CITY_BY_SLUG[s]["name"])}</a></li>' for s in c["near"] if s in CITY_BY_SLUG)
