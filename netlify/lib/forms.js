@@ -108,8 +108,14 @@ export async function upsertLead({ name, business, email, phone, industry, sourc
     if (Date.now() - new Date(lead.updated_at).getTime() < 120_000 && (lead.notes || "").includes(note)) {
       return { lead, isNew: false, duplicate: true };
     }
+    // Keep what they typed this time if it differs from what we have, so nothing is lost.
+    const diffs = [];
+    if (business && lead.business && business.toLowerCase() !== lead.business.toLowerCase()) diffs.push(`Business entered: ${business}`);
+    if (phone && lead.phone && phone.replace(/\D/g, "") !== lead.phone.replace(/\D/g, "")) diffs.push(`Phone entered: ${phone}`);
+    if (name && lead.name && name.toLowerCase() !== lead.name.toLowerCase()) diffs.push(`Name entered: ${name}`);
+    const full = diffs.length ? `${entry}\n${diffs.join("\n")}` : entry;
     const patch = {
-      notes: lead.notes ? `${entry}\n\n${lead.notes}` : entry,
+      notes: lead.notes ? `${full}\n\n${lead.notes}` : full,
       next_follow_up: !lead.next_follow_up || lead.next_follow_up > today ? today : lead.next_follow_up,
     };
     if (!lead.business && business) patch.business = business;

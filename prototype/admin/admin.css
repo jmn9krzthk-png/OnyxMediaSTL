@@ -58,3 +58,25 @@ body.admin{background:var(--bone);min-height:100vh;min-height:100dvh}
 .a-toast.bad{background:var(--danger);color:#fff}
 /* iOS zooms inputs under 16px; keep them at 16px+ */
 .admin .field input,.admin .field select,.admin .field textarea{font-size:16px}
+
+/* Phase 2: add lead, audits, proposals, won */
+.a-add{width:100%;margin-bottom:12px}
+.a-won{margin:0;font:500 12px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:#1E6B34}
+.a-file{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:15px;overflow-wrap:anywhere}
+.admin input[type=file]{font-size:15px;max-width:100%}
+.a-offer{border:1px solid var(--line);padding:14px;display:grid;gap:8px;border-radius:var(--radius-sm)}
+.a-offer-pkgs{margin:0;padding-left:18px;font-size:15px}
+.a-offer-total{margin:0;font-size:15px}
+.a-offer-notes{margin:0;font-size:14px;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+.a-btnrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.a-panel .a-btnrow .btn{width:auto;flex:1 1 30%;padding:11px 10px;font-size:14px}
+.a-new-offer{border:1px dashed var(--line-strong);padding:0 12px}
+.a-new-offer summary{cursor:pointer;padding:12px 0;font-weight:700}
+.a-offer-form{display:grid;gap:12px;padding-bottom:14px}
+.a-pkgs{border:0;margin:0;padding:0;display:grid;gap:8px}
+.a-pkgs legend{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;padding:0}
+.a-pkgs label,.a-check{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.35;cursor:pointer}
+.a-pkgs input,.a-check input{width:20px;height:20px;margin:0;flex:none;accent-color:var(--amber-deep)}
+.a-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.a-panel,.a-offer{min-width:0}
+.a-offer .a-row{flex-wrap:wrap;row-gap:6px}

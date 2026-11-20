@@ -152,3 +152,43 @@ Use a personal email (e.g. Gmail) as the "prospect" so you can see both sides.
 - [ ] Visit `/api/config` → shows only the URL and the **publishable** key (never `sb_secret`).
 
 When everything passes, delete the test leads in Supabase (Table Editor → tick rows → Delete), then merge to main.
+
+---
+
+# Phase 2: audits, proposals and won clients
+
+What was added:
+- **Audit delivery.** On a lead's admin page, upload the audit PDF, then tap **Email audit**. The prospect gets a download link that works for 30 days. The audit is marked *sent*, the lead moves to *Audit sent* (unless it's already further along, e.g. *Proposal sent*; statuses never move backward), and a follow-up is set for 3 days later.
+- **Proposals.** Under **Proposals → New proposal**: tick packages, optionally set a custom monthly price or setup fee, optionally offer "setup fee waived if the first month is paid upfront", add a note, then **Save draft** → **Preview** → **Send**.
+  - The prospect gets an email with a private link to `onyxmediastl.com/proposal.html?t=…`.
+  - The lead moves to *Proposal sent* (never backward from *Won*), with a follow-up in 3 days.
+  - Prospects who reply to the email instead of tapping Accept reach max@ directly (reply-to). Treat a written "yes" the same way.
+- **Opened alert.** The first time the prospect opens the proposal, you get an email ("Pat Doe opened your proposal"). Your own previews don't count.
+- **Accept.** The prospect types their name, picks the setup option if one was offered, and taps **Accept**. You get "ACCEPTED: … send invoice & contract", and the lead is due for follow-up today. The prospect gets a confirmation saying nothing is charged until the agreement is signed. You build the Square invoice and contract yourself.
+- **Mark as won.** Creates the client from the accepted proposal: business, contact, monthly rate and packages. It also opens an onboarding record and sets the lead to *Won*.
+- **Add lead / Edit contact.** For walk-ins and referrals, and to fix an email before sending.
+
+## Setup (one step)
+In Supabase → **SQL Editor** → **New query**, paste the contents of `supabase/migrations/20261121000005_phase2_offers.sql` and click **Run**. You should see "Success". It only adds columns and a function, and it's safe to run twice.
+
+Do this **before** testing the deploy preview; saving a proposal needs the new columns. There are no new Netlify or Resend settings.
+
+## Phase 2 test checklist
+Use a test lead with your personal email.
+
+- [ ] Admin → **+ Add lead**: save a lead with your personal email; it opens the lead page.
+- [ ] **Edit contact**: change the phone, save, and check it updated.
+- [ ] **Proposals → New proposal**: tick Growth Content + Meta Ads. "List price: $2,645/mo + $625 setup" appears.
+- [ ] Tick the setup-waiver box, add a note, **Save draft**. A *Draft* card appears.
+- [ ] **Preview** opens the proposal page with "(Preview…)" in the intro. Accept is blocked in preview, and you get no "opened" email.
+- [ ] **Delete draft** works. Make another draft, then tap **Send** and add a short message.
+- [ ] Your personal inbox gets "Your Onyx Media proposal – …". The lead shows *Proposal sent*, with a follow-up in 3 days.
+- [ ] Open the link from that email on your phone. It should open the **preview** site when testing a preview. max@ gets "… opened your proposal" (once only), and the admin card says *Opened*.
+- [ ] Tap **Accept proposal** without choosing a setup option: it asks you to choose. Then choose "Pay my first month upfront…", type your name, **Accept proposal**. The page switches to "Accepted…".
+- [ ] max@ gets "ACCEPTED: … send invoice & contract"; your personal inbox gets "Proposal accepted – next steps".
+- [ ] The admin card shows *Accepted by …* with the prepay choice and your note. The lead is in **Follow up today**.
+- [ ] Audit test: submit `/audit.html` with your personal email, open the lead, upload any PDF, tap **View** (it opens), then **Email audit to …**.
+- [ ] Your personal inbox gets the audit email, and the download link works.
+- [ ] On the proposal test lead, tap **Mark as won**. "Client · onboarding" appears and the lead shows *Won*.
+- [ ] Supabase: `clients` has the business at $2,645, `client_packages` has 2 rows, and `onboarding` has 1 row.
+- [ ] Clean up: delete the test client in `clients` (this also removes its packages and onboarding), then the test leads.

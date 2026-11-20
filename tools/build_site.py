@@ -224,8 +224,8 @@ def faq_html(items):
                ('<span><span class="tag">CONFIRM WITH MAX</span></span>' if confirm else "") + "</div></details>"
     return out + "</div>"
 
-def head(title, desc, path, extra=""):
-    robots = "index,follow" if INDEXABLE else "noindex,nofollow"
+def head(title, desc, path, extra="", noindex=False):
+    robots = "index,follow" if INDEXABLE and not noindex else "noindex,nofollow"
     canon = SITE_URL + "/" + ("" if path == "index.html" else path)
     return f"""<title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
@@ -271,8 +271,8 @@ def footer():
   <div class="legal caption"><span>© 2026 ONYX HTZ LLC</span><span><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms</a></span></div>
 </div></footer>"""
 
-def page(path, title, desc, body, active=None, extra_head="", fragment=False):
-    h = head(title, desc, path, extra_head)
+def page(path, title, desc, body, active=None, extra_head="", fragment=False, noindex=False):
+    h = head(title, desc, path, extra_head, noindex)
     rest = header(active) + "\n<main>\n" + body + "\n</main>\n" + footer() + '\n<script src="assets/site.js"></script>\n'
     if fragment:
         return h + "\n" + rest
@@ -740,7 +740,7 @@ def thanks_page():
     return page("thank-you.html", "Thanks | Onyx Media", "Thanks for reaching out to Onyx Media.", body)
 
 # ---------------------------------------------------------------- audit request (free content & ads audit)
-NO_SITEMAP = {"thank-you.html", "audit-thank-you.html"}
+NO_SITEMAP = {"thank-you.html", "audit-thank-you.html", "proposal.html"}
 # Keep in sync with AD_SPEND in netlify/functions/audit.js
 AD_SPEND_OPTIONS = ["Not running ads", "Under $500", "$500–$1,500", "$1,500–$3,000", "$3,000–$7,000", "$7,000+"]
 
@@ -807,6 +807,36 @@ def audit_thanks_page():
 <div class="btns"><a class="btn primary" href="contact.html">Book a 30-minute call {TRI}</a><a class="btn secondary" href="work.html">See Our Work</a></div></div></section>"""
     return page("audit-thank-you.html", "Audit Requested | Onyx Media", "Thanks for requesting a free audit from Onyx Media.", body)
 
+# ---------------------------------------------------------------- proposal (private link from Max; filled in by assets/proposal.js)
+def proposal_page():
+    body = f"""<section class="page-head"><div class="wrap"><div class="stack" style="gap:16px;max-width:900px">{eyebrow("Your proposal")}
+  <h1 class="display-l" id="pTitle">Loading your proposal…</h1><p class="body-l" id="pLead">Prepared by Max Fisher, Onyx Media.</p></div></div></section>
+<section class="band"><div class="wrap proposal" id="proposal" hidden>
+  <div class="stack" style="gap:24px">
+    <div class="stack" style="gap:12px">{eyebrow("What's included")}<div class="p-packages" id="pPackages"></div></div>
+    <div class="p-note" id="pNotes" hidden><span class="eyebrow">{TRI}A note from Max</span><p id="pNotesText"></p></div>
+  </div>
+  <div class="stack" style="gap:16px">
+    <div class="quote-card p-totals" id="pTotals"></div>
+    <form class="quote-card" id="acceptForm" novalidate>
+      <input type="hidden" name="t" value="">
+      <p class="hp" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+      {eyebrow("Ready to start?")}
+      <fieldset class="choice p-prepay" id="pPrepay" hidden><legend>Setup fee</legend></fieldset>
+      <div class="field"><label for="pName">Your full name <span class="req">*</span></label><input id="pName" name="name" autocomplete="name" required></div>
+      <div class="field"><label for="pNote">Anything we should know? (optional)</label><textarea id="pNote" name="note" placeholder="Preferred start date, questions…"></textarea></div>
+      <p class="err" role="alert" hidden></p>
+      <button class="btn primary" type="submit">Accept proposal {TRI}</button>
+      <p class="form-note">Accepting lets Max prepare your invoice and service agreement. Nothing is charged and nothing is binding until you sign the agreement.</p>
+    </form>
+    <div class="quote-card" id="pAccepted" hidden>{eyebrow("Accepted")}<p id="pAcceptedText"></p></div>
+    <p class="form-note">Questions? Call or text {PHONE} or reply to the email this link came in.</p>
+  </div>
+</div>
+<div class="wrap" id="pError" hidden><p class="body-l"></p></div></section>"""
+    return page("proposal.html", "Your Proposal | Onyx Media", "Your Onyx Media proposal.", body,
+                extra_head='<meta name="referrer" content="no-referrer">\n<script src="assets/proposal.js" defer></script>', noindex=True)
+
 H1_VARIANTS = ["Video production & social media marketing in {n}, MO.", "{n}, MO video production and social media marketing.",
                "Social media video and ads for {n}, MO businesses."]
 WHY_VARIANTS = [("Why video in {n}", "Be the {n} company people call first."), ("Local to {n}", "Show {n} the work behind your name."),
@@ -847,7 +877,8 @@ def main():
     OUT.mkdir(exist_ok=True); ART.mkdir(exist_ok=True)
     pages = {"index.html": home(), "content-creation.html": content_page(), "paid-advertising.html": ads_page(),
              "work.html": work_page(), "about.html": about_page(), "contact.html": contact_page(), "thank-you.html": thanks_page(),
-             "audit.html": audit_page(), "audit-thank-you.html": audit_thanks_page()}
+             "audit.html": audit_page(), "audit-thank-you.html": audit_thanks_page(),
+             "proposal.html": proposal_page()}
     for c in CITIES:
         pages[city_file(c["slug"])] = city_page(c)
     pages["industries.html"] = industries_hub()
@@ -861,7 +892,7 @@ def main():
     (ART / "artifact-index.html").write_text(home(fragment=True))
     urls = "".join(f"<url><loc>{SITE_URL}/" + ("" if p == "index.html" else p) + "</loc></url>" for p in pages if p not in NO_SITEMAP)
     (OUT / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>\n')
-    (OUT / "robots.txt").write_text(("User-agent: *\nAllow: /\nDisallow: /admin/\n" if INDEXABLE else "User-agent: *\nDisallow: /\n") + f"Sitemap: {SITE_URL}/sitemap.xml\n")
+    (OUT / "robots.txt").write_text(("User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /proposal.html\n" if INDEXABLE else "User-agent: *\nDisallow: /\n") + f"Sitemap: {SITE_URL}/sitemap.xml\n")
     print(f"built {len(pages)} pages")
 
 if __name__ == "__main__":

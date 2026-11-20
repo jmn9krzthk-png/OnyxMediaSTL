@@ -55,7 +55,7 @@ export default formHandler(async (req) => {
 
   const first = name.split(/\s+/)[0];
   await Promise.all([
-    sendAlert({
+    sendAlert({ req,
       subject: `Audit request: ${business}`,
       heading: isNew ? "New audit request" : "Audit request from an existing lead",
       leadId: lead.id,
