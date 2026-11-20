@@ -33,9 +33,9 @@
 <section class="band"><div class="wrap book">
   <div class="stack"><span class="eyebrow"><span class="tri"></span>Fastest: pick a time</span><div class="calendly-inline-widget" data-url="https://calendly.com/max-onyxmediastl/30min?hide_gdpr_banner=1" style="min-width:300px;height:680px"></div><script src="https://assets.calendly.com/assets/external/widget.js" async></script><p class="form-note">Calendar not loading? <a href="https://calendly.com/max-onyxmediastl/30min">Book on Calendly</a></p>
   <address class="nap muted"><strong style="color:var(--ink)">Onyx Media</strong><span>St. Charles, MO · Serving the St. Louis metro</span><span>Call or text 636.385.3995</span><span><a href="mailto:max@onyxmediastl.com">max@onyxmediastl.com</a></span></address></div>
-  <form class="quote-card js-lead" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="thank-you.html" novalidate>
-  <input type="hidden" name="form-name" value="contact">
-  <p class="hp"><label>Leave this empty <input name="bot-field" tabindex="-1"></label></p>
+  <form class="quote-card js-lead" name="contact" method="POST" action="/api/contact" data-success="thank-you.html" novalidate>
+  <input type="hidden" name="t" value="">
+  <p class="hp" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
   <span class="eyebrow"><span class="tri"></span>Send 5 quick details</span>
   <div class="fields two">
     <div class="field"><label for="c-name">Name <span class="req">*</span></label><input id="c-name" name="name" autocomplete="name" required></div>
@@ -52,9 +52,13 @@
     <div class="field full"><label for="c-site">Website</label><input id="c-site" name="website" type="url" placeholder="https://"></div>
     <div class="field full"><label for="c-msg">What do you want more of?</label><textarea id="c-msg" name="message" placeholder="More install jobs, fuller bays, fewer price shoppers…"></textarea></div>
   </div></details>
-  <p class="err" hidden>Add your name, a 10-digit mobile number and a full email address.</p>
+  <p class="err" role="alert" hidden>Add your name, a 10-digit mobile number and a full email address.</p>
   <button class="btn primary" type="submit">Book my 30-minute call <span class="tri"></span></button>
 </form>
+</div></section>
+<section class="band bone"><div class="wrap audit-teaser">
+  <div class="stack" style="gap:12px"><span class="eyebrow"><span class="tri"></span>Not ready for a call?</span><h2 class="display-m">Get a free content &amp; ads audit.</h2><p class="body-l">Send us your links. We'll review your website, social pages, Google profile and ads, and send back the top things we'd fix or film first.</p></div>
+  <div class="btns"><a class="btn primary" href="audit.html">Request my free audit <span class="tri"></span></a></div>
 </div></section>
 </main>
 <div class="callbar" id="callbar"><a class="btn primary" href="contact.html">Contact Us <span class="tri"></span></a><span class="callbar-num"><span class="caption">Call / text</span><strong>636.385.3995</strong></span></div>
@@ -63,7 +67,7 @@
     <div class="stack" style="gap:14px"><a class="logo" href="./"><img src="media/logo-light.webp" alt="Onyx Media" width="150" height="62"></a>
       <address class="nap"><span>Onyx Media · St. Charles, MO</span><span>Video, monthly content and paid ads for home service and automotive businesses</span><span>636.385.3995 · <a href="mailto:max@onyxmediastl.com">max@onyxmediastl.com</a></span></address>
       <p class="faith-line"><span class="tri"></span>Built on faith, honest work and doing right by people.</p></div>
-    <div><h4>Services</h4><ul><li><a href="content-creation.html">Monthly content</a></li><li><a href="paid-advertising.html">Paid advertising</a></li><li><a href="industries.html">Industries</a></li><li><a href="areas.html">Areas</a></li><li><a href="work.html">Work</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
+    <div><h4>Services</h4><ul><li><a href="content-creation.html">Monthly content</a></li><li><a href="paid-advertising.html">Paid advertising</a></li><li><a href="industries.html">Industries</a></li><li><a href="areas.html">Areas</a></li><li><a href="work.html">Work</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li><li><a href="audit.html">Free content &amp; ads audit</a></li></ul></div>
     <div><h4>Follow</h4><ul><li><a href="https://www.facebook.com/OnyxMediastl">Facebook</a></li><li><a href="https://www.instagram.com/onyxmediastl/">Instagram</a></li><li><a href="https://g.page/r/CQYfHVSfUBVMEAE/review">Leave us a Google review</a></li></ul></div>
     <div><h4>Where we work</h4><ul><li><a href="areas.html">Areas we serve →</a></li><li><a href="industries.html">Industries we serve →</a></li></ul></div>
   </div>

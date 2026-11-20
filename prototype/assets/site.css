@@ -500,3 +500,10 @@ a.trade{text-decoration:none;color:inherit}
 .legal-copy h2{margin-top:18px}
 .legal-copy p{color:var(--muted)}
 .legal a{color:inherit}
+
+/* Free audit page */
+ol.steps{list-style:none;margin:0;padding:0}
+@media (min-width:860px){.steps.three{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.audit-teaser{display:grid;gap:24px;align-items:center}
+@media (min-width:860px){.audit-teaser{grid-template-columns:minmax(0,1fr) auto;gap:48px}}
+.btn[disabled]{opacity:.6;cursor:progress}
