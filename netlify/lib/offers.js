@@ -1,11 +1,9 @@
 // Package offers (proposals): load an offer with its packages and work out the totals.
 import { adminDb } from "./supabase.js";
+import { siteUrl } from "./email.js";
 
 export const TOKEN_RE = /^[a-f0-9]{64}$/;
 
-export function siteUrl() {
-  return (process.env.URL || "https://onyxmediastl.com").replace(/\/$/, "");
-}
 
 export function offerUrl(token) {
   return `${siteUrl()}/proposal.html?t=${token}`;
