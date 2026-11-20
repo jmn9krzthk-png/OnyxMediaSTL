@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0B0B0C">
+<title>Leads | Onyx Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="admin.css">
+<link rel="icon" type="image/png" href="../media/favicon.png">
+<link rel="apple-touch-icon" href="../media/apple-touch-icon.png">
+</head>
+<body class="admin">
+<header class="a-top">
+  <a class="logo" href="./" aria-label="Admin home"><img src="../media/logo-light.webp" alt="Onyx Media" width="96" height="40"></a>
+  <span class="a-title">Admin</span>
+  <button class="a-link" id="signOut" type="button" hidden>Sign out</button>
+</header>
+
+<main class="a-main">
+  <section id="v-loading" class="a-center"><p class="muted">Loading…</p></section>
+
+  <section id="v-login" class="a-center" hidden>
+    <form id="loginForm" class="quote-card a-login" novalidate>
+      <span class="eyebrow"><span class="tri"></span>Admin sign in</span>
+      <div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="email" required></div>
+      <button class="btn primary" type="submit">Email me a sign-in link</button>
+      <p class="form-note" id="loginMsg" role="status"></p>
+    </form>
+  </section>
+
+  <section id="v-denied" class="a-center" hidden>
+    <div class="quote-card a-login"><span class="eyebrow"><span class="tri"></span>No access</span>
+      <p>This account isn't an admin. Ask Max to grant access, or sign in with a different email.</p>
+      <button class="btn secondary" type="button" id="deniedSignOut">Sign out</button></div>
+  </section>
+
+  <section id="v-error" class="a-center" hidden>
+    <div class="quote-card a-login"><span class="eyebrow"><span class="tri"></span>Setup needed</span><p id="errorMsg"></p></div>
+  </section>
+
+  <section id="v-list" hidden>
+    <nav class="a-tabs" aria-label="Lead lists">
+      <button type="button" class="a-tab" data-tab="follow" aria-pressed="true">Follow up today <span class="a-count" id="followCount">0</span></button>
+      <button type="button" class="a-tab" data-tab="all" aria-pressed="false">All leads <span class="a-count" id="allCount">0</span></button>
+    </nav>
+    <div class="a-filters" id="filters" hidden>
+      <div class="field"><label for="fStatus">Status</label><select id="fStatus"><option value="">All statuses</option></select></div>
+      <div class="field"><label for="fSearch">Search</label><input id="fSearch" type="search" placeholder="Name, business, email, phone"></div>
+    </div>
+    <p class="a-empty muted" id="listEmpty" hidden></p>
+    <ul class="a-list" id="list"></ul>
+  </section>
+
+  <section id="v-detail" hidden>
+    <button type="button" class="a-link a-back" id="back">← Back to leads</button>
+    <div id="detail"></div>
+  </section>
+</main>
+<div class="a-toast" id="toast" role="status" hidden></div>
+
+<script src="vendor/supabase.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
