@@ -1,0 +1,16 @@
+{
+  "name": "onyxmediastl",
+  "private": true,
+  "description": "Onyx Media website: static pages in prototype/, server code in netlify/functions/",
+  "type": "module",
+  "scripts": {
+    "build:site": "python3 tools/build_site.py",
+    "vendor:supabase": "cp node_modules/@supabase/supabase-js/dist/umd/supabase.js prototype/admin/vendor/supabase.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.119.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

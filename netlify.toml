@@ -1,6 +1,21 @@
 # Netlify settings for onyxmediastl.com
 # Static site: no build step; Netlify publishes the prototype/ folder.
+# Server code (form handlers) lives in netlify/functions/ and is served at /api/*.
+# Keys are set in Netlify > Site configuration > Environment variables (see .env.example).
 # To pause deploys again (saves credits), add:  ignore = "exit 0"  under [build].
 [build]
   publish = "prototype"
   command = ""
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Admin area: never indexed, never framed, no referrer leaks.
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "no-referrer"
+    Cache-Control = "no-cache"
