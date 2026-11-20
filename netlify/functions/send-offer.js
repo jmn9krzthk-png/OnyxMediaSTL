@@ -18,7 +18,7 @@ export default formHandler(async (req) => {
   if (!packages.length) throw new HttpError(400, "This proposal has no packages.");
   if (!lead.email) throw new HttpError(400, "This lead has no email address. Add one with Edit contact.");
   const message = clean(body.message, 2000);
-  const url = offerUrl(offer.public_token);
+  const url = offerUrl(offer.public_token, req);
 
   const html = prospectEmail({
     paragraphs: [

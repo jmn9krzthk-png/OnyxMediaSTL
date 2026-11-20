@@ -37,7 +37,7 @@ export default formHandler(async (req) => {
   const { lead, isNew, duplicate } = await upsertLead({ name, business, email, phone, industry, source: "website", note });
 
   if (!duplicate) {
-    await sendAlert({
+    await sendAlert({ req,
       subject: `New lead: ${name}${business ? ` (${business})` : ""}`,
       heading: isNew ? "New contact form lead" : "Returning lead sent the contact form again",
       leadId: lead.id,

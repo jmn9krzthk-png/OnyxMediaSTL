@@ -45,7 +45,7 @@ export default formHandler(async (req) => {
     ],
   });
   await Promise.all([
-    sendAlert({
+    sendAlert({ req,
       subject: `ACCEPTED: ${lead.business || lead.name} – send invoice & contract`,
       heading: `${name} accepted the proposal${lead.business ? ` for ${lead.business}` : ""}`,
       leadId: lead.id, replyTo: lead.email || undefined,

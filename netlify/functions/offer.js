@@ -23,7 +23,7 @@ export default async (req) => {
       const { data: updated } = await adminDb().from("package_offers").update({ viewed_at: new Date().toISOString() })
         .eq("id", offer.id).is("viewed_at", null).select("id");
       if (updated && updated.length) {
-        await sendAlert({
+        await sendAlert({ req,
           subject: `${lead.name} opened your proposal`,
           heading: `${lead.name}${lead.business ? ` (${lead.business})` : ""} just opened your proposal`,
           leadId: lead.id, replyTo: lead.email || undefined,

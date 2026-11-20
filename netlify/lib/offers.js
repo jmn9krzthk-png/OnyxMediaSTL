@@ -5,8 +5,8 @@ import { siteUrl } from "./email.js";
 export const TOKEN_RE = /^[a-f0-9]{64}$/;
 
 
-export function offerUrl(token) {
-  return `${siteUrl()}/proposal.html?t=${token}`;
+export function offerUrl(token, req) {
+  return `${siteUrl(req)}/proposal.html?t=${token}`;
 }
 
 export function money(n) {

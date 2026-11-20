@@ -1,11 +1,17 @@
 // Transactional email through Resend (https://resend.com). RESEND_API_KEY lives in Netlify env vars.
 
-// Base URL for links in emails. On deploy previews and branch deploys, links point at that
-// deploy (so new pages can be tested before merging); in production, at the main site.
-export function siteUrl() {
-  const ctx = process.env.CONTEXT;
-  const url = ctx && ctx !== "production" && process.env.DEPLOY_PRIME_URL ? process.env.DEPLOY_PRIME_URL : process.env.URL;
-  return (url || "https://onyxmediastl.com").replace(/\/$/, "");
+// Base URL for links in emails: the site the request came in on, so a deploy preview emails
+// preview links and the live site emails live links. Only our own domains are trusted;
+// anything else falls back to the main site.
+const OWN_HOST = /^(?:(?:www\.)?onyxmediastl\.com|(?:[a-z0-9-]+--)?onyxmediastl\.netlify\.app)$/i;
+export function siteUrl(req) {
+  if (req) {
+    try {
+      const u = new URL(req.url);
+      if (u.protocol === "https:" && OWN_HOST.test(u.hostname)) return u.origin;
+    } catch { /* fall through */ }
+  }
+  return (process.env.URL || "https://onyxmediastl.com").replace(/\/$/, "");
 }
 
 const ALERT_TO = () => process.env.ALERT_EMAIL_TO || "max@onyxmediastl.com";
@@ -49,8 +55,8 @@ export async function sendEmail({ to, subject, html, text, replyTo }) {
 }
 
 // Alert to Max. `rows` is a list of [label, value]; empty values are skipped.
-export function sendAlert({ subject, heading, rows, leadId, replyTo }) {
-  const site = siteUrl();
+export function sendAlert({ subject, heading, rows, leadId, replyTo, req }) {
+  const site = siteUrl(req);
   const link = leadId ? `${site}/admin/#lead=${leadId}` : `${site}/admin/`;
   const shown = rows.filter(([, v]) => v !== undefined && v !== null && String(v).trim() !== "");
   const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#0B0B0C;max-width:560px">
