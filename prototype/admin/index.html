@@ -32,6 +32,12 @@
       <button class="btn primary" type="submit">Email me a sign-in link</button>
       <p class="form-note" id="loginMsg" role="status"></p>
     </form>
+    <form id="codeForm" class="quote-card a-login" novalidate hidden style="margin-top:12px">
+      <span class="eyebrow"><span class="tri"></span>Or type the code</span>
+      <div class="field"><label for="loginCode">Code from the email</label><input id="loginCode" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456"></div>
+      <button class="btn secondary" type="submit">Sign in with code</button>
+      <p class="form-note" id="codeMsg" role="status"></p>
+    </form>
   </section>
 
   <section id="v-denied" class="a-center" hidden>

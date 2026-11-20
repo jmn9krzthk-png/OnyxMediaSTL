@@ -106,16 +106,20 @@
         db = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey, {
           auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: "implicit" }
         });
-        var hashErr = new URLSearchParams(location.hash.slice(1)).get("error_description");
+        var hashErr = new URLSearchParams(location.hash.slice(1)).get("error_description") ||
+                      new URLSearchParams(location.search).get("error_description");
         db.auth.onAuthStateChange(function (event) {
           if (event === "SIGNED_OUT") { $("signOut").hidden = true; show("v-login"); }
         });
-        return db.auth.getSession().then(function (res) {
+        return completeLinkSignIn().then(function (linkErr) {
+          if (linkErr) hashErr = linkErr;
+          return db.auth.getSession();
+        }).then(function (res) {
           var session = res.data && res.data.session;
           if (!session) {
             if (location.hash.indexOf("#lead=") === 0) { try { localStorage.setItem("onyxPendingLead", location.hash); } catch (e) {} }
             show("v-login");
-            if (hashErr) $("loginMsg").textContent = "That link didn't work (" + hashErr.replace(/\+/g, " ") + "). Request a new one.";
+            if (hashErr) loginError("That link didn't work (" + hashErr.replace(/\+/g, " ") + "). Request a new link, or use the code from the email.");
             history.replaceState(null, "", location.pathname);
             return;
           }
@@ -150,11 +154,41 @@
     db.auth.signInWithOtp({ email: email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + "/admin/" } })
       .then(function (res) {
         btn.disabled = false;
-        msg.textContent = res.error
-          ? "Couldn't send a link: " + res.error.message
-          : "Check your email for a sign-in link. Open it on this device, in this browser.";
+        if (res.error) { loginError("Couldn't send a link: " + res.error.message); return; }
+        msg.className = "form-note";
+        msg.textContent = "Check your email. Tap the link, or type the code from the email below.";
+        $("codeForm").hidden = false; $("loginCode").focus();
       });
   });
+  function loginError(text) { var m = $("loginMsg"); m.className = "err"; m.textContent = text; }
+
+  // Supabase can send sign-in links in three shapes. #access_token=… is handled by supabase-js itself;
+  // ?code=… and ?token_hash=… are finished here. Returns an error message, or "" when there was nothing to do.
+  function completeLinkSignIn() {
+    var q = new URLSearchParams(location.search), done = function (res) {
+      history.replaceState(null, "", location.pathname + location.hash);
+      return res && res.error ? res.error.message : "";
+    };
+    if (q.get("code")) return db.auth.exchangeCodeForSession(q.get("code")).then(done, function (e) { done(); return errMsg(e); });
+    if (q.get("token_hash")) {
+      return db.auth.verifyOtp({ token_hash: q.get("token_hash"), type: q.get("type") || "email" }).then(done, function (e) { done(); return errMsg(e); });
+    }
+    return Promise.resolve("");
+  }
+
+  $("codeForm").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var email = $("loginEmail").value.trim(), code = $("loginCode").value.replace(/\D/g, ""), msg = $("codeMsg"), btn = ev.target.querySelector("button");
+    if (code.length < 6) { msg.className = "err"; msg.textContent = "Enter the code from the email."; return; }
+    btn.disabled = true; msg.className = "form-note"; msg.textContent = "Checking…";
+    db.auth.verifyOtp({ email: email, token: code, type: "email" }).then(function (res) {
+      btn.disabled = false;
+      if (res.error || !res.data || !res.data.session) { msg.className = "err"; msg.textContent = "That code didn't work" + (res.error ? " (" + res.error.message + ")" : "") + ". Request a new email and use the newest code."; return; }
+      msg.textContent = ""; $("codeForm").hidden = true; $("loginCode").value = "";
+      return checkAdmin(res.data.session.user);
+    });
+  });
+
   function signOut() { db.auth.signOut().then(function () { location.hash = ""; show("v-login"); }); }
   $("signOut").addEventListener("click", signOut);
   $("deniedSignOut").addEventListener("click", signOut);
