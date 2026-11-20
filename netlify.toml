@@ -19,3 +19,11 @@
     X-Frame-Options = "DENY"
     Referrer-Policy = "no-referrer"
     Cache-Control = "no-cache"
+
+# Proposal links carry a private token in the URL: never index, never leak it as a referrer.
+[[headers]]
+  for = "/proposal.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Referrer-Policy = "no-referrer"
+    Cache-Control = "no-cache"
