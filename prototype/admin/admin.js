@@ -59,9 +59,9 @@
     var t = $("toast"); t.textContent = msg; t.className = "a-toast" + (bad ? " bad" : ""); t.hidden = false;
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, bad ? 6000 : 2400);
   }
-  function show(view) {
+  function show(view, keepScroll) {
     ["v-loading", "v-login", "v-denied", "v-error", "v-list", "v-detail"].forEach(function (id) { $(id).hidden = id !== view; });
-    window.scrollTo(0, 0);
+    if (!keepScroll) window.scrollTo(0, 0);
   }
   function dueClass(l) {
     if (!l.next_follow_up || CLOSED.indexOf(l.status) > -1) return "";
@@ -272,9 +272,10 @@
   }
 
   // ------------------------------------------------------------ detail
-  function renderDetail(id) {
-    show("v-detail");
-    $("detail").innerHTML = '<p class="muted">Loading…</p>';
+  function renderDetail(id, keepY) {
+    var keep = typeof keepY === "number";
+    show("v-detail", keep);
+    if (!keep) $("detail").innerHTML = '<p class="muted">Loading…</p>';
     Promise.all([
       db.from("leads").select(LEAD_COLS).eq("id", id).maybeSingle(),
       db.from("audit_requests").select("*").eq("lead_id", id).order("created_at", { ascending: false }),
@@ -329,12 +330,14 @@
       wireAudits(l);
       wireOffers(l, offers);
       wireWon(l, offers, client);
+      if (keep) window.scrollTo(0, keepY);
     });
   }
 
   function reloadDetail(id, msg) {
     if (msg) toast(msg);
-    return loadLeads().then(function () { renderDetail(id); });
+    var y = window.scrollY;
+    return loadLeads().then(function () { renderDetail(id, y); });
   }
 
   function wireDetail(l) {
@@ -463,6 +466,7 @@
         (o.accepted_at ? '<p class="a-offer-notes"><strong>Accepted by ' + esc(o.accepted_name) + "</strong>" +
           (o.accepted_prepay === true ? " · paying first month upfront (setup waived)" : o.accepted_prepay === false ? " · paying setup fee" : "") +
           (o.accepted_note ? "<br>“" + esc(o.accepted_note) + "”" : "") + "</p>" : "") +
+        (o.accepted_at ? "" : '<div class="field"><label>Personal note in the email (optional)</label><textarea class="offer-msg" rows="2" placeholder="Great talking today…"></textarea></div>') +
         '<div class="a-btnrow">' +
           '<a class="btn secondary" href="' + esc(proposalLink(o.public_token, true)) + '" target="_blank" rel="noopener">Preview</a>' +
           '<button type="button" class="btn secondary offer-copy">Copy link</button>' +
@@ -482,7 +486,7 @@
     return '<div class="a-panel"><h2>Proposals</h2>' + (list || '<p class="muted" style="margin:0">No proposals yet.</p>') +
       '<details class="a-new-offer"' + (offers.length ? "" : " open") + "><summary>New proposal</summary>" +
         '<form id="offerForm" class="a-offer-form">' + groups +
-          '<p class="a-offer-total" id="offerList">Pick at least one package.</p>' +
+          '<p class="a-offer-total" id="offerList">Tick packages to see the list price.</p>' +
           '<div class="a-two"><div class="field"><label for="oMonthly">Custom monthly price</label><input id="oMonthly" type="number" inputmode="decimal" min="0" step="1" placeholder="List price"></div>' +
           '<div class="field"><label for="oSetup">Custom setup fee</label><input id="oSetup" type="number" inputmode="decimal" min="0" step="1" placeholder="List price"></div></div>' +
           '<label class="a-check"><input type="checkbox" id="oWaive"> <span>Offer: setup fee waived if the first month is paid upfront</span></label>' +
@@ -497,7 +501,7 @@
     function picked() { return [].map.call(form.querySelectorAll(".a-pkgs input:checked"), function (i) { return i.value; }); }
     function updateList() {
       var t = offerTotals({ package_ids: picked(), custom_monthly_price: null, custom_setup_fee: null });
-      $("offerList").textContent = t.pkgs.length ? "List price: " + money(t.monthly) + "/mo" + (t.setup ? " + " + money(t.setup) + " setup" : "") : "Pick at least one package.";
+      $("offerList").textContent = t.pkgs.length ? "List price: " + money(t.monthly) + "/mo" + (t.setup ? " + " + money(t.setup) + " setup" : "") : "Tick packages to see the list price.";
       $("oMonthly").placeholder = t.pkgs.length ? String(t.monthly) : "List price";
       $("oSetup").placeholder = t.pkgs.length ? String(t.setup) : "List price";
     }
@@ -522,8 +526,8 @@
       var send = box.querySelector(".offer-send");
       if (send) send.addEventListener("click", function () {
         if (!l.email) { toast("Add an email first (Edit contact).", true); return; }
-        var msg = window.prompt("Email this proposal to " + l.email + "?\n\nOptional personal note (leave blank for none):", "");
-        if (msg === null) return;
+        if (!window.confirm("Email this proposal to " + l.email + "?")) return;
+        var msg = box.querySelector(".offer-msg").value;
         send.disabled = true;
         api("/api/send-offer", { offerId: id, message: msg })
           .then(function () { return reloadDetail(l.id, "Proposal sent"); })
@@ -564,6 +568,22 @@
   }
 
   $("back").addEventListener("click", function () { location.hash = tab; });
+
+  // Refresh when you come back to the tab (e.g. after a prospect opens or accepts),
+  // unless you're in the middle of typing something on the lead page.
+  function hasUnsavedInput() {
+    return [].some.call(document.querySelectorAll("#detail input, #detail textarea"), function (f) {
+      if (f.type === "file") return !!f.value;
+      if (f.type === "checkbox") return f.checked !== f.defaultChecked;
+      return f.value !== f.defaultValue;
+    });
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden || !db) return;
+    var h = location.hash.slice(1);
+    if (!$("v-detail").hidden && h.indexOf("lead=") === 0 && !hasUnsavedInput()) { reloadDetail(decodeURIComponent(h.slice(5))); }
+    else if (!$("v-list").hidden) { loadLeads().then(renderList); }
+  });
 
   // ------------------------------------------------------------ routing (#follow, #all, #new, #lead=<id>)
   function route() {

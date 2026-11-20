@@ -77,9 +77,9 @@
     if (d.waiveSetupWithPrepay) {
       var fs = $("pPrepay"); fs.hidden = false;
       [["yes", "Pay my first month (" + money(t.monthly) + ") upfront and waive the " + money(t.setup) + " setup fee"],
-       ["no", "Pay the " + money(t.setup) + " setup fee as normal"]].forEach(function (o, i) {
+       ["no", "Pay the " + money(t.setup) + " setup fee as normal"]].forEach(function (o) {
         var lab = el("label"), inp = document.createElement("input");
-        inp.type = "radio"; inp.name = "prepay"; inp.value = o[0]; if (i === 0) inp.checked = true;
+        inp.type = "radio"; inp.name = "prepay"; inp.value = o[0];
         lab.appendChild(inp); lab.appendChild(el("span", null, o[1])); fs.appendChild(lab);
       });
     }
@@ -102,7 +102,11 @@
       if (preview) { err.textContent = "This is a preview. The prospect will see this button."; err.hidden = false; return; }
       var name = $("pName");
       if (!name.value.trim()) { name.setAttribute("aria-invalid", "true"); err.textContent = "Type your name to accept."; err.hidden = false; return; }
-      name.setAttribute("aria-invalid", "false"); err.hidden = true; btn.disabled = true;
+      name.setAttribute("aria-invalid", "false");
+      if (!$("pPrepay").hidden && !form.querySelector("[name=prepay]:checked")) {
+        err.textContent = "Choose how you'd like to handle the setup fee."; err.hidden = false; return;
+      }
+      err.hidden = true; btn.disabled = true;
       var data = { token: token };
       new FormData(form).forEach(function (v, k) { data[k] = v; });
       fetch("/api/offer-accept", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(data) })
