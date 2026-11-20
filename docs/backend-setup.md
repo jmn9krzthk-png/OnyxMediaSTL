@@ -192,3 +192,18 @@ Use a test lead with your personal email.
 - [ ] On the proposal test lead, tap **Mark as won**. "Client · onboarding" appears and the lead shows *Won*.
 - [ ] Supabase: `clients` has the business at $2,645, `client_packages` has 2 rows, and `onboarding` has 1 row.
 - [ ] Clean up: delete the test client in `clients` (this also removes its packages and onboarding), then the test leads.
+
+---
+
+## Admin sign-in: add the code to the sign-in email (one-time)
+The admin accepts the emailed link or a code typed from the same email. The code is the most reliable option on iPhone, where email apps sometimes open links in their own browser. Supabase's default email doesn't include the code, so add it once:
+
+1. Supabase → **Authentication** → **Emails** (or **Email Templates**) → **Magic Link**.
+2. Subject: `Your Onyx admin sign-in`
+3. Replace the message body with:
+   ```html
+   <h2>Sign in to Onyx admin</h2>
+   <p>Your code: <strong style="font-size:22px;letter-spacing:3px">{{ .Token }}</strong></p>
+   <p>Or tap this link on the device you're signing in on: <a href="{{ .ConfirmationURL }}">Sign in</a></p>
+   ```
+4. **Save**.
