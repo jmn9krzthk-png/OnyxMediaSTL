@@ -770,6 +770,194 @@ def city_page(c):
                 f"Video production, monthly social content and paid ads for local businesses in {n}, MO ({c['county']}). Content from $795/mo, ads from $1,150/mo.",
                 body, None, extra_head=ld(schema) + faq_ld(faq))
 
+# ---------------------------------------------------------------- Google Ads landing pages (/lp/*)
+# Ad traffic only: noindex, not in the sitemap, not linked from anywhere on the site, no nav.
+# Forms post to Netlify Forms (same pipeline as the Contact form). Google Ads IDs come from
+# env vars via tools/lp_config.py, which writes prototype/lp/ads-config.js at build/deploy time.
+LP_AREAS = "Serving Wright City, Troy, Wentzville, O'Fallon, St. Peters & St. Charles"
+LP_PROOF = [("5-star", "Google reviews"), ("18", "Local businesses filmed"), ("43", "Industries served")]
+LP_STEPS = [("Request your free audit", "Send the short form below."),
+            ("Free 30-minute call", "We review your current ads/posting and your local competition with you."),
+            ("We launch", "Usually the following week.")]
+LP_FAQ_ADS = [
+    ("How much should I spend on ads?", "That's your call. Ad spend is paid directly to Meta or Google, so you control the budget. We'll talk through what makes sense for your area on the free call.", False),
+    ("What's included?", "Campaign setup, targeting, ongoing optimization and a monthly report in plain English. Ad spend is separate and paid directly to the platforms.", False),
+    ("Can you do both Google and Facebook?", "Yes. We manage Meta (Facebook + Instagram) ads, Google ads, or both together.", False),
+    ("How fast will I see leads?", "We usually launch the week after your call. Results and leads aren't guaranteed, and your monthly report shows exactly what the ads are doing.", False),
+    ("Is there a long-term contract?", "No. Most plans are month to month. A special offer may come with a set term, which we state before you sign.", False),
+]
+LP_FAQ_SOCIAL = [
+    ("What platforms do you post to?", "Facebook and Instagram are included. Additional platforms are quoted separately.", False),
+    ("How often do you post?", "2 to 5 times a week, depending on your plan.", False),
+    ("Do I own the content?", "Yes. You own all finished content and can use it anywhere.", False),
+    ("How fast can we start?", "First posts can go live as soon as the following week.", False),
+    ("Is there a long-term contract?", "No. Most plans are month to month. A special offer may come with a set term, which we state before you sign.", False),
+]
+LP = {
+    "paid-ads": dict(
+        title="Facebook & Google Ads Management | Onyx Media",
+        desc="Facebook, Instagram and Google ads management for local service businesses. Request a free audit.",
+        h1="Facebook & Google ads that make your phone ring.",
+        sub="Ads management for local service businesses, with monthly reporting in plain English.",
+        lead_source="lp-paid-ads", service="paid_ads",
+        get_h2="Your ads, managed.",
+        get_lead="Ad spend is paid directly to the platforms, so you control the budget.",
+        get=["Meta (Facebook + Instagram) and/or Google ads management", "Campaign setup",
+             "Targeting the areas and customers you actually want", "Ongoing optimization",
+             "Monthly reporting in plain English", "Your ad spend goes straight to Meta or Google, not through us"],
+        price="Ads management from $1,150/mo. Setup fee applies.", faq=LP_FAQ_ADS),
+    "social-media": dict(
+        title="Social Media Management for Local Businesses | Onyx Media",
+        desc="We film it, edit it and post it. Social media management for local service businesses. Request a free audit.",
+        h1="Social media management for local businesses. We film it, edit it & post it.",
+        sub="On-site photo and video, editing, captions and posting to Facebook and Instagram, done for you.",
+        lead_source="lp-social-media", service="social_media",
+        get_h2="Filmed, edited, posted.",
+        get_lead="You run the business. We handle the posting.",
+        get=["On-site photo and video capture", "Editing and captions",
+             "Posting to Facebook and Instagram 2–5x per week", "A content calendar",
+             "Monthly reporting", "You own your finished content",
+             "First posts can go live the following week"],
+        price="Monthly plans from $795/mo.", faq=LP_FAQ_SOCIAL),
+}
+
+def lp_head(title, desc):
+    font = "https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap"
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{e(title)}</title>
+<meta name="description" content="{e(desc)}">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="{font}" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="{font}"></noscript>
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/lp.css">
+<link rel="icon" type="image/png" href="/media/favicon.png">
+<script src="/lp/ads-config.js" defer></script>
+<script src="/assets/lp.js" defer></script>
+</head>"""
+
+def lp_top(self_href):
+    logo = '<img src="/media/logo-light.webp" alt="Onyx Media" width="128" height="53">'
+    logo = f'<a class="logo" href="{self_href}" aria-label="Onyx Media">{logo}</a>' if self_href else f'<span class="logo">{logo}</span>'
+    return f"""<header class="lp-top"><div class="wrap lp-bar">{logo}
+  <a class="btn primary lp-call" href="tel:{PHONE_TEL}"><span class="lp-call-label">Call / text</span> {PHONE}</a>
+</div></header>"""
+
+def lp_foot():
+    return f"""<footer class="lp-foot"><div class="wrap">
+  <a href="tel:{PHONE_TEL}">{PHONE}</a>
+  <span><a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></span>
+  <span>© 2026 ONYX HTZ LLC</span>
+</div></footer>"""
+
+def lp_form(slug, d, idx):
+    """Netlify form. Every field must exist in this HTML so Netlify stores it."""
+    p = f"f{idx}-"
+    hidden = "".join(f'<input type="hidden" name="{n}" value="{e(v)}">' for n, v in [
+        ("form-name", d["lead_source"]), ("lead_source", d["lead_source"]), ("service_interest", d["service"]),
+        ("subject", f"New free audit request [{d['lead_source']}]")])
+    tracked = "".join(f'<input type="hidden" name="{n}" value="">' for n in
+                      ["gclid", "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "landing_page", "referrer"])
+    return f"""<form class="quote-card lp-form" name="{d['lead_source']}" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="/lp/thank-you?s={slug}" data-next="/lp/thank-you?s={slug}" novalidate>
+  {hidden}{tracked}
+  <p class="hp" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+  <h2 class="lp-form-h">Get your free audit</h2>
+  <p class="form-note">Free 30-minute call. No obligation.</p>
+  <div class="fields two">
+    <div class="field"><label for="{p}name">Name <span class="req">*</span></label><input id="{p}name" name="name" autocomplete="name" required maxlength="100"></div>
+    <div class="field"><label for="{p}biz">Business name <span class="req">*</span></label><input id="{p}biz" name="business_name" autocomplete="organization" required maxlength="150"></div>
+    <div class="field"><label for="{p}phone">Phone <span class="req">*</span></label><input id="{p}phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="30"></div>
+    <div class="field"><label for="{p}email">Email <span class="req">*</span></label><input id="{p}email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="200"></div>
+    <div class="field full"><label for="{p}site">Website or Facebook page <span class="opt">(optional)</span></label><input id="{p}site" name="website" inputmode="url" autocomplete="url" maxlength="300" placeholder="yourbusiness.com"></div>
+  </div>
+  <p class="err" role="alert" hidden></p>
+  <button class="btn primary" type="submit">Get my free audit {TRI}</button>
+</form>"""
+
+def lp_page(slug):
+    d = LP[slug]
+    proof = "".join(f'<div><strong>{e(a)}</strong><span>{e(b)}</span></div>' for a, b in LP_PROOF)
+    steps3 = '<div class="steps lp-steps">' + "".join(
+        f'<div class="step"><span class="n">0{i+1}</span><h3>{e(t)}</h3><p>{e(x)}</p></div>' for i, (t, x) in enumerate(LP_STEPS)) + "</div>"
+    revs = '<div class="reviews">' + "".join(review_card(*r) for r in REVIEWS) + "</div>"
+    body = f"""<body class="lp">
+{lp_top("/lp/" + slug)}
+<main>
+<section class="lp-hero"><div class="wrap lp-hero-grid">
+  <div class="lp-copy">
+    <h1 class="display-l lp-h1">{e(d['h1'])}</h1>
+    <p class="lp-sub">{e(d['sub'])}</p>
+    <p class="lp-area">{TRI}{e(LP_AREAS)}</p>
+  </div>
+  <div class="lp-form-wrap" id="audit">{lp_form(slug, d, 1)}</div>
+</div></section>
+<section class="lp-proof"><div class="wrap lp-proof-row">{proof}</div></section>
+<section class="band"><div class="wrap">
+  <div class="band-head"><div class="stack">{eyebrow("What you get")}<h2 class="display-l">{e(d['get_h2'])}</h2></div><p class="body-l">{e(d['get_lead'])}</p></div>
+  <ul class="ticks lp-get">{"".join(f"<li>{TRI}{e(i)}</li>" for i in d['get'])}</ul>
+</div></section>
+<section class="band bone"><div class="wrap">
+  <div class="band-head"><div class="stack">{eyebrow("How it works")}<h2 class="display-l">Three steps.</h2></div></div>
+  {steps3}
+</div></section>
+<section class="band dark"><div class="wrap">
+  <div class="band-head"><div class="stack">{eyebrow("Google reviews")}<h2 class="display-l">From the owners.</h2></div><p class="body-l">What local business owners say after working with us.</p></div>
+  {revs}
+</div></section>
+<section class="lp-price"><div class="wrap"><p class="lp-price-main">{e(d['price'])}</p><p class="lp-price-sub">Month-to-month. No long-term contracts.</p></div></section>
+<section class="band"><div class="wrap lp-narrow">
+  <div class="stack" style="margin-bottom:24px">{eyebrow("FAQ")}<h2 class="display-l">Straight answers.</h2></div>
+  {faq_html(d['faq'])}
+</div></section>
+<section class="band bone"><div class="wrap lp-narrow lp-final">
+  <h2 class="display-l">Get your free audit.</h2>
+  <p class="body-l">Prefer to talk? Call or text <a href="tel:{PHONE_TEL}">{PHONE}</a>.</p>
+  <a class="btn primary" href="#audit">Get my free audit {TRI}</a>
+</div></section>
+</main>
+{lp_foot()}
+</body>
+</html>
+"""
+    return lp_head(d["title"], d["desc"]) + "\n" + body
+
+def lp_thanks():
+    steps = "".join(f"<li><strong>{e(t)}.</strong> {e(x)}</li>" for t, x in [
+        ("Max reaches out", "Within 1 business day, to set up your free 30-minute call"),
+        ("Free 30-minute call", "We review your current ads/posting and your local competition with you"),
+        ("We launch", "Usually the following week")])
+    body = f"""<body class="lp" data-lp-thanks>
+{lp_top(None)}
+<main>
+<section class="band"><div class="wrap lp-narrow stack" style="gap:22px">
+  {eyebrow("Request received")}
+  <h1 class="display-l">Got it. Max will reach out within 1 business day.</h1>
+  <p class="body-l">Want to talk sooner? Call or text <a href="tel:{PHONE_TEL}">{PHONE}</a>.</p>
+  <h2 class="heading">What happens next</h2>
+  <ol class="lp-next">{steps}</ol>
+  <div class="btns"><a class="btn primary" href="tel:{PHONE_TEL}">Call {PHONE} {TRI}</a></div>
+</div></section>
+</main>
+{lp_foot()}
+</body>
+</html>
+"""
+    return lp_head("Thanks | Onyx Media", "Your free audit request was received.") + "\n" + body
+
+def write_landing_pages():
+    import lp_config
+    d = OUT / "lp"; d.mkdir(exist_ok=True)
+    for slug in LP:
+        (d / f"{slug}.html").write_text(lp_page(slug))
+    (d / "thank-you.html").write_text(lp_thanks())
+    lp_config.main()
+
 # ---------------------------------------------------------------- write
 def main():
     OUT.mkdir(exist_ok=True); ART.mkdir(exist_ok=True)
@@ -786,6 +974,7 @@ def main():
     for name, text in pages.items():
         (OUT / name).write_text(text)
     (ART / "artifact-index.html").write_text(home(fragment=True))
+    write_landing_pages()  # /lp/* pages: deliberately not in `pages`, so never in the sitemap
     urls = "".join(f"<url><loc>{SITE_URL}/" + ("" if p == "index.html" else p) + "</loc></url>" for p in pages if p != "thank-you.html")
     (OUT / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>\n')
     (OUT / "robots.txt").write_text(("User-agent: *\nAllow: /\n" if INDEXABLE else "User-agent: *\nDisallow: /\n") + f"Sitemap: {SITE_URL}/sitemap.xml\n")

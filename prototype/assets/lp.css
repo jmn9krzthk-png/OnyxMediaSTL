@@ -1,0 +1,65 @@
+/* Ad landing pages (/lp/*). Layered on site.css; brand tokens come from there. */
+.lp-top{position:sticky;top:0;z-index:50;background:var(--onyx);border-bottom:1px solid #2E2E33;padding-top:env(safe-area-inset-top,0px)}
+.lp-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;height:60px}
+.lp-top .logo img{width:104px;height:auto}
+.lp-call{padding:11px 14px;font-size:15px;gap:6px;white-space:nowrap}
+.lp-call-label{display:none}
+@media (min-width:520px){.lp-call-label{display:inline;font-weight:500}}
+@media (min-width:720px){.lp-bar{height:72px}.lp-top .logo img{width:128px}.lp-call{padding:14px 20px;font-size:16px}}
+
+.lp-hero{background:var(--onyx);color:var(--on-dark);padding:14px 0 24px}
+.lp-hero-grid{display:grid;gap:12px}
+.lp-h1{font-size:clamp(21px,5.8vw,58px);line-height:1.02;font-stretch:112%;color:var(--on-dark)}
+.lp-sub{font-size:15px;line-height:1.4;color:var(--on-dark-muted);margin-top:8px}
+.lp-area{display:flex;gap:8px;align-items:baseline;margin-top:8px;font-size:12.5px;line-height:1.35;font-weight:600;color:var(--on-dark)}
+.lp-area .tri{width:7px;height:10px}
+.lp-form{border-top:6px solid var(--amber);padding:14px;gap:8px}
+.lp-form .fields{gap:8px;grid-template-columns:1fr 1fr}
+.lp-form .fields .full{grid-column:1/-1}
+.lp-form .field{gap:4px}
+.lp-form .field input{padding:10px 10px;font-size:16px}
+.lp-form .field label{font-size:10.5px;letter-spacing:.08em}
+.lp-form .opt{font-weight:500;letter-spacing:.05em;text-transform:none}
+.lp-form-h{font-family:var(--font-display);font-weight:900;font-stretch:112%;text-transform:uppercase;font-size:19px;line-height:1.05;margin:0}
+.lp-form .form-note{margin-top:-4px}
+.lp-form .btn{padding:15px 18px;font-size:17px}
+.lp-form .btn[disabled]{opacity:.6;cursor:wait}
+@media (min-width:900px){
+  .lp-hero{padding:56px 0 64px}
+  .lp-h1{font-stretch:125%;line-height:.98}
+  .lp-form{gap:12px}
+  .lp-form .fields{gap:12px}
+  .lp-form .field label{font-size:11px;letter-spacing:.14em}
+  .lp-form-h{font-size:24px}
+  .lp-form .field input{padding:12px}
+  .lp-hero-grid{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:56px;align-items:center}
+  .lp-sub{font-size:20px;margin-top:20px}
+  .lp-area{font-size:15px;margin-top:18px}
+  .lp-form{padding:28px}
+}
+
+.lp-proof{background:var(--amber);color:var(--on-amber)}
+.lp-proof-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding-block:16px;text-align:center}
+.lp-proof strong{display:block;font-family:var(--font-display);font-weight:900;font-stretch:125%;font-size:clamp(22px,5vw,40px);line-height:1}
+.lp-proof span{display:block;font-size:12px;line-height:1.25;font-weight:700;margin-top:4px}
+@media (min-width:720px){.lp-proof span{font-size:15px}}
+
+.lp-get{gap:14px;font-size:18px}
+@media (min-width:760px){.lp-get{grid-template-columns:1fr 1fr;column-gap:40px}}
+@media (min-width:860px){.lp-steps{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+.lp-price{background:var(--onyx);color:var(--on-dark);padding:40px 0;text-align:center}
+.lp-price-main{max-width:none;font-family:var(--font-display);font-weight:900;font-stretch:112%;text-transform:uppercase;font-size:clamp(22px,4vw,36px);line-height:1.1}
+.lp-price-sub{max-width:none;margin-top:10px;color:var(--amber);font-weight:700;font-size:18px}
+
+.lp-narrow{max-width:860px}
+.lp-final{display:grid;gap:18px;justify-items:start}
+.lp-final a:not(.btn){color:inherit;font-weight:700}
+.lp-next{margin:0;padding-left:22px;display:grid;gap:10px;color:var(--muted);font-size:18px}
+.lp-next strong{color:var(--ink)}
+.lp a[href^="tel:"]:not(.btn){font-weight:700}
+
+.lp-foot{background:var(--onyx);color:var(--on-dark-muted);padding:24px 0 calc(24px + env(safe-area-inset-bottom,0px));font-size:14px}
+.lp-foot .wrap{display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:space-between}
+.lp-foot a{color:var(--on-dark)}
+.lp-steps .step .n{color:var(--amber-text)}
