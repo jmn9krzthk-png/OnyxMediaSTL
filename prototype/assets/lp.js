@@ -1,4 +1,4 @@
-/* Onyx Media ad landing pages (/lp/*): attribution capture, form validation + Netlify submit,
+/* Onyx Media ad landing pages (/lp/*): attribution capture, form validation + submit to /api/lp-audit,
    Google Ads tag and conversions. Config comes from /lp/ads-config.js (window.ONYX_ADS). */
 (function () {
   var ATTR_KEY = "onyx_lp_attr", SUBMIT_KEY = "onyx_lp_submitted", CONV_KEY = "onyx_lp_conv_fired";
@@ -51,6 +51,7 @@
     PARAMS.concat(["landing_page", "referrer"]).forEach(function (k) {
       var el = form.querySelector('input[name="' + k + '"]'); if (el) el.value = attr[k] || "";
     });
+    var t = form.querySelector("[name=t]"); if (t) t.value = String(Date.now()); // time-on-page bot check (same as /audit)
     var err = form.querySelector(".err"), btn = form.querySelector("button[type=submit]");
     function field(n) { return form.querySelector('[name="' + n + '"]'); }
     function mark(el, ok) { el.setAttribute("aria-invalid", ok ? "false" : "true"); return ok; }
@@ -58,7 +59,7 @@
 
     form.addEventListener("submit", function (ev) {
       ev.preventDefault();
-      var name = field("name"), biz = field("business_name"), phone = field("phone"), email = field("email"), site = field("website");
+      var name = field("name"), biz = field("business"), phone = field("phone"), email = field("email"), site = field("link");
       var bad = [];
       if (!mark(name, name.value.trim().length >= 2)) bad.push("your name");
       if (!mark(biz, biz.value.trim().length >= 2)) bad.push("your business name");
@@ -74,17 +75,22 @@
       }
       showErr("");
       btn.disabled = true; btn.setAttribute("aria-busy", "true");
-      fetch("/", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                   body: new URLSearchParams(new FormData(form)).toString() })
-        .then(function (r) {
-          if (!r.ok) throw new Error("HTTP " + r.status);
-          sset(SUBMIT_KEY, "1");
-          location.href = form.getAttribute("data-next");
-        })
-        .catch(function () {
-          btn.disabled = false; btn.removeAttribute("aria-busy");
-          showErr("Something went wrong sending the form. Please try again, or call/text 636.385.3995.");
+      var data = {};
+      new FormData(form).forEach(function (v, k) { data[k] = v; });
+      var fail = function (msg) {
+        btn.disabled = false; btn.removeAttribute("aria-busy");
+        showErr(msg || "Something went wrong sending the form. Please try again, or call/text 636.385.3995.");
+      };
+      fetch(form.getAttribute("action"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify(data)
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          if (r.ok && j.ok) { sset(SUBMIT_KEY, "1"); location.href = form.getAttribute("data-success"); return; }
+          fail(j.error);
         });
+      }).catch(function () { fail("Couldn't send. Check your connection and try again, or call/text 636.385.3995."); });
     });
   });
 })();

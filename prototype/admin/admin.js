@@ -427,6 +427,11 @@
         "<dt>Runs ads</dt><dd>" + (a.runs_ads === true ? "Yes" : a.runs_ads === false ? "No" : "—") + "</dd>" +
         (a.monthly_ad_spend ? "<dt>Ad spend</dt><dd>" + esc(a.monthly_ad_spend) + "</dd>" : "") +
         (a.biggest_goal ? "<dt>Goal</dt><dd>" + esc(a.biggest_goal) + "</dd>" : "") +
+        [["lead_source", "Lead source"], ["service_interest", "Service"], ["gclid", "gclid"], ["utm_source", "UTM source"],
+         ["utm_medium", "UTM medium"], ["utm_campaign", "UTM campaign"], ["utm_term", "UTM term"], ["utm_content", "UTM content"],
+         ["landing_page", "Landing page"], ["referrer", "Referrer"]].map(function (f) {
+          return a[f[0]] ? "<dt>" + f[1] + '</dt><dd style="overflow-wrap:anywhere">' + esc(a[f[0]]) + "</dd>" : "";
+        }).join("") +
       "</dl>" +
       '<div class="field"><label>Audit status</label><select class="audit-status">' + options(AUDIT_STATUSES, a.status) + "</select></div>" +
       '<div class="field"><label>Audit PDF</label>' +

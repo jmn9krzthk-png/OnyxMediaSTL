@@ -207,3 +207,24 @@ The admin accepts the emailed link or a code typed from the same email. The code
    <p>Or tap this link on the device you're signing in on: <a href="{{ .ConfirmationURL }}">Sign in</a></p>
    ```
 4. **Save**.
+
+## Google Ads landing pages (/lp/paid-ads, /lp/social-media)
+
+The ad landing pages post to `/api/lp-audit` (`netlify/functions/lp-audit.js`). Leads land in the same `leads` and `audit_requests` tables as the /audit form, you get the same alert email (subject `Audit request [lp-paid-ads]: Business`), and the prospect gets a confirmation. Each audit request also stores `lead_source`, `service_interest`, `gclid`, the five UTM values, the landing page and the referrer, shown on the lead in /admin.
+
+**One-time database step (before the first deploy that includes these pages):**
+
+1. Supabase → **SQL Editor** → **+ New query**.
+2. Paste `supabase/migrations/20261121000006_lp_attribution.sql` and click **Run**. It only adds empty (nullable) columns, so the /audit form keeps working. Safe to run twice.
+
+**Google Ads (optional until the conversion actions exist).** In Netlify → Site configuration → Environment variables, add (scope: Builds), then redeploy:
+
+| Key | Value |
+|---|---|
+| `NEXT_PUBLIC_GOOGLE_ADS_ID` | `AW-XXXXXXXXX` |
+| `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL` | label of the form-submit conversion |
+| `NEXT_PUBLIC_GOOGLE_ADS_CALL_LABEL` | label of the click-to-call conversion |
+
+The build command (`python3 tools/lp_config.py`) writes them into `/lp/ads-config.js`. While they're empty, the pages load no Google tag. The form conversion fires on `/lp/thank-you` once per session, only after a real submit; the call conversion fires on any phone-number tap.
+
+**Test:** open `/lp/paid-ads?gclid=test123&utm_source=google&utm_medium=cpc&utm_campaign=test` on the deploy preview, wait a few seconds, submit, and check: redirect to `/lp/thank-you?s=paid-ads`, the alert email subject shows `[lp-paid-ads]`, and the lead in /admin shows the gclid and UTM values. Repeat on `/lp/social-media`.

@@ -1,11 +1,13 @@
 # Netlify settings for onyxmediastl.com
-# Static site: no build step; Netlify publishes the prototype/ folder.
+# Static site: pages are pre-built by tools/build_site.py and committed; Netlify publishes prototype/.
+# The build command only writes prototype/lp/ads-config.js from the Google Ads env vars
+# (NEXT_PUBLIC_GOOGLE_ADS_*). With none set, the ad landing pages load no Google tag.
 # Server code (form handlers) lives in netlify/functions/ and is served at /api/*.
 # Keys are set in Netlify > Site configuration > Environment variables (see .env.example).
 # To pause deploys again (saves credits), add:  ignore = "exit 0"  under [build].
 [build]
   publish = "prototype"
-  command = ""
+  command = "python3 tools/lp_config.py"
 
 [functions]
   directory = "netlify/functions"
@@ -27,3 +29,9 @@
     X-Robots-Tag = "noindex, nofollow"
     Referrer-Policy = "no-referrer"
     Cache-Control = "no-cache"
+
+# Google Ads landing pages: never indexed (also set by a meta tag on each page).
+[[headers]]
+  for = "/lp/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
