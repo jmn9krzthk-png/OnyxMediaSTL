@@ -473,7 +473,7 @@ def industries_hub():
         items = [i for i in INDUSTRIES if i["group"] == key]
         groups += f'<section class="band{" bone" if key in ("auto", "pro") else ""}"><div class="wrap"><div class="band-head"><div class="stack">{eyebrow(label)}<h2 class="display-l">{e(label)}.</h2></div><span></span></div>' + \
             '<div class="ind-grid">' + "".join(f'<a class="card" href="{industry_file(i["slug"])}"><h3 class="display-m" style="font-size:22px">{e(i["name"])}</h3><p>{e(i["intro"].split(". ")[0])}.</p><span class="btn text">See {e(i["name"].lower())} marketing</span></a>' for i in items) + "</div></div></section>"
-    body = page_head("Industries", "Video and ads for service businesses.", "Home services, automotive, pets and local professional services across St. Louis and St. Charles County. Pick your industry to see what we film and what it costs.", "Industries") + groups + cta_band()
+    body = page_head("Industries", "Video and ads for service businesses.", "Home services, automotive, pets and local service businesses across St. Louis and St. Charles County. Pick your industry to see what we film and what it costs.", "Industries") + groups + cta_band()
     return page("industries.html", "Industries We Serve | Video & Social Media Marketing for Service Businesses | Onyx Media St. Louis",
                 "Video production, monthly social content and paid ads for home service, automotive, pet and local service businesses in St. Louis and St. Charles County.", body, "industries.html")
 
