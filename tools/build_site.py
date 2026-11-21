@@ -17,6 +17,7 @@ import html, json, os, pathlib, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from industries import INDUSTRIES, GROUPS
 from cities import EXTRA_CITIES, CITY_FOCUS, CITY_NOTE
+from seo_extra import INDUSTRY_SEO, CITY_SEO, GENERIC_FAQ
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "prototype"
@@ -477,28 +478,76 @@ def industries_hub():
     return page("industries.html", "Industries We Serve | Video & Social Media Marketing for Service Businesses | Onyx Media St. Louis",
                 "Video production, monthly social content and paid ads for home service, automotive, pet and local service businesses in St. Louis and St. Charles County.", body, "industries.html")
 
+# ---------------------------------------------------------------- SEO page helpers (city + industry)
+CP_BY_KEY = {p["key"]: p for p in CONTENT_PLANS}
+AP_BY_KEY = {p["key"]: p for p in AD_PLANS}
+
+def start_offer(i):
+    """(content plan, ad plan or None, why) recommended for an industry."""
+    x = INDUSTRY_SEO[i["slug"]]; c_key, a_key = x["start"]
+    return CP_BY_KEY[c_key], (AP_BY_KEY[a_key] if a_key else None), x["why"]
+
+def start_sentence(i, who):
+    cp, ap, _ = start_offer(i)
+    s = f"{who} usually start with {cp['name']} content at {money(cp['price'])}/mo"
+    return s + (f" plus {ap['name']} at {money(ap['fee'])}/mo and a {money(ap['setup'])} one-time setup" if ap else "") + "."
+
+def seo_pricing(recs, h2, lead, cls="band", city=None):
+    """Short pricing section for city and industry pages; the full tools live on the service pages."""
+    cards = ""
+    if recs:
+        cards = '<div class="grid-3 seo-recs">' + "".join(
+            f'<div class="card"><span class="eyebrow">{e(i["name"] if city else "Where most start")}</span>'
+            f'<h3 class="display-m" style="font-size:22px">{e(start_offer(i)[0]["name"])}' + (f' + {e(start_offer(i)[1]["name"])}' if start_offer(i)[1] else "") + "</h3>"
+            f'<p class="seo-price">{money(start_offer(i)[0]["price"])}/mo content' + (f' + {money(start_offer(i)[1]["fee"])}/mo ads · {money(start_offer(i)[1]["setup"])} setup' if start_offer(i)[1] else "") + "</p>"
+            f'<p>{e(start_offer(i)[2])}</p>' + (f'<a class="btn text" href="{industry_file(i["slug"])}">{e(i["name"])}</a>' if city else "") + "</div>"
+            for i in recs) + "</div>"
+    content = "".join(f"<li>{TRI}<span><strong>{e(p['name'])}</strong> · {money(p['price'])}/mo · {e(p['posts'])} posts a month ({p['reels']} reels, {p['photos']} photo/graphic)</span></li>" for p in CONTENT_PLANS)
+    ads = "".join(f"<li>{TRI}<span><strong>{e(p['name'])}</strong> ({e(p['platforms'])}) · {money(p['fee'])}/mo + {money(p['setup'])} one-time setup</span></li>" for p in AD_PLANS)
+    return f"""<section class="{cls}" id="pricing"><div class="wrap">
+  <div class="band-head"><div class="stack">{eyebrow("Pricing")}<h2 class="display-l">{e(h2)}</h2></div><p class="body-l">{e(lead)}</p></div>
+  {cards}
+  <div class="seo-price-grid">
+    <div class="stack" style="gap:10px"><h3 class="heading">Monthly content</h3><ul class="ticks">{content}</ul><a class="btn text" href="content-creation.html#pricing">Compare content plans</a></div>
+    <div class="stack" style="gap:10px"><h3 class="heading">Paid ads management</h3><ul class="ticks">{ads}</ul><p class="form-note">Ad spend is paid directly to the platforms.</p><a class="btn text" href="paid-advertising.html#pricing">Ad cost calculator</a></div>
+  </div></div></section>"""
+
+def rotate(seq, k):
+    return seq[k % len(seq):] + seq[:k % len(seq)] if seq else seq
+
 def industry_page(i):
-    n = i["name"]; noun = i["noun"]
+    n = i["name"]; noun = i["noun"]; idx = INDUSTRIES.index(i); x = INDUSTRY_SEO[i["slug"]]
     shots = ticks(i["shots"])
     ideas = '<div class="grid-3">' + "".join(f'<div class="card"><span class="eyebrow">Idea {k+1}</span><h3 class="display-m" style="font-size:24px">{e(t)}</h3><p>{e(d)}</p></div>' for k, (t, d) in enumerate(i["ideas"])) + "</div>"
     case = ""
     if i.get("case") is not None:
         case = section("Recent work", f"Work for {noun}.", "", '<div class="cases two" style="max-width:640px">' + case_html(CASES[i["case"]]) + "</div>")
+    gq, ga = GENERIC_FAQ[idx % len(GENERIC_FAQ)]
     faq = [(f"Do you work with {noun} in St. Louis?", f"Yes. We create content and run ads for {noun} across St. Louis, St. Charles County and nearby areas. Our studio is in St. Charles.", False),
+           (x["q"][0], x["q"][1], False),
            (f"What content works best for {noun}?", " ".join(f"{t}: {d}" for t, d in i["ideas"]), False),
-           ("How much does it cost?", "Monthly content plans are $795, $1,495 or $2,195 a month. Ad management is $1,150 or $1,950 a month plus a one-time setup, and you pay ad spend directly to the platforms.", False),
-           ("Is there a contract?", "Most plans are month to month. A special offer may come with a set term, stated before signing. Ask about current specials.", False),
-           ("How fast can we start?", "First posts can go live as soon as the next week.", False)]
-    city_list = '<ul class="areas">' + "".join(f'<li><a href="{city_file(c["slug"])}">{TRI}{e(c["name"])}</a></li>' for c in CITIES[:9]) + f'<li><a href="areas.html">{TRI}All {len(CITIES)} areas</a></li></ul>'
+           (f"What does it cost for {noun}?", start_sentence(i, f"Most {noun}") + " Content plans run $795 to $2,195 a month, and you pay ad spend directly to the platforms.", False),
+           (gq, ga, False)]
+    # Cities that feature this industry first, then a rotating set, so each page links somewhere different.
+    featured = [c for c in CITIES if i["slug"] in CITY_FOCUS.get(c["slug"], [])]
+    picks = (featured + [c for c in rotate(CITIES, idx * 3) if c not in featured])[:8]
+    city_list = '<ul class="areas">' + "".join(f'<li><a href="{city_file(c["slug"])}">{TRI}{e(c["name"])}</a></li>' for c in picks) + f'<li><a href="areas.html">{TRI}All {len(CITIES)} areas</a></li></ul>'
+    same = rotate([j for j in INDUSTRIES if j["group"] == i["group"] and j is not i], idx)
+    others = rotate([j for j in INDUSTRIES if j["group"] != i["group"]], idx * 2)
+    related = '<ul class="areas">' + "".join(f'<li><a href="{industry_file(j["slug"])}">{TRI}{e(j["name"])}</a></li>' for j in (same + others)[:8]) + "</ul>"
+    film = section("What we film", f"Content built for {noun}.", i["season"], shots)
+    plan = section("Content ideas", f"Videos that bring in more {i['jobs']}.", "A few of the formats we plan into your monthly calendar.", ideas, "band bone")
+    price = seo_pricing([i], f"Where {noun} usually start.", x["ads"])
+    blocks = [[film, plan, case, price], [film, price, plan, case], [plan, film, case, price]][idx % 3]
+    proof = [section("Recent shoots", "Shot on real jobs.", f"The kind of footage we capture for {noun}.", gallery(idx, 5), "band dark"), reviews(2, idx + 2)]
+    if idx % 2:
+        proof.reverse()
     body = page_head(f"Marketing for {n.lower()}", f"Video & social media marketing for {noun} in St. Louis.", i["intro"], f"Industries / {n}", "See pricing") + \
-        section("What we film", f"Content built for {noun}.", i["season"], shots) + \
-        section("Content ideas", f"Videos that bring in more {i['jobs']}.", "A few of the formats we plan into your monthly calendar.", ideas, "band bone") + \
-        case + pricing_section("content") + pricing_section("ads", "band bone", anchor=False) + \
-        section("Recent shoots", "Shot on real jobs.", f"The kind of footage we capture for {noun}.", gallery(INDUSTRIES.index(i), 5), "band dark") + reviews(2, INDUSTRIES.index(i) + 2) + \
+        "".join(blocks) + "".join(proof) + \
         section("Where we work", f"Serving {noun} across the metro.", "We come to your job sites, shop or office.", city_list) + \
         section("FAQ", f"Questions from {noun}.", "", faq_html(faq), "band bone") + \
-        section("Other industries", "We also work with.", "", industry_links(i["slug"], 10) + '<div class="btns" style="margin-top:20px"><a class="btn text" href="industries.html">All industries</a></div>') + \
-        cta_band(f"Let's bring in more {i['jobs']}.")
+        section("Related industries", "We also work with.", "", related + '<div class="btns" style="margin-top:20px"><a class="btn text" href="industries.html">All industries</a></div>') + \
+        cta_band(f"Let's bring in more {i['jobs']}.", f"30 minutes. We'll look at what you're posting now, what other {noun} around St. Louis are doing, and what we'd film first.")
     schema = {"@context": "https://schema.org", "@type": "Service", "serviceType": f"Video production and social media marketing for {noun}",
               "provider": {k: v for k, v in BUSINESS.items() if k != "@context"}, "areaServed": "St. Louis, MO"}
     return page(industry_file(i["slug"]), f"Video & Social Media Marketing for {n} in St. Louis | Onyx Media",
@@ -826,17 +875,28 @@ H1_VARIANTS = ["Video production & social media marketing in {n}, MO.", "{n}, MO
 WHY_VARIANTS = [("Why video in {n}", "Be the {n} company people call first."), ("Local to {n}", "Show {n} the work behind your name."),
                 ("Standing out in {n}", "Make {n} customers choose you.")]
 
+CITY_INTRO_VARIANTS = [
+    "We plan, film, edit and post content for {n} businesses, and run Meta and Google ads aimed at {n} and the surrounding area.",
+    "One local team handles it all for {n} companies: the shoot, the edit, the weekly posts and the ads that reach {n} and nearby towns.",
+    "From the first shoot day to the monthly report, we handle content and ads for {n} businesses, aimed at the customers around {n} you actually want.",
+]
+
 def city_page(c):
-    n = c["name"]; idx = CITIES.index(c)
+    n = c["name"]; idx = CITIES.index(c); x = CITY_SEO[c["slug"]]
     focus = [IND_BY_SLUG[s] for s in CITY_FOCUS.get(c["slug"], []) if s in IND_BY_SLUG]
-    faq = [(f"Do you film in {n}?", f"Yes. We shoot on location in {n} and across {c['county']}. Our studio is in St. Charles.", False)]
-    if c["slug"] in CITY_NOTE:
-        q, a = CITY_NOTE[c["slug"]]; faq.append((q, a, False))
+    near_names = [CITY_BY_SLUG[s]["name"] for s in c["near"] if s in CITY_BY_SLUG]
+    near_txt = (", and nearby " + (", ".join(near_names[:-1]) + " and " + near_names[-1] if len(near_names) > 1 else near_names[0])) if near_names else ""
+    faq = [(f"Do you film in {n}?", f"Yes. We shoot on location in {n}, across {c['county']}{near_txt}. Our studio is in St. Charles.", False)]
+    q = CITY_NOTE.get(c["slug"]) or x.get("q")
+    if q:
+        faq.append((q[0], q[1], False))
     if focus:
         faq.append((f"Which {n} businesses do you work with most?", f"Across {n} we often work with " + ", ".join(i["noun"] for i in focus[:-1]) + f" and {focus[-1]['noun']}, plus other home service, automotive and local service businesses.", False))
-    faq += [("How much does it cost?", "Monthly content plans are $795, $1,495 or $2,195 a month. Ad management is $1,150 or $1,950 a month plus a one-time setup, and you pay ad spend directly to the platforms.", False),
-            ("How fast can you start?", "First posts can go live as soon as the next week.", False),
-            ("Is there a contract?", "Most plans are month to month. A special offer may come with a set term, stated before signing. Ask about current specials.", False)]
+        faq.append((f"What does it cost for a {n} business?", "Content plans are $795, $1,495 or $2,195 a month. " + start_sentence(focus[0], f"Around {n}, {focus[0]['noun']}") + " You pay ad spend directly to the platforms.", False))
+    else:
+        faq.append(("How much does it cost?", "Monthly content plans are $795, $1,495 or $2,195 a month. Ad management is $1,150 or $1,950 a month plus a one-time setup, and you pay ad spend directly to the platforms.", False))
+    gq, ga = GENERIC_FAQ[(idx + 2) % len(GENERIC_FAQ)]
+    faq.append((gq, ga, False))
     near = "".join(f'<li><a href="{city_file(s)}">{TRI}{e(CITY_BY_SLUG[s]["name"])}</a></li>' for s in c["near"] if s in CITY_BY_SLUG)
     focus_html = ""
     if focus:
@@ -845,13 +905,21 @@ def city_page(c):
     eb, h2 = WHY_VARIANTS[idx % 3]
     schema = {**BUSINESS, "areaServed": {"@type": "City", "name": f"{n}, MO"}}
     gal = section("Recent shoots", "Shot on real jobs.", f"A sample of the work we make for businesses around {n}.", gallery(idx, 5), "band dark")
-    blocks = [section(eb.format(n=n), h2.format(n=n), c["local"], f'<p class="muted" style="max-width:70ch">We plan, film, edit and post content for {e(n)} businesses, and run Meta and Google ads aimed at {e(n)} and the surrounding area. <a href="content-creation.html">Monthly content</a> starts at $795/mo and <a href="paid-advertising.html">paid ads</a> at $1,150/mo.</p>'), focus_html,
-              pricing_section("content", "band bone" if not focus_html else "band") + pricing_section("ads", "band bone" if focus_html else "band", anchor=False)]
+    intro = CITY_INTRO_VARIANTS[idx % 3].format(n=n)
+    local = section(eb.format(n=n), h2.format(n=n), c["local"],
+        f'<div class="stack" style="gap:14px;max-width:70ch"><p class="muted">{e(intro)}</p><p class="muted"><strong style="color:var(--ink)">Where we shoot:</strong> {e(x["area"])}</p>'
+        f'<p class="muted"><a href="content-creation.html">Monthly content</a> starts at $795/mo and <a href="paid-advertising.html">paid ads</a> at $1,150/mo.</p></div>')
+    price = seo_pricing(focus, f"What {n} businesses usually start with.",
+        f"Most {n} businesses start with one content plan and add ads aimed at {n} and nearby towns when they're ready.",
+        "band" if focus_html else "band bone", city=n)
+    blocks = [local, focus_html, price]
     if idx % 2:
-        blocks = [blocks[0], blocks[2], blocks[1]]
-    body = page_head(f"{n}, MO", H1_VARIANTS[idx % 3].format(n=n), c["intro"], n, "See pricing") + "".join(blocks) + gal + reviews(2, idx) + \
+        blocks = [local, price, focus_html]
+    body = page_head(f"{n}, MO", H1_VARIANTS[idx % 3].format(n=n), c["intro"], n, "See pricing") + "".join(blocks) + \
+        ((gal + reviews(2, idx)) if idx % 3 != 1 else (reviews(2, idx) + gal)) + \
         f"""<section class="band"><div class="wrap"><div class="band-head"><div class="stack">{eyebrow("Nearby")}<h2 class="display-l">We also serve.</h2></div><p class="body-l">Close to {e(n)} and on our regular routes.</p></div><ul class="areas">{near}<li><a href="areas.html">{TRI}All areas</a></li></ul></div></section>""" + \
-        section("FAQ", f"{n} questions.", "", faq_html(faq), "band bone") + cta_band(f"Let's fill your schedule in {n}.")
+        section("FAQ", f"{n} questions.", "", faq_html(faq), "band bone") + \
+        cta_band(f"Let's fill your schedule in {n}.", f"30 minutes. We'll look at what you're posting now, what competitors around {n} are doing, and what we'd film first.")
     return page(city_file(c["slug"]), f"Video Production & Social Media Marketing in {n}, MO | Onyx Media",
                 f"Video production, monthly social content and paid ads for local businesses in {n}, MO ({c['county']}). Content from $795/mo, ads from $1,150/mo.",
                 body, None, extra_head=ld(schema) + faq_ld(faq))
