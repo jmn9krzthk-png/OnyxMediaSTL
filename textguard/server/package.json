@@ -1,0 +1,13 @@
+{
+  "name": "textguard-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TextGuard prototype: compliance archive and supervision server for advisor text messages.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node src/server.js",
+    "simulate": "node scripts/simulate.js",
+    "test": "node --test test/*.test.js"
+  }
+}

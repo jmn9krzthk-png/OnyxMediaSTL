@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TextGuard Supervision</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <section id="login" class="login" hidden>
+    <form id="login-form" class="login-card">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span>TextGuard</div>
+      <h1>Supervision console</h1>
+      <p class="muted">Sign in with the supervisor token printed when the server started.</p>
+      <label>Supervisor token <input id="token" type="password" autocomplete="off" required></label>
+      <label>Your name (recorded on reviews) <input id="reviewer" autocomplete="name" required></label>
+      <button type="submit">Sign in</button>
+      <p id="login-error" class="error" role="alert"></p>
+    </form>
+  </section>
+
+  <div id="app" hidden>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span>TextGuard</div>
+      <nav class="tabs" role="tablist">
+        <button role="tab" data-view="queue" aria-selected="true">Review queue <span id="queue-count" class="pill"></span></button>
+        <button role="tab" data-view="messages">All messages</button>
+        <button role="tab" data-view="devices">Devices <span id="device-alert" class="pill warn" hidden></span></button>
+        <button role="tab" data-view="records">Records &amp; export</button>
+      </nav>
+      <div class="who"><span id="who"></span> <button id="logout" class="link">Sign out</button></div>
+    </header>
+
+    <section class="stats" id="stats"></section>
+
+    <main>
+      <section id="view-list" class="view">
+        <div class="filters">
+          <input id="f-q" type="search" placeholder="Search text, number or advisor">
+          <select id="f-advisor"><option value="">All advisors</option></select>
+          <select id="f-flag"><option value="">Flagged and not</option><option value="true">Flagged only</option></select>
+        </div>
+        <div class="split">
+          <ul id="msg-list" class="msg-list" aria-label="Messages"></ul>
+          <aside id="detail" class="detail"><p class="muted empty">Select a message to see the conversation and record a review.</p></aside>
+        </div>
+      </section>
+
+      <section id="view-devices" class="view" hidden>
+        <div class="panel">
+          <h2>Enroll an advisor's phone</h2>
+          <p class="muted">Creates a single-use code (valid 72 hours) that the advisor types into the TextGuard app. The app shows the recording disclosure and the advisor must accept it before capture starts.</p>
+          <form id="enroll-form" class="inline-form">
+            <input id="e-id" placeholder="Advisor ID, e.g. FA-20418" required>
+            <input id="e-name" placeholder="Advisor name" required>
+            <button type="submit">Create code</button>
+          </form>
+          <p id="enroll-result" class="code-result" aria-live="polite"></p>
+        </div>
+        <div class="panel">
+          <h2>Enrolled devices</h2>
+          <div class="table-wrap"><table id="device-table"></table></div>
+        </div>
+      </section>
+
+      <section id="view-records" class="view" hidden>
+        <div class="panel">
+          <h2>Record integrity</h2>
+          <p class="muted">Every captured message and every review is appended to a hash-chained log. Editing, deleting or reordering any record breaks the chain at that point. There is no edit or delete function.</p>
+          <button id="verify">Verify all records now</button>
+          <div id="verify-result" aria-live="polite"></div>
+        </div>
+        <div class="panel">
+          <h2>Export for an exam or audit</h2>
+          <form id="export-form" class="inline-form">
+            <select id="x-advisor"><option value="">All advisors</option></select>
+            <label>From <input id="x-from" type="date"></label>
+            <label>To <input id="x-to" type="date"></label>
+            <select id="x-format"><option value="csv">Spreadsheet (CSV)</option><option value="jsonl">Records with hashes (JSONL)</option></select>
+            <button type="submit">Download</button>
+          </form>
+        </div>
+        <div class="panel">
+          <h2>Supervision lexicon</h2>
+          <p class="muted" id="lexicon-version"></p>
+          <div class="table-wrap"><table id="lexicon-table"></table></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TextGuard</string>
+    <string name="disclosure_title">Business texts on this phone are recorded</string>
+    <string name="disclosure_body">Your firm is required by SEC Rule 17a-4 and FINRA Rule 4511 to keep copies of business communications, and by FINRA Rule 3110 to review them.\n\nWhile TextGuard is enrolled, every text message, picture message and phone call log entry on this phone (incoming and outgoing, including personal ones) is copied to your firm\'s archive, where compliance staff may read it. Messages sent before enrollment are not collected. Call audio is not recorded.\n\nA notification stays on screen while recording is active. Capture stops if this app is removed or your device is unenrolled, and your firm is notified.</string>
+    <string name="disclosure_accept">I have read this and agree that texts and call logs on this phone will be recorded</string>
+    <string name="server_url">Archive server</string>
+    <string name="enrollment_code">Enrollment code from your compliance team</string>
+    <string name="enroll">Enroll this phone</string>
+    <string name="sync_now">Sync now</string>
+    <string name="grant_permissions">Grant permissions</string>
+    <string name="channel_name">Compliance recording</string>
+    <string name="notification_title">Compliance recording is on</string>
+    <string name="notification_text">Texts and call logs on this phone are archived by your firm.</string>
+</resources>
