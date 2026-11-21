@@ -54,3 +54,4 @@
 | 50 | 2026-11-21 | Pricing | No specials by default. Optional per-proposal: setup fee waived if the first month is paid upfront (prospect picks at acceptance) | Done (branch) | Toggle is off unless Max ticks it |
 | 51 | 2026-11-21 | Phase 2 | Mark as won → creates client, client_packages, onboarding row (convert_lead_to_client, admin only); Add lead and Edit contact in admin | Done (branch) | |
 | 52 | 2026-11-21 | Site | Law Firms and Insurance Agencies industry pages removed (41 industries remain); old URLs 301 to /industries.html; Clayton, Creve Coeur, St. Louis and Maryland Heights copy and featured industries updated; "Local & professional services" group renamed "Local services" | Done | |
+| 53 | 2026-11-21 | Site | Audit form shortened to name, business, email, mobile and website (website required). Socials, Google profile, ads questions and goal removed; Max looks those up | Done | Old fields still accepted by /api/audit |

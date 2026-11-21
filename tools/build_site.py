@@ -689,7 +689,7 @@ def contact_page():
   {contact_form()}
 </div></section>
 <section class="band bone"><div class="wrap audit-teaser">
-  <div class="stack" style="gap:12px">{eyebrow("Not ready for a call?")}<h2 class="display-m">Get a free content &amp; ads audit.</h2><p class="body-l">Send us your links. We'll review your website, social pages, Google profile and ads, and send back the top things we'd fix or film first.</p></div>
+  <div class="stack" style="gap:12px">{eyebrow("Not ready for a call?")}<h2 class="display-m">Get a free content &amp; ads audit.</h2><p class="body-l">Send us your website. We'll review it, your social pages, Google profile and ads, and send back the top things we'd fix or film first.</p></div>
   <div class="btns"><a class="btn primary" href="audit.html">Request my free audit {TRI}</a></div>
 </div></section>"""
     return page("contact.html", "Contact | Onyx Media St. Louis", "Contact Onyx Media for monthly video content and paid ads, and book a free 30-minute call.", body, "contact.html")
@@ -741,13 +741,9 @@ def thanks_page():
 
 # ---------------------------------------------------------------- audit request (free content & ads audit)
 NO_SITEMAP = {"thank-you.html", "audit-thank-you.html", "proposal.html"}
-# Keep in sync with AD_SPEND in netlify/functions/audit.js
-AD_SPEND_OPTIONS = ["Not running ads", "Under $500", "$500–$1,500", "$1,500–$3,000", "$3,000–$7,000", "$7,000+"]
 
 def audit_form():
-    biz = "".join(f"<option>{e(o)}</option>" for o in BIZ_OPTIONS)
-    spend = "".join(f"<option>{e(o)}</option>" for o in AD_SPEND_OPTIONS)
-    return f"""<form class="quote-card js-lead" name="audit" method="POST" action="/api/audit" data-success="audit-thank-you.html" data-need-link="true" novalidate>
+    return f"""<form class="quote-card js-lead" name="audit" method="POST" action="/api/audit" data-success="audit-thank-you.html" novalidate>
   <input type="hidden" name="t" value="">
   <p class="hp" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
   {eyebrow("Request your free audit")}
@@ -756,23 +752,11 @@ def audit_form():
     <div class="field"><label for="a-biz">Business name <span class="req">*</span></label><input id="a-biz" name="business" autocomplete="organization" required></div>
     <div class="field"><label for="a-email">Email <span class="req">*</span></label><input id="a-email" name="email" type="email" autocomplete="email" required></div>
     <div class="field"><label for="a-phone">Mobile <span class="req">*</span></label><input id="a-phone" name="phone" type="tel" autocomplete="tel" required></div>
-    <div class="field full"><label for="a-ind">Industry</label><select id="a-ind" name="industry">{biz}</select></div>
+    <div class="field full"><label for="a-site">Website <span class="req">*</span></label><input id="a-site" name="website" type="url" inputmode="url" placeholder="yourbusiness.com" autocomplete="url" required></div>
   </div>
-  <p class="form-note" style="margin:6px 0 0">Your links (add at least one)</p>
-  <div class="fields two">
-    <div class="field full"><label for="a-site">Website</label><input id="a-site" name="website" type="url" inputmode="url" placeholder="yourbusiness.com" autocomplete="url"></div>
-    <div class="field"><label for="a-fb">Facebook page</label><input id="a-fb" name="facebook_url" type="url" inputmode="url" placeholder="facebook.com/…"></div>
-    <div class="field"><label for="a-ig">Instagram</label><input id="a-ig" name="instagram_url" type="url" inputmode="url" placeholder="instagram.com/…"></div>
-    <div class="field full"><label for="a-gbp">Google Business Profile link</label><input id="a-gbp" name="google_business_url" type="url" inputmode="url" placeholder="Paste your Google Maps / g.page link"></div>
-  </div>
-  <div class="fields two">
-    <fieldset class="choice"><legend>Running ads now?</legend><label><input type="radio" name="runs_ads" value="yes"><span>Yes</span></label><label><input type="radio" name="runs_ads" value="no"><span>No</span></label></fieldset>
-    <div class="field"><label for="a-spend">Monthly ad spend</label><select id="a-spend" name="monthly_ad_spend">{spend}</select></div>
-    <div class="field full"><label for="a-goal">Biggest goal for the next 6 months</label><textarea id="a-goal" name="biggest_goal" placeholder="More booked jobs, fill the slow season, hire techs, launch a new service…"></textarea></div>
-  </div>
-  <p class="err" role="alert" hidden>Add your name, business name, a 10-digit mobile number, a full email address and at least one link.</p>
+  <p class="err" role="alert" hidden>Add your name, business name, a 10-digit mobile number, a full email address and your website.</p>
   <button class="btn primary" type="submit">Request my free audit {TRI}</button>
-  <p class="form-note">Free, no obligation. We'll email it to you within 3 business days.</p>
+  <p class="form-note">Free, no obligation. We'll find your social pages and Google profile from there and email your audit within 3 business days.</p>
 </form>"""
 
 def audit_page():
@@ -785,7 +769,7 @@ def audit_page():
     body = f"""<section class="page-head with-form"><div class="wrap">
   <div class="stack" style="gap:20px"><p class="crumbs"><a href="./">Home</a> / Free audit</p>{eyebrow("Free · No obligation")}
     <h1 class="display-l">Get a free content &amp; ads audit.</h1>
-    <p class="body-l">Send us your links. We'll look at your website, social pages, Google profile and ads the way your customers see them, and send back a short, plain-English audit.</p>
+    <p class="body-l">Send us your website. We'll look at it, your social pages, Google profile and ads the way your customers see them, and send back a short, plain-English audit.</p>
     <div class="stack" style="gap:12px"><span class="eyebrow">{TRI}What you get</span>{ticks(gets)}</div>
     <p class="form-note">Prefer to talk? Call or text {PHONE}, or <a href="contact.html">book a 30-minute call</a>.</p>
   </div>
@@ -793,7 +777,7 @@ def audit_page():
 </div></section>
 """ + section("How it works", "Three steps. No pitch deck.", "", '<ol class="steps three">' + "".join(
         f'<li class="step"><span class="n">0{i+1}</span><h3>{e(t)}</h3><p>{e(d)}</p></li>' for i, (t, d) in enumerate([
-            ("Send your links", "Two minutes. Your website, Facebook, Instagram and Google profile, whichever you have."),
+            ("Send your website", "Thirty seconds: your name, contact info and website. We find the rest."),
             ("We dig in", "We review everything and compare you with a few competitors near you."),
             ("You get the audit", "A short write-up by email with what to fix first. Use it with us or on your own.")])) + "</ol>", "band") + \
         cta_band("Rather just talk it through?", "30 minutes. We'll look at what you're posting now and what we'd film first.")
