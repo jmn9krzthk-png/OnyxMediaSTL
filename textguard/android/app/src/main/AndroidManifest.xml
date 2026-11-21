@@ -18,6 +18,21 @@
 
     <uses-feature android:name="android.hardware.telephony" android:required="true" />
 
+    <!-- Consumer messaging apps with no business capture route. Android 11+
+         only reveals installed apps that are declared here; TextGuard checks
+         for these specific apps so supervisors can follow up. It does not read
+         anything inside them. -->
+    <queries>
+        <package android:name="org.thoughtcrime.securesms" />
+        <package android:name="org.telegram.messenger" />
+        <package android:name="com.whatsapp" />
+        <package android:name="com.facebook.orca" />
+        <package android:name="com.tencent.mm" />
+        <package android:name="com.snapchat.android" />
+        <package android:name="com.viber.voip" />
+        <package android:name="com.discord" />
+    </queries>
+
     <application
         android:name=".TextGuardApp"
         android:allowBackup="false"

@@ -45,7 +45,13 @@ const fmtAgo = (iso) => {
   return `${Math.round(s / 86400)} d ago`;
 };
 const DECISION_LABEL = { no_action: 'No action needed', approved: 'Approved', follow_up: 'Follow up with advisor', escalated: 'Escalated to compliance' };
-const DIRECTION_LABEL = { inbound: 'from', outbound: 'to', missed: 'missed call from', rejected: 'declined call from', voicemail: 'voicemail from', failed: 'failed send to' };
+const CHANNEL = {
+  sms: 'SMS', mms: 'MMS', call: 'Call', email: 'Email', facebook: 'Messenger', instagram: 'Instagram', whatsapp: 'WhatsApp',
+  linkedin: 'LinkedIn', teams: 'Teams', zoom: 'Zoom', slack: 'Slack', x: 'X', web_chat: 'Web chat',
+};
+const STATUS = { capturing: ['Capturing', 'ok'], waiting: ['Connected, no messages yet', 'neutral'], needs_accounts: ['Connected, no accounts mapped', 'warn'], not_connected: ['Not connected', 'neutral'] };
+const who = (m) => m.counterpartyName ? `${m.counterpartyName} (${m.counterparties[0]})` : m.counterparties.join(', ');
+const DIRECTION_LABEL = { internal: 'internal with', inbound: 'from', outbound: 'to', missed: 'missed call from', rejected: 'declined call from', voicemail: 'voicemail from', failed: 'failed send to' };
 
 // ---------- state ----------
 let view = 'queue';
@@ -80,12 +86,14 @@ function setView(v) {
   for (const t of document.querySelectorAll('.tabs button')) t.setAttribute('aria-selected', String(t.dataset.view === v));
   $('#view-list').hidden = !(v === 'queue' || v === 'messages');
   $('#view-devices').hidden = v !== 'devices';
+  $('#view-channels').hidden = v !== 'channels';
   $('#view-records').hidden = v !== 'records';
   $('#f-flag').hidden = v === 'queue';
   selectedId = null;
   renderDetailEmpty();
   if (v === 'queue' || v === 'messages') loadList();
   if (v === 'devices') loadDevices();
+  if (v === 'channels') loadChannels();
   if (v === 'records') renderRecords();
 }
 
@@ -104,6 +112,9 @@ async function loadSummary() {
     h('div', { class: `stat ${s.devicesWithIssues ? 'alert' : 'good'}` }, h('div', { class: 'n' }, s.devicesWithIssues), h('div', { class: 'l' }, 'Phones needing attention')),
     h('div', { class: 'stat' }, h('div', { class: 'n text' }, cats[0]?.[0] ?? 'None'), h('div', { class: 'l' }, 'Top flag category in queue')),
   );
+  if ($('#f-channel').options.length === 1) {
+    $('#f-channel').append(...Object.entries(CHANNEL).map(([id, label]) => h('option', { value: id }, label)));
+  }
   for (const sel of [$('#f-advisor'), $('#x-advisor')]) {
     const keep = sel.value;
     sel.replaceChildren(h('option', { value: '' }, 'All advisors'), ...s.advisors.map((a) => h('option', { value: a.id }, `${a.name} (${a.id})`)));
@@ -116,11 +127,13 @@ let searchTimer;
 $('#f-q').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(loadList, 250); });
 $('#f-advisor').addEventListener('change', loadList);
 $('#f-flag').addEventListener('change', loadList);
+$('#f-channel').addEventListener('change', loadList);
 
 async function loadList() {
   const p = new URLSearchParams({ limit: '300' });
   if ($('#f-q').value.trim()) p.set('q', $('#f-q').value.trim());
   if ($('#f-advisor').value) p.set('advisor', $('#f-advisor').value);
+  if ($('#f-channel').value) p.set('channel', $('#f-channel').value);
   if (view === 'queue') p.set('status', 'pending');
   else if ($('#f-flag').value) p.set('flagged', $('#f-flag').value);
   const { messages, total } = await api(`/api/v1/messages?${p}`);
@@ -132,14 +145,14 @@ async function loadList() {
   list.replaceChildren(
     ...messages.map((m) =>
       h('li', { tabindex: '0', 'aria-current': String(m.messageId === selectedId), onclick: () => select(m.messageId), onkeydown: (e) => e.key === 'Enter' && select(m.messageId), 'data-id': m.messageId },
-        h('div', { class: 'row1' }, h('span', {}, h('b', {}, m.advisorName), ` ${DIRECTION_LABEL[m.direction] ?? ''} ${m.counterparties.join(', ')}`), h('span', { class: 'time' }, fmtTime(m.sentAt))),
-        h('div', { class: 'body' }, m.channel === 'call' ? `Phone call${m.durationSec ? `, ${Math.round(m.durationSec / 60)} min` : ''}` : m.body || (m.attachments.length ? `[${m.attachments.length} attachment]` : '')),
+        h('div', { class: 'row1' }, h('span', {}, h('span', { class: `ch ch-${m.channel}` }, CHANNEL[m.channel] ?? m.channel), ' ', h('b', {}, m.advisorName), ` ${DIRECTION_LABEL[m.direction] ?? ''} ${who(m)}`), h('span', { class: 'time' }, fmtTime(m.sentAt))),
+        h('div', { class: 'body' }, m.subject ? `${m.subject} · ${m.body}` : m.channel === 'call' ? `Phone call${m.durationSec ? `, ${Math.round(m.durationSec / 60)} min` : ''}` : m.body || (m.attachments.length ? `[${m.attachments.length} attachment]` : '')),
         (m.flags.length || m.review) && h('div', { class: 'tags' },
           [...new Set(m.flags.map((f) => f.category))].map((c) => h('span', { class: 'tag' }, c)),
           m.review && h('span', { class: 'tag ok' }, DECISION_LABEL[m.review.decision])),
       ),
     ),
-    total > messages.length ? h('li', { class: 'empty' }, `Showing ${messages.length} of ${total}. Narrow the search to see more.`) : null,
+    total > messages.length ? h('li', { class: 'empty' }, `Showing ${messages.length} of ${total}. Narrow the search to see more.`) : '',
   );
 }
 
@@ -171,7 +184,8 @@ async function select(id) {
   for (const li of document.querySelectorAll('#msg-list li')) li.setAttribute('aria-current', String(li.dataset.id === id));
   const { message: m, reviews } = await api(`/api/v1/messages/${id}`);
   // Conversation context: everything this advisor exchanged with the same number.
-  const p = new URLSearchParams({ advisor: m.advisorId, counterparty: m.counterparties[0] ?? '', order: 'asc', limit: '200' });
+  const p = new URLSearchParams({ advisor: m.advisorId, order: 'asc', limit: '200', channel: m.channel });
+  if (m.threadId) p.set('thread', m.threadId); else p.set('counterparty', m.counterparties[0] ?? '');
   const { messages: thread } = await api(`/api/v1/messages?${p}`);
 
   const decisionInputs = Object.entries(DECISION_LABEL).map(([value, label], i) =>
@@ -181,7 +195,7 @@ async function select(id) {
 
   $('#detail').replaceChildren(
     h('header', {},
-      h('div', {}, h('h2', {}, `${m.advisorName} and ${m.counterparties.join(', ')}`), h('div', { class: 'muted' }, `${m.advisorId} · ${m.channel.toUpperCase()} · sent ${new Date(m.sentAt).toLocaleString()}`)),
+      h('div', {}, h('h2', {}, m.subject || `${m.advisorName} and ${who(m)}`), h('div', { class: 'muted' }, `${CHANNEL[m.channel] ?? m.channel} · ${m.advisorName} (${m.advisorId}) ${DIRECTION_LABEL[m.direction] ?? ''} ${who(m)}${m.account ? ` · account ${m.account}` : ''} · ${new Date(m.sentAt).toLocaleString()}`)),
       h('div', { class: 'tags' }, m.flags.map((f) => h('span', { class: 'tag', title: `Rule ${f.rule}, lexicon ${m.lexiconVersion}` }, `${f.category}: "${f.match}"`))),
     ),
     h('div', { class: 'thread' },
@@ -189,7 +203,8 @@ async function select(id) {
         if (t.channel === 'call') {
           return h('div', { class: 'bubble call' }, `${t.direction === 'outbound' ? 'Outgoing' : t.direction === 'inbound' ? 'Incoming' : 'Missed'} call · ${t.durationSec ? `${Math.round(t.durationSec / 60)} min · ` : ''}${fmtTime(t.sentAt)}`);
         }
-        return h('div', { class: `bubble ${t.direction === 'outbound' ? 'out' : ''} ${t.messageId === m.messageId ? 'focus' : ''}` },
+        return h('div', { class: `bubble ${t.direction === 'outbound' ? 'out' : ''} ${t.channel === 'email' ? 'mail' : ''} ${t.messageId === m.messageId ? 'focus' : ''}` },
+          t.channel === 'email' && h('span', { class: 'mail-head' }, `${t.direction === 'outbound' ? `To ${t.counterparties.join(', ')}` : `From ${t.counterparties.join(', ')}`}${t.subject ? ` · ${t.subject}` : ''}`),
           ...highlight(t.body, t.flags),
           t.attachments.map((a) => h('span', { class: 'meta' }, `Attachment: ${a.contentType}${a.size ? `, ${Math.round(a.size / 1024)} KB` : ''}`)),
           h('span', { class: 'meta' }, `${fmtTime(t.sentAt)}${t.flags.length && t.messageId !== m.messageId ? ' · flagged' : ''}`));
@@ -214,6 +229,36 @@ async function select(id) {
       h('div', { class: 'hash' }, `Record #${m.seq} · SHA-256 ${m.hash}`),
     ),
   );
+}
+
+// ---------- channels ----------
+async function loadChannels() {
+  const { channels, connectors, offChannelApps } = await api('/api/v1/channels');
+  $('#channel-table').replaceChildren(
+    h('thead', {}, h('tr', {}, ['Channel', 'How it is captured', 'Status', 'Archived', 'Flagged', 'Last message'].map((t) => h('th', {}, t)))),
+    h('tbody', {}, channels.map((c) => h('tr', {},
+      h('td', {}, h('span', { class: `ch ch-${c.id}` }, CHANNEL[c.id] ?? c.id), h('div', { class: 'muted' }, c.label)),
+      h('td', {}, c.capture),
+      h('td', {}, h('span', { class: `tag ${STATUS[c.status][1]}` }, STATUS[c.status][0]), c.accounts ? h('div', { class: 'muted' }, `${c.accounts} account${c.accounts === 1 ? '' : 's'}`) : null),
+      h('td', { class: 'num' }, c.messages.toLocaleString()),
+      h('td', { class: 'num' }, c.flagged.toLocaleString()),
+      h('td', {}, c.lastMessageAt ? fmtAgo(c.lastMessageAt) : '—'),
+    ))),
+  );
+  $('#connector-table').replaceChildren(
+    h('thead', {}, h('tr', {}, ['Source', 'Channels', 'Accounts mapped', 'Received', 'Last activity'].map((t) => h('th', {}, t)))),
+    h('tbody', {}, [
+      h('tr', {}, h('td', {}, h('b', {}, 'TextGuard Android app')), h('td', {}, 'SMS, MMS, Call'), h('td', {}, 'Enrolled phones (see Devices)'), h('td'), h('td')),
+      ...connectors.map((c) => h('tr', {},
+        h('td', {}, h('b', {}, c.name), c.lastError ? h('div', {}, h('span', { class: 'tag' }, c.lastError)) : null),
+        h('td', {}, c.channels.map((id) => CHANNEL[id]).join(', ')),
+        h('td', {}, Object.entries(c.accounts).map(([acct, a]) => h('div', {}, `${a.advisorName}: `, h('span', { class: 'hash' }, acct)))),
+        h('td', { class: 'num' }, `${c.received.toLocaleString()}${c.unmatched ? ` (+${c.unmatched} unmapped)` : ''}`),
+        h('td', {}, fmtAgo(c.lastReceivedAt)),
+      )),
+    ]),
+  );
+  $('#offchannel').replaceChildren(...offChannelApps.map((a) => h('span', { class: 'tag neutral' }, a)), h('span', { class: 'tag neutral' }, 'iMessage'), h('span', { class: 'tag neutral' }, 'Personal email'));
 }
 
 // ---------- devices ----------

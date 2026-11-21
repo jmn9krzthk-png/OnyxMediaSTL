@@ -118,3 +118,119 @@ test('static files cannot escape the public folder', async () => {
   const r = await req('/..%2f..%2fpackage.json');
   assert.equal(r.status, 404);
 });
+
+// ---------- multi-channel connectors ----------
+import crypto from 'node:crypto';
+
+async function connector(type, extra = {}) {
+  const r = await req('/api/v1/connectors', { token: ADMIN, body: { type, name: `${type} test`, ...extra } });
+  assert.equal(r.status, 201);
+  return r.body;
+}
+const mapAcct = (id, account, advisorId, advisorName = advisorId) =>
+  req(`/api/v1/connectors/${id}/accounts`, { token: ADMIN, body: { account, advisorId, advisorName } });
+
+async function postSigned(path, secret, payload) {
+  const raw = JSON.stringify(payload);
+  const sig = `sha256=${crypto.createHmac('sha256', secret).update(raw).digest('hex')}`;
+  const res = await fetch(base + path, { method: 'POST', headers: { 'content-type': 'application/json', 'x-hub-signature-256': sig }, body: raw });
+  return res.status;
+}
+
+test('journaled email is parsed, attributed to the advisor and flagged', async () => {
+  const c = await connector('email');
+  await mapAcct(c.connector.connectorId, 'Dana.Whitfield@firm.example', 'FA-E1', 'Dana');
+  const eml = [
+    'From: "Pat Client" <pat@client.example>',
+    'To: Dana Whitfield <dana.whitfield@firm.example>',
+    'Subject: =?utf-8?B?UXVlc3Rpb24gYWJvdXQgbXkgSVJB?=',
+    'Message-ID: <abc123@client.example>',
+    'Date: Fri, 20 Nov 2026 15:04:00 -0600',
+    'MIME-Version: 1.0',
+    'Content-Type: multipart/mixed; boundary="b1"',
+    '',
+    '--b1',
+    'Content-Type: text/plain; charset=utf-8',
+    'Content-Transfer-Encoding: quoted-printable',
+    '',
+    'Can you wire $10,000 to my new account? Thanks =E2=80=94 Pat',
+    '--b1',
+    'Content-Type: application/pdf; name="form.pdf"',
+    'Content-Disposition: attachment; filename="form.pdf"',
+    'Content-Transfer-Encoding: base64',
+    '',
+    Buffer.from('%PDF-1.4 test').toString('base64'),
+    '--b1--',
+    '',
+  ].join('\r\n');
+  const send = () => fetch(`${base}/api/v1/ingest/email`, { method: 'POST', headers: { authorization: `Bearer ${c.connectorKey}`, 'content-type': 'message/rfc822' }, body: eml }).then((r) => r.json());
+  assert.equal((await send()).accepted, 1);
+  assert.equal((await send()).duplicates, 1);
+  const { body } = await req('/api/v1/messages?channel=email&advisor=FA-E1', { token: ADMIN });
+  const m = body.messages[0];
+  assert.equal(m.subject, 'Question about my IRA');
+  assert.equal(m.direction, 'inbound');
+  assert.deepEqual(m.counterparties, ['pat@client.example']);
+  assert.match(m.body, /Thanks — Pat/);
+  assert.equal(m.attachments[0].name, 'form.pdf');
+  assert.ok(m.flags.some((f) => f.rule === 'wire'));
+  assert.equal(m.sentAt, '2026-11-20T21:04:00.000Z');
+});
+
+test('Meta webhook archives Messenger and Instagram messages and rejects forged calls', async () => {
+  const c = await connector('meta', { appSecret: 'meta-secret' });
+  const id = c.connector.connectorId;
+  await mapAcct(id, 'PAGE1', 'FA-M1');
+  const verify = await fetch(`${base}/api/v1/webhooks/meta/${id}?hub.mode=subscribe&hub.verify_token=${c.verifyToken}&hub.challenge=42`);
+  assert.equal(await verify.text(), '42');
+  const payload = { object: 'page', entry: [{ id: 'PAGE1', messaging: [
+    { sender: { id: 'PSID9' }, recipient: { id: 'PAGE1' }, timestamp: 1763700000000, message: { mid: 'm1', text: 'Is this guaranteed?' } },
+    { sender: { id: 'PAGE1' }, recipient: { id: 'PSID9' }, timestamp: 1763700060000, message: { mid: 'm2', text: 'No investment is guaranteed.', is_echo: true } },
+    { sender: { id: 'PSID9' }, recipient: { id: 'PAGE1' }, timestamp: 1763700070000, read: { watermark: 1 } },
+  ] }] };
+  assert.equal(await postSigned(`/api/v1/webhooks/meta/${id}`, 'wrong-secret', payload), 401);
+  assert.equal(await postSigned(`/api/v1/webhooks/meta/${id}`, 'meta-secret', payload), 200);
+  const ig = { object: 'instagram', entry: [{ id: 'PAGE1', messaging: [{ sender: { id: 'IG7' }, recipient: { id: 'PAGE1' }, timestamp: 1763700100000, message: { mid: 'ig1', text: 'hi' } }] }] };
+  assert.equal(await postSigned(`/api/v1/webhooks/meta/${id}`, 'meta-secret', ig), 200);
+  const { body } = await req('/api/v1/messages?advisor=FA-M1&order=asc', { token: ADMIN });
+  assert.deepEqual(body.messages.map((m) => [m.channel, m.direction]), [['facebook', 'inbound'], ['facebook', 'outbound'], ['instagram', 'inbound']]);
+  assert.ok(body.messages[0].flags.length);
+});
+
+test('WhatsApp Business webhook archives received and sent messages', async () => {
+  const c = await connector('whatsapp', { appSecret: 'wa-secret' });
+  const id = c.connector.connectorId;
+  await mapAcct(id, '1098765', 'FA-W1');
+  const payload = { object: 'whatsapp_business_account', entry: [{ id: 'WABA', changes: [
+    { field: 'messages', value: { metadata: { phone_number_id: '1098765' }, contacts: [{ wa_id: '13145550100', profile: { name: 'Lee' } }],
+      messages: [{ from: '13145550100', id: 'wamid.1', timestamp: '1763700000', type: 'text', text: { body: 'Can you text my personal cell?' } }] } },
+    { field: 'smb_message_echoes', value: { metadata: { phone_number_id: '1098765' },
+      message_echoes: [{ from: '13145559999', to: '13145550100', id: 'wamid.2', timestamp: '1763700100', type: 'text', text: { body: 'Please keep it here.' } }] } },
+  ] }] };
+  assert.equal(await postSigned(`/api/v1/webhooks/whatsapp/${id}`, 'wa-secret', payload), 200);
+  const { body } = await req('/api/v1/messages?channel=whatsapp&order=asc', { token: ADMIN });
+  assert.equal(body.total, 2);
+  assert.equal(body.messages[0].counterpartyName, 'Lee');
+  assert.equal(body.messages[1].direction, 'outbound');
+});
+
+test('partner connector accepts mapped accounts and its channels only', async () => {
+  const c = await connector('connector');
+  await mapAcct(c.connector.connectorId, 'urn:li:person:abc', 'FA-L1');
+  const msg = { clientMsgId: 'li-1', channel: 'linkedin', account: 'urn:li:person:abc', direction: 'inbound', counterparty: 'urn:li:person:xyz', counterpartyName: 'Sam', body: 'Saw your post', sentAt: new Date().toISOString() };
+  const r = await req('/api/v1/ingest/messages', { token: c.connectorKey, body: { messages: [msg, { ...msg, clientMsgId: 'li-2', account: 'nobody' }, { ...msg, clientMsgId: 'li-3', channel: 'sms' }] } });
+  assert.deepEqual(r.body.accepted, ['li-1']);
+  assert.equal(r.body.rejected.length, 2);
+  const ch = await req('/api/v1/channels', { token: ADMIN });
+  assert.equal(ch.body.channels.find((x) => x.id === 'linkedin').status, 'capturing');
+  assert.equal(ch.body.channels.find((x) => x.id === 'slack').status, 'waiting');
+  assert.equal(ch.body.channels.find((x) => x.id === 'zoom').status, 'waiting');
+});
+
+test('heartbeat reports off-channel apps as a device issue', async () => {
+  const { deviceToken } = await enrollDevice('FA-H1', 'Heartbeat');
+  await req('/api/v1/devices/heartbeat', { token: deviceToken, body: { permissions: { READ_SMS: true }, installedPackages: ['org.thoughtcrime.securesms', 'com.example.calc'] } });
+  const { body } = await req('/api/v1/devices', { token: ADMIN });
+  const d = body.devices.find((x) => x.advisorId === 'FA-H1');
+  assert.ok(d.issues.some((i) => i.includes('Signal')));
+});

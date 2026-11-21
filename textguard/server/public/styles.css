@@ -126,3 +126,16 @@ th { color: var(--muted); font-weight: 600; font-size: 12px; }
   .msg-list { max-height: 50vh; }
   .detail { position: static; }
 }
+
+/* Channel chips: small, quiet, distinguishable at a glance. */
+.ch { display: inline-block; font-size: 10.5px; font-weight: 600; letter-spacing: .3px; text-transform: uppercase; padding: 1px 6px; border-radius: 5px; background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); vertical-align: 1px; white-space: nowrap; }
+.ch-email { color: #2f6f4f; border-color: #bfe0cd; background: #eef8f2; }
+.ch-facebook { color: #1b5fd1; border-color: #c4d7f7; background: #eef4fe; }
+.ch-instagram { color: #b3256b; border-color: #f0c4da; background: #fdf0f6; }
+.ch-whatsapp { color: #127a52; border-color: #b8e5d2; background: #ecf9f3; }
+.ch-linkedin { color: #0a5a96; border-color: #bcd6ec; background: #eef5fb; }
+.ch-teams { color: #4b4fae; border-color: #d0d1f0; background: #f3f3fc; }
+.tag.warn { background: var(--warn-bg); color: var(--warn); }
+td.num { font-variant-numeric: tabular-nums; }
+.bubble.mail { max-width: 92%; border-radius: 8px; }
+.mail-head { display: block; font-size: 11.5px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }

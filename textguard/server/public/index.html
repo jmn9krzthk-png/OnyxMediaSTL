@@ -26,6 +26,7 @@
       <nav class="tabs" role="tablist">
         <button role="tab" data-view="queue" aria-selected="true">Review queue <span id="queue-count" class="pill"></span></button>
         <button role="tab" data-view="messages">All messages</button>
+        <button role="tab" data-view="channels">Channels</button>
         <button role="tab" data-view="devices">Devices <span id="device-alert" class="pill warn" hidden></span></button>
         <button role="tab" data-view="records">Records &amp; export</button>
       </nav>
@@ -39,11 +40,29 @@
         <div class="filters">
           <input id="f-q" type="search" placeholder="Search text, number or advisor">
           <select id="f-advisor"><option value="">All advisors</option></select>
+          <select id="f-channel"><option value="">All channels</option></select>
           <select id="f-flag"><option value="">Flagged and not</option><option value="true">Flagged only</option></select>
         </div>
         <div class="split">
           <ul id="msg-list" class="msg-list" aria-label="Messages"></ul>
           <aside id="detail" class="detail"><p class="muted empty">Select a message to see the conversation and record a review.</p></aside>
+        </div>
+      </section>
+
+      <section id="view-channels" class="view" hidden>
+        <div class="panel">
+          <h2>Where advisors are contacted</h2>
+          <p class="muted">Each channel is captured through the platform's own business or compliance route. Channels with no such route are prohibited by policy and flagged when they come up in conversation or are installed on an enrolled phone.</p>
+          <div class="table-wrap"><table id="channel-table"></table></div>
+        </div>
+        <div class="panel">
+          <h2>Connected sources</h2>
+          <div class="table-wrap"><table id="connector-table"></table></div>
+        </div>
+        <div class="panel">
+          <h2>Not capturable: prohibit and watch for</h2>
+          <p class="muted">Personal accounts on these apps have no business capture route. TextGuard flags messages that try to move a conversation onto them and reports enrolled phones that have them installed.</p>
+          <div id="offchannel" class="tags"></div>
         </div>
       </section>
 

@@ -1,10 +1,10 @@
 # TextGuard (prototype)
 
-Compliance archiving and supervision for advisors who text clients from Android phones.
+Compliance archiving and supervision for every channel clients use to reach financial advisors: text, phone, email, Facebook Messenger, Instagram, WhatsApp, LinkedIn, Teams, Zoom, Slack, X and website chat.
 
 Broker-dealers must keep business texts (SEC Rule 17a-4, FINRA Rule 4511) and review them (FINRA Rule 3110). TextGuard does three things:
 
-1. **Captures.** An Android app copies every SMS, MMS and call-log entry on an enrolled phone, whichever texting app sent it, and uploads it to the firm's archive.
+1. **Captures.** An Android app copies every SMS, MMS and call-log entry on an enrolled phone. Server-side connectors bring in email, social and collaboration messages through each platform's own business or compliance route (see "Channels").
 2. **Preserves.** The server appends each record to a hash-chained, append-only log. Edits, deletions and reordering are detectable, and there is no edit or delete function.
 3. **Supervises.** A web console flags risky language (guarantees, off-channel requests, complaints, wire instructions, gifts, SSNs) into a review queue. Reviewers record decisions, and the console shows which phones have stopped capturing.
 
@@ -40,6 +40,24 @@ Run the tests:
 cd textguard/server && npm test
 ```
 
+## Channels
+
+Each channel is captured only through a route the platform supports for business use.
+
+| Channel | How it's captured | Endpoint |
+|---|---|---|
+| SMS, MMS, calls | Android app on the enrolled phone | `POST /api/v1/messages` |
+| Email | Journaling rule in Microsoft 365, Google Workspace or any mail server sends a copy of every message as raw .eml | `POST /api/v1/ingest/email` |
+| Facebook Messenger, Instagram DMs | Meta webhook for the advisor's **business** Page or Instagram account, signature-checked | `/api/v1/webhooks/meta/:id` |
+| WhatsApp | WhatsApp Business Platform webhook for a **firm-owned** number: received messages, plus sent ones from the WhatsApp Business app via message echoes | `/api/v1/webhooks/whatsapp/:id` |
+| LinkedIn, Teams, Zoom, Slack, X, website chat | A connector job pulls from the platform's compliance API or partner feed and posts normalized JSON | `POST /api/v1/ingest/messages` |
+
+**Setup.** Create a connector (`POST /api/v1/connectors` with `type` set to `email`, `meta`, `whatsapp` or `connector`). Then map each platform account to an advisor with `POST /api/v1/connectors/:id/accounts`. The account is an email address, Page id, WhatsApp phone-number id, LinkedIn member id and so on. Messages for unmapped accounts are counted but not archived. The **Channels** page in the console shows each channel's status, volume and connected sources.
+
+**Not capturable.** Personal Signal, Telegram, WeChat, iMessage, personal WhatsApp and personal Messenger have no business capture route. The only legitimate approach is the one firms already use: prohibit them, flag messages that try to move a client onto them, and have the Android app report when one is installed on an enrolled phone. The app checks for specific apps and reads nothing inside them. Reading other apps' notifications, or shipping modified copies of consumer apps, is fragile and gets incomplete data. It's also how TeleMessage ended up with the breach that leaked archived messages in 2025.
+
+**Partner programs still needed.** LinkedIn, Microsoft Teams export and Slack Discovery each require approval or a partnership before their compliance APIs can be used. The connector endpoint is ready, but those pullers aren't written yet.
+
 ## Run the Android app
 
 1. Open `textguard/android` in Android Studio and run it on an emulator (API 26+).
@@ -55,7 +73,7 @@ On a physical phone, put the server behind HTTPS and set its URL on the enrollme
 
 ## Verified so far
 
-- Server: 8 automated tests pass (auth, enrollment, flagging, de-duplication, revocation, tamper detection, CSV formula injection, path traversal). Demo data loads, and the console works in desktop and phone layouts.
+- Server: 13 automated tests pass. They cover auth, enrollment, flagging, de-duplication, revocation, tamper detection, CSV formula injection, path traversal, email parsing, Meta and WhatsApp webhooks (including forged signatures), partner feeds and off-channel app reporting. Demo data loads, and the console works in desktop and phone layouts.
 - Android: all Kotlin sources compile against the real Android 14 framework classes. WorkManager was checked against signature stubs, because Google's Maven host wasn't reachable from the build machine. **The APK has not been built or run on a device yet.** First step in Android Studio: build, then run the emulator walkthrough above.
 
 ## Known gaps
@@ -83,4 +101,6 @@ Smaller independent broker-dealers and RIAs buy faster and with less procurement
 
 Device (bearer device token): `POST /api/v1/devices/enroll`, `POST /api/v1/messages` (batches of up to 500, idempotent on `clientMsgId`), `POST /api/v1/devices/heartbeat`.
 
-Supervisor (bearer admin token): `GET /api/v1/summary`, `GET /api/v1/messages?q=&advisor=&counterparty=&flagged=&status=pending|reviewed&from=&to=`, `GET /api/v1/messages/:id`, `POST /api/v1/messages/:id/reviews`, `POST /api/v1/enrollment-codes`, `GET /api/v1/devices`, `POST /api/v1/devices/:id/revoke`, `GET /api/v1/ledger/verify`, `GET /api/v1/export?format=csv|jsonl`.
+Connectors: `POST /api/v1/ingest/email` (bearer connector key, raw .eml), `POST /api/v1/ingest/messages` (bearer connector key, JSON batch), `GET|POST /api/v1/webhooks/meta/:id` and `/api/v1/webhooks/whatsapp/:id` (Meta verify token and `X-Hub-Signature-256`).
+
+Supervisor (bearer admin token): `GET /api/v1/summary`, `GET /api/v1/channels`, `POST /api/v1/connectors`, `POST /api/v1/connectors/:id/accounts`, `GET /api/v1/messages?q=&advisor=&channel=&thread=&counterparty=&flagged=&status=pending|reviewed&from=&to=`, `GET /api/v1/messages/:id`, `POST /api/v1/messages/:id/reviews`, `POST /api/v1/enrollment-codes`, `GET /api/v1/devices`, `POST /api/v1/devices/:id/revoke`, `GET /api/v1/ledger/verify`, `GET /api/v1/export?format=csv|jsonl`.

@@ -175,6 +175,21 @@ object DeviceStatus {
         "READ_CALL_LOG" to Manifest.permission.READ_CALL_LOG,
     )
 
+    /** Must match the <queries> list in AndroidManifest.xml. */
+    private val OFF_CHANNEL_PACKAGES = listOf(
+        "org.thoughtcrime.securesms", "org.telegram.messenger", "com.whatsapp", "com.facebook.orca",
+        "com.tencent.mm", "com.snapchat.android", "com.viber.voip", "com.discord",
+    )
+
+    fun installedOffChannelApps(context: Context): List<String> = OFF_CHANNEL_PACKAGES.filter { pkg ->
+        try {
+            context.packageManager.getPackageInfo(pkg, 0)
+            true
+        } catch (_: android.content.pm.PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
     fun missingPermissions(context: Context): List<String> {
         val needed = PERMISSIONS.values.toMutableList()
         if (Build.VERSION.SDK_INT >= 33) needed += Manifest.permission.POST_NOTIFICATIONS
@@ -194,6 +209,7 @@ object DeviceStatus {
             // integration should set this. The prototype reports false.
             .put("rcsDisabledByPolicy", false)
             .put("pendingUploads", pending)
+            .put("installedPackages", org.json.JSONArray(installedOffChannelApps(context)))
             .put("appVersion", BuildConfig.VERSION_NAME)
             .put("batteryOptimizationExempt", pm?.isIgnoringBatteryOptimizations(context.packageName) == true)
     }
