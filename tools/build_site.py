@@ -17,6 +17,7 @@ import html, json, os, pathlib, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from industries import INDUSTRIES, GROUPS
 from cities import EXTRA_CITIES, CITY_FOCUS, CITY_NOTE
+from seo_extra import INDUSTRY_SEO, CITY_SEO, GENERIC_FAQ
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "prototype"
@@ -224,8 +225,8 @@ def faq_html(items):
                ('<span><span class="tag">CONFIRM WITH MAX</span></span>' if confirm else "") + "</div></details>"
     return out + "</div>"
 
-def head(title, desc, path, extra=""):
-    robots = "index,follow" if INDEXABLE else "noindex,nofollow"
+def head(title, desc, path, extra="", noindex=False):
+    robots = "index,follow" if INDEXABLE and not noindex else "noindex,nofollow"
     canon = SITE_URL + "/" + ("" if path == "index.html" else path)
     return f"""<title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
@@ -263,7 +264,7 @@ def footer():
     <div class="stack" style="gap:14px"><a class="logo" href="./"><img src="media/logo-light.webp" alt="Onyx Media" width="150" height="62"></a>
       <address class="nap"><span>Onyx Media · St. Charles, MO</span><span>Video, monthly content and paid ads for home service and automotive businesses</span><span>{PHONE} · {(f'<a href="mailto:{e(EMAIL)}">{e(EMAIL)}</a>' if EMAIL else e(EMAIL_SHOWN))}</span></address>
       <p class="faith-line">{TRI}Built on faith, honest work and doing right by people.</p></div>
-    <div><h4>Services</h4><ul><li><a href="content-creation.html">Monthly content</a></li><li><a href="paid-advertising.html">Paid advertising</a></li><li><a href="industries.html">Industries</a></li><li><a href="areas.html">Areas</a></li><li><a href="work.html">Work</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
+    <div><h4>Services</h4><ul><li><a href="content-creation.html">Monthly content</a></li><li><a href="paid-advertising.html">Paid advertising</a></li><li><a href="industries.html">Industries</a></li><li><a href="areas.html">Areas</a></li><li><a href="work.html">Work</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li><li><a href="audit.html">Free content &amp; ads audit</a></li></ul></div>
     <div><h4>Follow</h4><ul><li><a href="https://www.facebook.com/OnyxMediastl">Facebook</a></li><li><a href="{INSTAGRAM}">Instagram</a></li><li><a href="{GOOGLE_REVIEW}">Leave us a Google review</a></li></ul></div>
     <div><h4>Where we work</h4><ul><li><a href="areas.html">Areas we serve →</a></li><li><a href="industries.html">Industries we serve →</a></li></ul></div>
   </div>
@@ -271,8 +272,8 @@ def footer():
   <div class="legal caption"><span>© 2026 ONYX HTZ LLC</span><span><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms</a></span></div>
 </div></footer>"""
 
-def page(path, title, desc, body, active=None, extra_head="", fragment=False):
-    h = head(title, desc, path, extra_head)
+def page(path, title, desc, body, active=None, extra_head="", fragment=False, noindex=False):
+    h = head(title, desc, path, extra_head, noindex)
     rest = header(active) + "\n<main>\n" + body + "\n</main>\n" + footer() + '\n<script src="assets/site.js"></script>\n'
     if fragment:
         return h + "\n" + rest
@@ -287,9 +288,9 @@ BIZ_OPTIONS = ["HVAC", "Plumbing", "Electrical", "Roofing & exteriors", "Remodel
 
 def contact_form():
     opts = "".join(f"<option>{e(o)}</option>" for o in BIZ_OPTIONS)
-    return f"""<form class="quote-card js-lead" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="thank-you.html" novalidate>
-  <input type="hidden" name="form-name" value="contact">
-  <p class="hp"><label>Leave this empty <input name="bot-field" tabindex="-1"></label></p>
+    return f"""<form class="quote-card js-lead" name="contact" method="POST" action="/api/contact" data-success="thank-you.html" novalidate>
+  <input type="hidden" name="t" value="">
+  <p class="hp" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
   {eyebrow("Send 5 quick details")}
   <div class="fields two">
     <div class="field"><label for="c-name">Name <span class="req">*</span></label><input id="c-name" name="name" autocomplete="name" required></div>
@@ -306,7 +307,7 @@ def contact_form():
     <div class="field full"><label for="c-site">Website</label><input id="c-site" name="website" type="url" placeholder="https://"></div>
     <div class="field full"><label for="c-msg">What do you want more of?</label><textarea id="c-msg" name="message" placeholder="More install jobs, fuller bays, fewer price shoppers…"></textarea></div>
   </div></details>
-  <p class="err" hidden>Add your name, a 10-digit mobile number and a full email address.</p>
+  <p class="err" role="alert" hidden>Add your name, a 10-digit mobile number and a full email address.</p>
   <button class="btn primary" type="submit">Book my 30-minute call {TRI}</button>
 </form>"""
 
@@ -410,7 +411,7 @@ def hero():
       <p class="lead"><strong>Onyx Media films your business, posts it every week, and runs the ads that make your phone ring.</strong> One local team for service businesses across St. Louis and St. Charles County.</p>
       <div class="hero-ctas">
         <a class="btn primary big" href="contact.html">Contact Us {TRI}</a>
-        <a class="btn ghost-light big" href="paid-advertising.html">Paid Advertising</a>
+        <a class="btn ghost-light big" href="audit.html">Get a Free Audit</a>
       </div>
           </div>
   </div>
@@ -473,32 +474,80 @@ def industries_hub():
         items = [i for i in INDUSTRIES if i["group"] == key]
         groups += f'<section class="band{" bone" if key in ("auto", "pro") else ""}"><div class="wrap"><div class="band-head"><div class="stack">{eyebrow(label)}<h2 class="display-l">{e(label)}.</h2></div><span></span></div>' + \
             '<div class="ind-grid">' + "".join(f'<a class="card" href="{industry_file(i["slug"])}"><h3 class="display-m" style="font-size:22px">{e(i["name"])}</h3><p>{e(i["intro"].split(". ")[0])}.</p><span class="btn text">See {e(i["name"].lower())} marketing</span></a>' for i in items) + "</div></div></section>"
-    body = page_head("Industries", "Video and ads for service businesses.", "Home services, automotive, pets and local professional services across St. Louis and St. Charles County. Pick your industry to see what we film and what it costs.", "Industries") + groups + cta_band()
+    body = page_head("Industries", "Video and ads for service businesses.", "Home services, automotive, pets and local service businesses across St. Louis and St. Charles County. Pick your industry to see what we film and what it costs.", "Industries") + groups + cta_band()
     return page("industries.html", "Industries We Serve | Video & Social Media Marketing for Service Businesses | Onyx Media St. Louis",
                 "Video production, monthly social content and paid ads for home service, automotive, pet and local service businesses in St. Louis and St. Charles County.", body, "industries.html")
 
+# ---------------------------------------------------------------- SEO page helpers (city + industry)
+CP_BY_KEY = {p["key"]: p for p in CONTENT_PLANS}
+AP_BY_KEY = {p["key"]: p for p in AD_PLANS}
+
+def start_offer(i):
+    """(content plan, ad plan or None, why) recommended for an industry."""
+    x = INDUSTRY_SEO[i["slug"]]; c_key, a_key = x["start"]
+    return CP_BY_KEY[c_key], (AP_BY_KEY[a_key] if a_key else None), x["why"]
+
+def start_sentence(i, who):
+    cp, ap, _ = start_offer(i)
+    s = f"{who} usually start with {cp['name']} content at {money(cp['price'])}/mo"
+    return s + (f" plus {ap['name']} at {money(ap['fee'])}/mo and a {money(ap['setup'])} one-time setup" if ap else "") + "."
+
+def seo_pricing(recs, h2, lead, cls="band", city=None):
+    """Short pricing section for city and industry pages; the full tools live on the service pages."""
+    cards = ""
+    if recs:
+        cards = '<div class="grid-3 seo-recs">' + "".join(
+            f'<div class="card"><span class="eyebrow">{e(i["name"] if city else "Where most start")}</span>'
+            f'<h3 class="display-m" style="font-size:22px">{e(start_offer(i)[0]["name"])}' + (f' + {e(start_offer(i)[1]["name"])}' if start_offer(i)[1] else "") + "</h3>"
+            f'<p class="seo-price">{money(start_offer(i)[0]["price"])}/mo content' + (f' + {money(start_offer(i)[1]["fee"])}/mo ads · {money(start_offer(i)[1]["setup"])} setup' if start_offer(i)[1] else "") + "</p>"
+            f'<p>{e(start_offer(i)[2])}</p>' + (f'<a class="btn text" href="{industry_file(i["slug"])}">{e(i["name"])}</a>' if city else "") + "</div>"
+            for i in recs) + "</div>"
+    content = "".join(f"<li>{TRI}<span><strong>{e(p['name'])}</strong> · {money(p['price'])}/mo · {e(p['posts'])} posts a month ({p['reels']} reels, {p['photos']} photo/graphic)</span></li>" for p in CONTENT_PLANS)
+    ads = "".join(f"<li>{TRI}<span><strong>{e(p['name'])}</strong> ({e(p['platforms'])}) · {money(p['fee'])}/mo + {money(p['setup'])} one-time setup</span></li>" for p in AD_PLANS)
+    return f"""<section class="{cls}" id="pricing"><div class="wrap">
+  <div class="band-head"><div class="stack">{eyebrow("Pricing")}<h2 class="display-l">{e(h2)}</h2></div><p class="body-l">{e(lead)}</p></div>
+  {cards}
+  <div class="seo-price-grid">
+    <div class="stack" style="gap:10px"><h3 class="heading">Monthly content</h3><ul class="ticks">{content}</ul><a class="btn text" href="content-creation.html#pricing">Compare content plans</a></div>
+    <div class="stack" style="gap:10px"><h3 class="heading">Paid ads management</h3><ul class="ticks">{ads}</ul><p class="form-note">Ad spend is paid directly to the platforms.</p><a class="btn text" href="paid-advertising.html#pricing">Ad cost calculator</a></div>
+  </div></div></section>"""
+
+def rotate(seq, k):
+    return seq[k % len(seq):] + seq[:k % len(seq)] if seq else seq
+
 def industry_page(i):
-    n = i["name"]; noun = i["noun"]
+    n = i["name"]; noun = i["noun"]; idx = INDUSTRIES.index(i); x = INDUSTRY_SEO[i["slug"]]
     shots = ticks(i["shots"])
     ideas = '<div class="grid-3">' + "".join(f'<div class="card"><span class="eyebrow">Idea {k+1}</span><h3 class="display-m" style="font-size:24px">{e(t)}</h3><p>{e(d)}</p></div>' for k, (t, d) in enumerate(i["ideas"])) + "</div>"
     case = ""
     if i.get("case") is not None:
         case = section("Recent work", f"Work for {noun}.", "", '<div class="cases two" style="max-width:640px">' + case_html(CASES[i["case"]]) + "</div>")
+    gq, ga = GENERIC_FAQ[idx % len(GENERIC_FAQ)]
     faq = [(f"Do you work with {noun} in St. Louis?", f"Yes. We create content and run ads for {noun} across St. Louis, St. Charles County and nearby areas. Our studio is in St. Charles.", False),
+           (x["q"][0], x["q"][1], False),
            (f"What content works best for {noun}?", " ".join(f"{t}: {d}" for t, d in i["ideas"]), False),
-           ("How much does it cost?", "Monthly content plans are $795, $1,495 or $2,195 a month. Ad management is $1,150 or $1,950 a month plus a one-time setup, and you pay ad spend directly to the platforms.", False),
-           ("Is there a contract?", "Most plans are month to month. A special offer may come with a set term, stated before signing. Ask about current specials.", False),
-           ("How fast can we start?", "First posts can go live as soon as the next week.", False)]
-    city_list = '<ul class="areas">' + "".join(f'<li><a href="{city_file(c["slug"])}">{TRI}{e(c["name"])}</a></li>' for c in CITIES[:9]) + f'<li><a href="areas.html">{TRI}All {len(CITIES)} areas</a></li></ul>'
+           (f"What does it cost for {noun}?", start_sentence(i, f"Most {noun}") + " Content plans run $795 to $2,195 a month, and you pay ad spend directly to the platforms.", False),
+           (gq, ga, False)]
+    # Cities that feature this industry first, then a rotating set, so each page links somewhere different.
+    featured = [c for c in CITIES if i["slug"] in CITY_FOCUS.get(c["slug"], [])]
+    picks = (featured + [c for c in rotate(CITIES, idx * 3) if c not in featured])[:8]
+    city_list = '<ul class="areas">' + "".join(f'<li><a href="{city_file(c["slug"])}">{TRI}{e(c["name"])}</a></li>' for c in picks) + f'<li><a href="areas.html">{TRI}All {len(CITIES)} areas</a></li></ul>'
+    same = rotate([j for j in INDUSTRIES if j["group"] == i["group"] and j is not i], idx)
+    others = rotate([j for j in INDUSTRIES if j["group"] != i["group"]], idx * 2)
+    related = '<ul class="areas">' + "".join(f'<li><a href="{industry_file(j["slug"])}">{TRI}{e(j["name"])}</a></li>' for j in (same + others)[:8]) + "</ul>"
+    film = section("What we film", f"Content built for {noun}.", i["season"], shots)
+    plan = section("Content ideas", f"Videos that bring in more {i['jobs']}.", "A few of the formats we plan into your monthly calendar.", ideas, "band bone")
+    price = seo_pricing([i], f"Where {noun} usually start.", x["ads"])
+    blocks = [[film, plan, case, price], [film, price, plan, case], [plan, film, case, price]][idx % 3]
+    proof = [section("Recent shoots", "Shot on real jobs.", f"The kind of footage we capture for {noun}.", gallery(idx, 5), "band dark"), reviews(2, idx + 2)]
+    if idx % 2:
+        proof.reverse()
     body = page_head(f"Marketing for {n.lower()}", f"Video & social media marketing for {noun} in St. Louis.", i["intro"], f"Industries / {n}", "See pricing") + \
-        section("What we film", f"Content built for {noun}.", i["season"], shots) + \
-        section("Content ideas", f"Videos that bring in more {i['jobs']}.", "A few of the formats we plan into your monthly calendar.", ideas, "band bone") + \
-        case + pricing_section("content") + pricing_section("ads", "band bone", anchor=False) + \
-        section("Recent shoots", "Shot on real jobs.", f"The kind of footage we capture for {noun}.", gallery(INDUSTRIES.index(i), 5), "band dark") + reviews(2, INDUSTRIES.index(i) + 2) + \
+        "".join(blocks) + "".join(proof) + \
         section("Where we work", f"Serving {noun} across the metro.", "We come to your job sites, shop or office.", city_list) + \
         section("FAQ", f"Questions from {noun}.", "", faq_html(faq), "band bone") + \
-        section("Other industries", "We also work with.", "", industry_links(i["slug"], 10) + '<div class="btns" style="margin-top:20px"><a class="btn text" href="industries.html">All industries</a></div>') + \
-        cta_band(f"Let's bring in more {i['jobs']}.")
+        section("Related industries", "We also work with.", "", related + '<div class="btns" style="margin-top:20px"><a class="btn text" href="industries.html">All industries</a></div>') + \
+        cta_band(f"Let's bring in more {i['jobs']}.", f"30 minutes. We'll look at what you're posting now, what other {noun} around St. Louis are doing, and what we'd film first.")
     schema = {"@context": "https://schema.org", "@type": "Service", "serviceType": f"Video production and social media marketing for {noun}",
               "provider": {k: v for k, v in BUSINESS.items() if k != "@context"}, "areaServed": "St. Louis, MO"}
     return page(industry_file(i["slug"]), f"Video & Social Media Marketing for {n} in St. Louis | Onyx Media",
@@ -687,6 +736,10 @@ def contact_page():
   <div class="stack">{eyebrow("Fastest: pick a time")}{(f'<div class="calendly-inline-widget" data-url="{e(CALENDLY_URL)}?hide_gdpr_banner=1" style="min-width:300px;height:680px"></div><script src="https://assets.calendly.com/assets/external/widget.js" async></script><p class="form-note">Calendar not loading? <a href="{e(CALENDLY_URL)}">Book on Calendly</a></p>') if CALENDLY_URL else '<div class="slot">Calendly booking calendar · 30-minute calls<br>Add the Calendly link in tools/build_site.py</div>'}
   <address class="nap muted"><strong style="color:var(--ink)">Onyx Media</strong><span>St. Charles, MO · Serving the St. Louis metro</span><span>Call or text {PHONE}</span><span>{(f'<a href="mailto:{e(EMAIL)}">{e(EMAIL)}</a>' if EMAIL else e(EMAIL_SHOWN))}</span></address></div>
   {contact_form()}
+</div></section>
+<section class="band bone"><div class="wrap audit-teaser">
+  <div class="stack" style="gap:12px">{eyebrow("Not ready for a call?")}<h2 class="display-m">Get a free content &amp; ads audit.</h2><p class="body-l">Send us your website. We'll review it, your social pages, Google profile and ads, and send back the top things we'd fix or film first.</p></div>
+  <div class="btns"><a class="btn primary" href="audit.html">Request my free audit {TRI}</a></div>
 </div></section>"""
     return page("contact.html", "Contact | Onyx Media St. Louis", "Contact Onyx Media for monthly video content and paid ads, and book a free 30-minute call.", body, "contact.html")
 
@@ -735,22 +788,115 @@ def thanks_page():
 <div class="btns"><a class="btn secondary" href="work.html">See Our Work</a></div></div></section>"""
     return page("thank-you.html", "Thanks | Onyx Media", "Thanks for reaching out to Onyx Media.", body)
 
+# ---------------------------------------------------------------- audit request (free content & ads audit)
+NO_SITEMAP = {"thank-you.html", "audit-thank-you.html", "proposal.html"}
+
+def audit_form():
+    return f"""<form class="quote-card js-lead" name="audit" method="POST" action="/api/audit" data-success="audit-thank-you.html" novalidate>
+  <input type="hidden" name="t" value="">
+  <p class="hp" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+  {eyebrow("Request your free audit")}
+  <div class="fields two">
+    <div class="field"><label for="a-name">Your name <span class="req">*</span></label><input id="a-name" name="name" autocomplete="name" required></div>
+    <div class="field"><label for="a-biz">Business name <span class="req">*</span></label><input id="a-biz" name="business" autocomplete="organization" required></div>
+    <div class="field"><label for="a-email">Email <span class="req">*</span></label><input id="a-email" name="email" type="email" autocomplete="email" required></div>
+    <div class="field"><label for="a-phone">Mobile <span class="req">*</span></label><input id="a-phone" name="phone" type="tel" autocomplete="tel" required></div>
+    <div class="field full"><label for="a-site">Website <span class="req">*</span></label><input id="a-site" name="website" type="url" inputmode="url" placeholder="yourbusiness.com" autocomplete="url" required></div>
+  </div>
+  <p class="err" role="alert" hidden>Add your name, business name, a 10-digit mobile number, a full email address and your website.</p>
+  <button class="btn primary" type="submit">Request my free audit {TRI}</button>
+  <p class="form-note">Free, no obligation. We'll find your social pages and Google profile from there and email your audit within 3 business days.</p>
+</form>"""
+
+def audit_page():
+    gets = ["Website check: speed on a phone, clear calls to action, how easy it is to call or book",
+            "Facebook and Instagram review: how often you post, what's working, what's missing",
+            "Google Business Profile: photos, reviews, categories and posts",
+            "Ads check (if you run them): targeting, creative and wasted spend",
+            "How you stack up against 2–3 local competitors",
+            "The top 3 things we'd fix or film first"]
+    body = f"""<section class="page-head with-form"><div class="wrap">
+  <div class="stack" style="gap:20px"><p class="crumbs"><a href="./">Home</a> / Free audit</p>{eyebrow("Free · No obligation")}
+    <h1 class="display-l">Get a free content &amp; ads audit.</h1>
+    <p class="body-l">Send us your website. We'll look at it, your social pages, Google profile and ads the way your customers see them, and send back a short, plain-English audit.</p>
+    <div class="stack" style="gap:12px"><span class="eyebrow">{TRI}What you get</span>{ticks(gets)}</div>
+    <p class="form-note">Prefer to talk? Call or text {PHONE}, or <a href="contact.html">book a 30-minute call</a>.</p>
+  </div>
+  {audit_form()}
+</div></section>
+""" + section("How it works", "Three steps. No pitch deck.", "", '<ol class="steps three">' + "".join(
+        f'<li class="step"><span class="n">0{i+1}</span><h3>{e(t)}</h3><p>{e(d)}</p></li>' for i, (t, d) in enumerate([
+            ("Send your website", "Thirty seconds: your name, contact info and website. We find the rest."),
+            ("We dig in", "We review everything and compare you with a few competitors near you."),
+            ("You get the audit", "A short write-up by email with what to fix first. Use it with us or on your own.")])) + "</ol>", "band") + \
+        cta_band("Rather just talk it through?", "30 minutes. We'll look at what you're posting now and what we'd film first.")
+    return page("audit.html", "Free Content & Ads Audit | Onyx Media St. Louis",
+                "Get a free audit of your website, Facebook, Instagram, Google Business Profile and ads from Onyx Media in St. Louis.",
+                body, "audit.html")
+
+def audit_thanks_page():
+    body = f"""<section class="band"><div class="wrap stack" style="gap:22px">{eyebrow("Audit requested")}<h1 class="display-l">Got it. Your audit is in the queue.</h1>
+<ol class="muted" style="display:grid;gap:10px;padding-left:20px;margin:0"><li>Check your inbox for a confirmation email (look in spam if you don't see it).</li><li>We review your website, social pages, Google profile and ads.</li><li>Within 3 business days, you'll get your audit by email.</li></ol>
+<div class="btns"><a class="btn primary" href="contact.html">Book a 30-minute call {TRI}</a><a class="btn secondary" href="work.html">See Our Work</a></div></div></section>"""
+    return page("audit-thank-you.html", "Audit Requested | Onyx Media", "Thanks for requesting a free audit from Onyx Media.", body)
+
+# ---------------------------------------------------------------- proposal (private link from Max; filled in by assets/proposal.js)
+def proposal_page():
+    body = f"""<section class="page-head"><div class="wrap"><div class="stack" style="gap:16px;max-width:900px">{eyebrow("Your proposal")}
+  <h1 class="display-l" id="pTitle">Loading your proposal…</h1><p class="body-l" id="pLead">Prepared by Max Fisher, Onyx Media.</p></div></div></section>
+<section class="band"><div class="wrap proposal" id="proposal" hidden>
+  <div class="stack" style="gap:24px">
+    <div class="stack" style="gap:12px">{eyebrow("What's included")}<div class="p-packages" id="pPackages"></div></div>
+    <div class="p-note" id="pNotes" hidden><span class="eyebrow">{TRI}A note from Max</span><p id="pNotesText"></p></div>
+  </div>
+  <div class="stack" style="gap:16px">
+    <div class="quote-card p-totals" id="pTotals"></div>
+    <form class="quote-card" id="acceptForm" novalidate>
+      <input type="hidden" name="t" value="">
+      <p class="hp" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+      {eyebrow("Ready to start?")}
+      <fieldset class="choice p-prepay" id="pPrepay" hidden><legend>Setup fee</legend></fieldset>
+      <div class="field"><label for="pName">Your full name <span class="req">*</span></label><input id="pName" name="name" autocomplete="name" required></div>
+      <div class="field"><label for="pNote">Anything we should know? (optional)</label><textarea id="pNote" name="note" placeholder="Preferred start date, questions…"></textarea></div>
+      <p class="err" role="alert" hidden></p>
+      <button class="btn primary" type="submit">Accept proposal {TRI}</button>
+      <p class="form-note">Accepting lets Max prepare your invoice and service agreement. Nothing is charged and nothing is binding until you sign the agreement.</p>
+    </form>
+    <div class="quote-card" id="pAccepted" hidden>{eyebrow("Accepted")}<p id="pAcceptedText"></p></div>
+    <p class="form-note">Questions? Call or text {PHONE} or reply to the email this link came in.</p>
+  </div>
+</div>
+<div class="wrap" id="pError" hidden><p class="body-l"></p></div></section>"""
+    return page("proposal.html", "Your Proposal | Onyx Media", "Your Onyx Media proposal.", body,
+                extra_head='<meta name="referrer" content="no-referrer">\n<script src="assets/proposal.js" defer></script>', noindex=True)
+
 H1_VARIANTS = ["Video production & social media marketing in {n}, MO.", "{n}, MO video production and social media marketing.",
                "Social media video and ads for {n}, MO businesses."]
 WHY_VARIANTS = [("Why video in {n}", "Be the {n} company people call first."), ("Local to {n}", "Show {n} the work behind your name."),
                 ("Standing out in {n}", "Make {n} customers choose you.")]
 
+CITY_INTRO_VARIANTS = [
+    "We plan, film, edit and post content for {n} businesses, and run Meta and Google ads aimed at {n} and the surrounding area.",
+    "One local team handles it all for {n} companies: the shoot, the edit, the weekly posts and the ads that reach {n} and nearby towns.",
+    "From the first shoot day to the monthly report, we handle content and ads for {n} businesses, aimed at the customers around {n} you actually want.",
+]
+
 def city_page(c):
-    n = c["name"]; idx = CITIES.index(c)
+    n = c["name"]; idx = CITIES.index(c); x = CITY_SEO[c["slug"]]
     focus = [IND_BY_SLUG[s] for s in CITY_FOCUS.get(c["slug"], []) if s in IND_BY_SLUG]
-    faq = [(f"Do you film in {n}?", f"Yes. We shoot on location in {n} and across {c['county']}. Our studio is in St. Charles.", False)]
-    if c["slug"] in CITY_NOTE:
-        q, a = CITY_NOTE[c["slug"]]; faq.append((q, a, False))
+    near_names = [CITY_BY_SLUG[s]["name"] for s in c["near"] if s in CITY_BY_SLUG]
+    near_txt = (", and nearby " + (", ".join(near_names[:-1]) + " and " + near_names[-1] if len(near_names) > 1 else near_names[0])) if near_names else ""
+    faq = [(f"Do you film in {n}?", f"Yes. We shoot on location in {n}, across {c['county']}{near_txt}. Our studio is in St. Charles.", False)]
+    q = CITY_NOTE.get(c["slug"]) or x.get("q")
+    if q:
+        faq.append((q[0], q[1], False))
     if focus:
         faq.append((f"Which {n} businesses do you work with most?", f"Across {n} we often work with " + ", ".join(i["noun"] for i in focus[:-1]) + f" and {focus[-1]['noun']}, plus other home service, automotive and local service businesses.", False))
-    faq += [("How much does it cost?", "Monthly content plans are $795, $1,495 or $2,195 a month. Ad management is $1,150 or $1,950 a month plus a one-time setup, and you pay ad spend directly to the platforms.", False),
-            ("How fast can you start?", "First posts can go live as soon as the next week.", False),
-            ("Is there a contract?", "Most plans are month to month. A special offer may come with a set term, stated before signing. Ask about current specials.", False)]
+        faq.append((f"What does it cost for a {n} business?", "Content plans are $795, $1,495 or $2,195 a month. " + start_sentence(focus[0], f"Around {n}, {focus[0]['noun']}") + " You pay ad spend directly to the platforms.", False))
+    else:
+        faq.append(("How much does it cost?", "Monthly content plans are $795, $1,495 or $2,195 a month. Ad management is $1,150 or $1,950 a month plus a one-time setup, and you pay ad spend directly to the platforms.", False))
+    gq, ga = GENERIC_FAQ[(idx + 2) % len(GENERIC_FAQ)]
+    faq.append((gq, ga, False))
     near = "".join(f'<li><a href="{city_file(s)}">{TRI}{e(CITY_BY_SLUG[s]["name"])}</a></li>' for s in c["near"] if s in CITY_BY_SLUG)
     focus_html = ""
     if focus:
@@ -759,23 +905,32 @@ def city_page(c):
     eb, h2 = WHY_VARIANTS[idx % 3]
     schema = {**BUSINESS, "areaServed": {"@type": "City", "name": f"{n}, MO"}}
     gal = section("Recent shoots", "Shot on real jobs.", f"A sample of the work we make for businesses around {n}.", gallery(idx, 5), "band dark")
-    blocks = [section(eb.format(n=n), h2.format(n=n), c["local"], f'<p class="muted" style="max-width:70ch">We plan, film, edit and post content for {e(n)} businesses, and run Meta and Google ads aimed at {e(n)} and the surrounding area. <a href="content-creation.html">Monthly content</a> starts at $795/mo and <a href="paid-advertising.html">paid ads</a> at $1,150/mo.</p>'), focus_html,
-              pricing_section("content", "band bone" if not focus_html else "band") + pricing_section("ads", "band bone" if focus_html else "band", anchor=False)]
+    intro = CITY_INTRO_VARIANTS[idx % 3].format(n=n)
+    local = section(eb.format(n=n), h2.format(n=n), c["local"],
+        f'<div class="stack" style="gap:14px;max-width:70ch"><p class="muted">{e(intro)}</p><p class="muted"><strong style="color:var(--ink)">Where we shoot:</strong> {e(x["area"])}</p>'
+        f'<p class="muted"><a href="content-creation.html">Monthly content</a> starts at $795/mo and <a href="paid-advertising.html">paid ads</a> at $1,150/mo.</p></div>')
+    price = seo_pricing(focus, f"What {n} businesses usually start with.",
+        f"Most {n} businesses start with one content plan and add ads aimed at {n} and nearby towns when they're ready.",
+        "band" if focus_html else "band bone", city=n)
+    blocks = [local, focus_html, price]
     if idx % 2:
-        blocks = [blocks[0], blocks[2], blocks[1]]
-    body = page_head(f"{n}, MO", H1_VARIANTS[idx % 3].format(n=n), c["intro"], n, "See pricing") + "".join(blocks) + gal + reviews(2, idx) + \
+        blocks = [local, price, focus_html]
+    body = page_head(f"{n}, MO", H1_VARIANTS[idx % 3].format(n=n), c["intro"], n, "See pricing") + "".join(blocks) + \
+        ((gal + reviews(2, idx)) if idx % 3 != 1 else (reviews(2, idx) + gal)) + \
         f"""<section class="band"><div class="wrap"><div class="band-head"><div class="stack">{eyebrow("Nearby")}<h2 class="display-l">We also serve.</h2></div><p class="body-l">Close to {e(n)} and on our regular routes.</p></div><ul class="areas">{near}<li><a href="areas.html">{TRI}All areas</a></li></ul></div></section>""" + \
-        section("FAQ", f"{n} questions.", "", faq_html(faq), "band bone") + cta_band(f"Let's fill your schedule in {n}.")
+        section("FAQ", f"{n} questions.", "", faq_html(faq), "band bone") + \
+        cta_band(f"Let's fill your schedule in {n}.", f"30 minutes. We'll look at what you're posting now, what competitors around {n} are doing, and what we'd film first.")
     return page(city_file(c["slug"]), f"Video Production & Social Media Marketing in {n}, MO | Onyx Media",
                 f"Video production, monthly social content and paid ads for local businesses in {n}, MO ({c['county']}). Content from $795/mo, ads from $1,150/mo.",
                 body, None, extra_head=ld(schema) + faq_ld(faq))
 
 # ---------------------------------------------------------------- Google Ads landing pages (/lp/*)
 # Ad traffic only: noindex, not in the sitemap, not linked from anywhere on the site, no nav.
-# Forms post to Netlify Forms (same pipeline as the Contact form). Google Ads IDs come from
+# Forms post to /api/lp-audit (netlify/functions/lp-audit.js): same Supabase leads + audit_requests
+# tables and the same Resend alert as /api/audit. Google Ads IDs come from
 # env vars via tools/lp_config.py, which writes prototype/lp/ads-config.js at build/deploy time.
 LP_AREAS = "Serving Wright City, Troy, Wentzville, O'Fallon, St. Peters & St. Charles"
-LP_PROOF = [("5-star", "Google reviews"), ("18", "Local businesses filmed"), ("43", "Industries served")]
+LP_PROOF = [("5-star", "Google reviews"), ("18", "Local businesses filmed"), (str(len(INDUSTRIES)), "Industries served")]  # same count as the homepage
 LP_STEPS = [("Request your free audit", "Send the short form below."),
             ("Free 30-minute call", "We review your current ads/posting and your local competition with you."),
             ("We launch", "Usually the following week.")]
@@ -857,24 +1012,22 @@ def lp_foot():
 </div></footer>"""
 
 def lp_form(slug, d, idx):
-    """Netlify form. Every field must exist in this HTML so Netlify stores it."""
+    """Posts to /api/lp-audit. lead_source is checked server-side against a fixed list."""
     p = f"f{idx}-"
-    hidden = "".join(f'<input type="hidden" name="{n}" value="{e(v)}">' for n, v in [
-        ("form-name", d["lead_source"]), ("lead_source", d["lead_source"]), ("service_interest", d["service"]),
-        ("subject", f"New free audit request [{d['lead_source']}]")])
+    hidden = f'<input type="hidden" name="lead_source" value="{e(d["lead_source"])}"><input type="hidden" name="t" value="">'
     tracked = "".join(f'<input type="hidden" name="{n}" value="">' for n in
                       ["gclid", "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "landing_page", "referrer"])
-    return f"""<form class="quote-card lp-form" name="{d['lead_source']}" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="/lp/thank-you?s={slug}" data-next="/lp/thank-you?s={slug}" novalidate>
+    return f"""<form class="quote-card lp-form" method="POST" action="/api/lp-audit" data-success="/lp/thank-you?s={slug}" novalidate>
   {hidden}{tracked}
   <p class="hp" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
   <h2 class="lp-form-h">Get your free audit</h2>
   <p class="form-note">Free 30-minute call. No obligation.</p>
   <div class="fields two">
-    <div class="field"><label for="{p}name">Name <span class="req">*</span></label><input id="{p}name" name="name" autocomplete="name" required maxlength="100"></div>
-    <div class="field"><label for="{p}biz">Business name <span class="req">*</span></label><input id="{p}biz" name="business_name" autocomplete="organization" required maxlength="150"></div>
-    <div class="field"><label for="{p}phone">Phone <span class="req">*</span></label><input id="{p}phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="30"></div>
-    <div class="field"><label for="{p}email">Email <span class="req">*</span></label><input id="{p}email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="200"></div>
-    <div class="field full"><label for="{p}site">Website or Facebook page <span class="opt">(optional)</span></label><input id="{p}site" name="website" inputmode="url" autocomplete="url" maxlength="300" placeholder="yourbusiness.com"></div>
+    <div class="field"><label for="{p}name">Name <span class="req">*</span></label><input id="{p}name" name="name" autocomplete="name" required maxlength="120"></div>
+    <div class="field"><label for="{p}biz">Business name <span class="req">*</span></label><input id="{p}biz" name="business" autocomplete="organization" required maxlength="160"></div>
+    <div class="field"><label for="{p}phone">Phone <span class="req">*</span></label><input id="{p}phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="40"></div>
+    <div class="field"><label for="{p}email">Email <span class="req">*</span></label><input id="{p}email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="254"></div>
+    <div class="field full"><label for="{p}site">Website or Facebook page <span class="opt">(optional)</span></label><input id="{p}site" name="link" inputmode="url" autocomplete="url" maxlength="300" placeholder="yourbusiness.com"></div>
   </div>
   <p class="err" role="alert" hidden></p>
   <button class="btn primary" type="submit">Get my free audit {TRI}</button>
@@ -962,7 +1115,9 @@ def write_landing_pages():
 def main():
     OUT.mkdir(exist_ok=True); ART.mkdir(exist_ok=True)
     pages = {"index.html": home(), "content-creation.html": content_page(), "paid-advertising.html": ads_page(),
-             "work.html": work_page(), "about.html": about_page(), "contact.html": contact_page(), "thank-you.html": thanks_page()}
+             "work.html": work_page(), "about.html": about_page(), "contact.html": contact_page(), "thank-you.html": thanks_page(),
+             "audit.html": audit_page(), "audit-thank-you.html": audit_thanks_page(),
+             "proposal.html": proposal_page()}
     for c in CITIES:
         pages[city_file(c["slug"])] = city_page(c)
     pages["industries.html"] = industries_hub()
@@ -975,9 +1130,9 @@ def main():
         (OUT / name).write_text(text)
     (ART / "artifact-index.html").write_text(home(fragment=True))
     write_landing_pages()  # /lp/* pages: deliberately not in `pages`, so never in the sitemap
-    urls = "".join(f"<url><loc>{SITE_URL}/" + ("" if p == "index.html" else p) + "</loc></url>" for p in pages if p != "thank-you.html")
+    urls = "".join(f"<url><loc>{SITE_URL}/" + ("" if p == "index.html" else p) + "</loc></url>" for p in pages if p not in NO_SITEMAP)
     (OUT / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>\n')
-    (OUT / "robots.txt").write_text(("User-agent: *\nAllow: /\n" if INDEXABLE else "User-agent: *\nDisallow: /\n") + f"Sitemap: {SITE_URL}/sitemap.xml\n")
+    (OUT / "robots.txt").write_text(("User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /proposal.html\n" if INDEXABLE else "User-agent: *\nDisallow: /\n") + f"Sitemap: {SITE_URL}/sitemap.xml\n")
     print(f"built {len(pages)} pages")
 
 if __name__ == "__main__":

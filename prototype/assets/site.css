@@ -500,3 +500,35 @@ a.trade{text-decoration:none;color:inherit}
 .legal-copy h2{margin-top:18px}
 .legal-copy p{color:var(--muted)}
 .legal a{color:inherit}
+
+/* Free audit page */
+ol.steps{list-style:none;margin:0;padding:0}
+@media (min-width:860px){.steps.three{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.audit-teaser{display:grid;gap:24px;align-items:center}
+@media (min-width:860px){.audit-teaser{grid-template-columns:minmax(0,1fr) auto;gap:48px}}
+.btn[disabled]{opacity:.6;cursor:progress}
+
+/* Proposal page */
+.proposal{display:grid;gap:32px}
+@media (min-width:960px){.proposal{grid-template-columns:minmax(0,1.3fr) minmax(320px,.7fr);align-items:start;gap:48px}}
+.p-packages{display:grid;gap:12px}
+.p-pkg{background:var(--bg);border:1px solid var(--line);border-left:6px solid var(--amber);padding:20px 22px;display:grid;gap:8px}
+.p-pkg-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.p-pkg h3{font-family:var(--font-display);font-weight:800;font-stretch:112%;text-transform:uppercase;font-size:20px;margin:0}
+.p-price{font-weight:800;font-size:18px;white-space:nowrap}
+.p-pkg p{margin:0;color:var(--muted)}
+.p-note{background:var(--bone);border:1px solid var(--line);padding:20px 22px;display:grid;gap:8px}
+.p-note p{margin:0;white-space:pre-wrap}
+.p-totals .p-line{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.p-totals .p-big{font-family:var(--font-display);font-weight:900;font-stretch:112%;font-size:34px;line-height:1}
+.p-totals s{color:var(--muted);font-weight:400}
+.p-prepay{display:grid;gap:8px}
+.p-prepay label{display:block}
+.p-prepay span{display:block;width:100%;line-height:1.4}
+
+/* SEO page pricing summary */
+.seo-recs{margin-bottom:28px}
+.seo-price{font-weight:800;margin:0}
+.seo-price-grid{display:grid;gap:28px}
+@media (min-width:860px){.seo-price-grid{grid-template-columns:1fr 1fr;gap:48px}}
+.seo-price-grid .ticks span{line-height:1.45}
