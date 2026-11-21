@@ -525,3 +525,10 @@ ol.steps{list-style:none;margin:0;padding:0}
 .p-prepay{display:grid;gap:8px}
 .p-prepay label{display:block}
 .p-prepay span{display:block;width:100%;line-height:1.4}
+
+/* SEO page pricing summary */
+.seo-recs{margin-bottom:28px}
+.seo-price{font-weight:800;margin:0}
+.seo-price-grid{display:grid;gap:28px}
+@media (min-width:860px){.seo-price-grid{grid-template-columns:1fr 1fr;gap:48px}}
+.seo-price-grid .ticks span{line-height:1.45}

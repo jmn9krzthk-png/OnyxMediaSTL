@@ -17,6 +17,7 @@ import html, json, os, pathlib, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from industries import INDUSTRIES, GROUPS
 from cities import EXTRA_CITIES, CITY_FOCUS, CITY_NOTE
+from seo_extra import INDUSTRY_SEO, CITY_SEO, GENERIC_FAQ
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "prototype"
@@ -473,32 +474,80 @@ def industries_hub():
         items = [i for i in INDUSTRIES if i["group"] == key]
         groups += f'<section class="band{" bone" if key in ("auto", "pro") else ""}"><div class="wrap"><div class="band-head"><div class="stack">{eyebrow(label)}<h2 class="display-l">{e(label)}.</h2></div><span></span></div>' + \
             '<div class="ind-grid">' + "".join(f'<a class="card" href="{industry_file(i["slug"])}"><h3 class="display-m" style="font-size:22px">{e(i["name"])}</h3><p>{e(i["intro"].split(". ")[0])}.</p><span class="btn text">See {e(i["name"].lower())} marketing</span></a>' for i in items) + "</div></div></section>"
-    body = page_head("Industries", "Video and ads for service businesses.", "Home services, automotive, pets and local professional services across St. Louis and St. Charles County. Pick your industry to see what we film and what it costs.", "Industries") + groups + cta_band()
+    body = page_head("Industries", "Video and ads for service businesses.", "Home services, automotive, pets and local service businesses across St. Louis and St. Charles County. Pick your industry to see what we film and what it costs.", "Industries") + groups + cta_band()
     return page("industries.html", "Industries We Serve | Video & Social Media Marketing for Service Businesses | Onyx Media St. Louis",
                 "Video production, monthly social content and paid ads for home service, automotive, pet and local service businesses in St. Louis and St. Charles County.", body, "industries.html")
 
+# ---------------------------------------------------------------- SEO page helpers (city + industry)
+CP_BY_KEY = {p["key"]: p for p in CONTENT_PLANS}
+AP_BY_KEY = {p["key"]: p for p in AD_PLANS}
+
+def start_offer(i):
+    """(content plan, ad plan or None, why) recommended for an industry."""
+    x = INDUSTRY_SEO[i["slug"]]; c_key, a_key = x["start"]
+    return CP_BY_KEY[c_key], (AP_BY_KEY[a_key] if a_key else None), x["why"]
+
+def start_sentence(i, who):
+    cp, ap, _ = start_offer(i)
+    s = f"{who} usually start with {cp['name']} content at {money(cp['price'])}/mo"
+    return s + (f" plus {ap['name']} at {money(ap['fee'])}/mo and a {money(ap['setup'])} one-time setup" if ap else "") + "."
+
+def seo_pricing(recs, h2, lead, cls="band", city=None):
+    """Short pricing section for city and industry pages; the full tools live on the service pages."""
+    cards = ""
+    if recs:
+        cards = '<div class="grid-3 seo-recs">' + "".join(
+            f'<div class="card"><span class="eyebrow">{e(i["name"] if city else "Where most start")}</span>'
+            f'<h3 class="display-m" style="font-size:22px">{e(start_offer(i)[0]["name"])}' + (f' + {e(start_offer(i)[1]["name"])}' if start_offer(i)[1] else "") + "</h3>"
+            f'<p class="seo-price">{money(start_offer(i)[0]["price"])}/mo content' + (f' + {money(start_offer(i)[1]["fee"])}/mo ads · {money(start_offer(i)[1]["setup"])} setup' if start_offer(i)[1] else "") + "</p>"
+            f'<p>{e(start_offer(i)[2])}</p>' + (f'<a class="btn text" href="{industry_file(i["slug"])}">{e(i["name"])}</a>' if city else "") + "</div>"
+            for i in recs) + "</div>"
+    content = "".join(f"<li>{TRI}<span><strong>{e(p['name'])}</strong> · {money(p['price'])}/mo · {e(p['posts'])} posts a month ({p['reels']} reels, {p['photos']} photo/graphic)</span></li>" for p in CONTENT_PLANS)
+    ads = "".join(f"<li>{TRI}<span><strong>{e(p['name'])}</strong> ({e(p['platforms'])}) · {money(p['fee'])}/mo + {money(p['setup'])} one-time setup</span></li>" for p in AD_PLANS)
+    return f"""<section class="{cls}" id="pricing"><div class="wrap">
+  <div class="band-head"><div class="stack">{eyebrow("Pricing")}<h2 class="display-l">{e(h2)}</h2></div><p class="body-l">{e(lead)}</p></div>
+  {cards}
+  <div class="seo-price-grid">
+    <div class="stack" style="gap:10px"><h3 class="heading">Monthly content</h3><ul class="ticks">{content}</ul><a class="btn text" href="content-creation.html#pricing">Compare content plans</a></div>
+    <div class="stack" style="gap:10px"><h3 class="heading">Paid ads management</h3><ul class="ticks">{ads}</ul><p class="form-note">Ad spend is paid directly to the platforms.</p><a class="btn text" href="paid-advertising.html#pricing">Ad cost calculator</a></div>
+  </div></div></section>"""
+
+def rotate(seq, k):
+    return seq[k % len(seq):] + seq[:k % len(seq)] if seq else seq
+
 def industry_page(i):
-    n = i["name"]; noun = i["noun"]
+    n = i["name"]; noun = i["noun"]; idx = INDUSTRIES.index(i); x = INDUSTRY_SEO[i["slug"]]
     shots = ticks(i["shots"])
     ideas = '<div class="grid-3">' + "".join(f'<div class="card"><span class="eyebrow">Idea {k+1}</span><h3 class="display-m" style="font-size:24px">{e(t)}</h3><p>{e(d)}</p></div>' for k, (t, d) in enumerate(i["ideas"])) + "</div>"
     case = ""
     if i.get("case") is not None:
         case = section("Recent work", f"Work for {noun}.", "", '<div class="cases two" style="max-width:640px">' + case_html(CASES[i["case"]]) + "</div>")
+    gq, ga = GENERIC_FAQ[idx % len(GENERIC_FAQ)]
     faq = [(f"Do you work with {noun} in St. Louis?", f"Yes. We create content and run ads for {noun} across St. Louis, St. Charles County and nearby areas. Our studio is in St. Charles.", False),
+           (x["q"][0], x["q"][1], False),
            (f"What content works best for {noun}?", " ".join(f"{t}: {d}" for t, d in i["ideas"]), False),
-           ("How much does it cost?", "Monthly content plans are $795, $1,495 or $2,195 a month. Ad management is $1,150 or $1,950 a month plus a one-time setup, and you pay ad spend directly to the platforms.", False),
-           ("Is there a contract?", "Most plans are month to month. A special offer may come with a set term, stated before signing. Ask about current specials.", False),
-           ("How fast can we start?", "First posts can go live as soon as the next week.", False)]
-    city_list = '<ul class="areas">' + "".join(f'<li><a href="{city_file(c["slug"])}">{TRI}{e(c["name"])}</a></li>' for c in CITIES[:9]) + f'<li><a href="areas.html">{TRI}All {len(CITIES)} areas</a></li></ul>'
+           (f"What does it cost for {noun}?", start_sentence(i, f"Most {noun}") + " Content plans run $795 to $2,195 a month, and you pay ad spend directly to the platforms.", False),
+           (gq, ga, False)]
+    # Cities that feature this industry first, then a rotating set, so each page links somewhere different.
+    featured = [c for c in CITIES if i["slug"] in CITY_FOCUS.get(c["slug"], [])]
+    picks = (featured + [c for c in rotate(CITIES, idx * 3) if c not in featured])[:8]
+    city_list = '<ul class="areas">' + "".join(f'<li><a href="{city_file(c["slug"])}">{TRI}{e(c["name"])}</a></li>' for c in picks) + f'<li><a href="areas.html">{TRI}All {len(CITIES)} areas</a></li></ul>'
+    same = rotate([j for j in INDUSTRIES if j["group"] == i["group"] and j is not i], idx)
+    others = rotate([j for j in INDUSTRIES if j["group"] != i["group"]], idx * 2)
+    related = '<ul class="areas">' + "".join(f'<li><a href="{industry_file(j["slug"])}">{TRI}{e(j["name"])}</a></li>' for j in (same + others)[:8]) + "</ul>"
+    film = section("What we film", f"Content built for {noun}.", i["season"], shots)
+    plan = section("Content ideas", f"Videos that bring in more {i['jobs']}.", "A few of the formats we plan into your monthly calendar.", ideas, "band bone")
+    price = seo_pricing([i], f"Where {noun} usually start.", x["ads"])
+    blocks = [[film, plan, case, price], [film, price, plan, case], [plan, film, case, price]][idx % 3]
+    proof = [section("Recent shoots", "Shot on real jobs.", f"The kind of footage we capture for {noun}.", gallery(idx, 5), "band dark"), reviews(2, idx + 2)]
+    if idx % 2:
+        proof.reverse()
     body = page_head(f"Marketing for {n.lower()}", f"Video & social media marketing for {noun} in St. Louis.", i["intro"], f"Industries / {n}", "See pricing") + \
-        section("What we film", f"Content built for {noun}.", i["season"], shots) + \
-        section("Content ideas", f"Videos that bring in more {i['jobs']}.", "A few of the formats we plan into your monthly calendar.", ideas, "band bone") + \
-        case + pricing_section("content") + pricing_section("ads", "band bone", anchor=False) + \
-        section("Recent shoots", "Shot on real jobs.", f"The kind of footage we capture for {noun}.", gallery(INDUSTRIES.index(i), 5), "band dark") + reviews(2, INDUSTRIES.index(i) + 2) + \
+        "".join(blocks) + "".join(proof) + \
         section("Where we work", f"Serving {noun} across the metro.", "We come to your job sites, shop or office.", city_list) + \
         section("FAQ", f"Questions from {noun}.", "", faq_html(faq), "band bone") + \
-        section("Other industries", "We also work with.", "", industry_links(i["slug"], 10) + '<div class="btns" style="margin-top:20px"><a class="btn text" href="industries.html">All industries</a></div>') + \
-        cta_band(f"Let's bring in more {i['jobs']}.")
+        section("Related industries", "We also work with.", "", related + '<div class="btns" style="margin-top:20px"><a class="btn text" href="industries.html">All industries</a></div>') + \
+        cta_band(f"Let's bring in more {i['jobs']}.", f"30 minutes. We'll look at what you're posting now, what other {noun} around St. Louis are doing, and what we'd film first.")
     schema = {"@context": "https://schema.org", "@type": "Service", "serviceType": f"Video production and social media marketing for {noun}",
               "provider": {k: v for k, v in BUSINESS.items() if k != "@context"}, "areaServed": "St. Louis, MO"}
     return page(industry_file(i["slug"]), f"Video & Social Media Marketing for {n} in St. Louis | Onyx Media",
@@ -689,7 +738,7 @@ def contact_page():
   {contact_form()}
 </div></section>
 <section class="band bone"><div class="wrap audit-teaser">
-  <div class="stack" style="gap:12px">{eyebrow("Not ready for a call?")}<h2 class="display-m">Get a free content &amp; ads audit.</h2><p class="body-l">Send us your links. We'll review your website, social pages, Google profile and ads, and send back the top things we'd fix or film first.</p></div>
+  <div class="stack" style="gap:12px">{eyebrow("Not ready for a call?")}<h2 class="display-m">Get a free content &amp; ads audit.</h2><p class="body-l">Send us your website. We'll review it, your social pages, Google profile and ads, and send back the top things we'd fix or film first.</p></div>
   <div class="btns"><a class="btn primary" href="audit.html">Request my free audit {TRI}</a></div>
 </div></section>"""
     return page("contact.html", "Contact | Onyx Media St. Louis", "Contact Onyx Media for monthly video content and paid ads, and book a free 30-minute call.", body, "contact.html")
@@ -741,13 +790,9 @@ def thanks_page():
 
 # ---------------------------------------------------------------- audit request (free content & ads audit)
 NO_SITEMAP = {"thank-you.html", "audit-thank-you.html", "proposal.html"}
-# Keep in sync with AD_SPEND in netlify/functions/audit.js
-AD_SPEND_OPTIONS = ["Not running ads", "Under $500", "$500–$1,500", "$1,500–$3,000", "$3,000–$7,000", "$7,000+"]
 
 def audit_form():
-    biz = "".join(f"<option>{e(o)}</option>" for o in BIZ_OPTIONS)
-    spend = "".join(f"<option>{e(o)}</option>" for o in AD_SPEND_OPTIONS)
-    return f"""<form class="quote-card js-lead" name="audit" method="POST" action="/api/audit" data-success="audit-thank-you.html" data-need-link="true" novalidate>
+    return f"""<form class="quote-card js-lead" name="audit" method="POST" action="/api/audit" data-success="audit-thank-you.html" novalidate>
   <input type="hidden" name="t" value="">
   <p class="hp" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
   {eyebrow("Request your free audit")}
@@ -756,23 +801,11 @@ def audit_form():
     <div class="field"><label for="a-biz">Business name <span class="req">*</span></label><input id="a-biz" name="business" autocomplete="organization" required></div>
     <div class="field"><label for="a-email">Email <span class="req">*</span></label><input id="a-email" name="email" type="email" autocomplete="email" required></div>
     <div class="field"><label for="a-phone">Mobile <span class="req">*</span></label><input id="a-phone" name="phone" type="tel" autocomplete="tel" required></div>
-    <div class="field full"><label for="a-ind">Industry</label><select id="a-ind" name="industry">{biz}</select></div>
+    <div class="field full"><label for="a-site">Website <span class="req">*</span></label><input id="a-site" name="website" type="url" inputmode="url" placeholder="yourbusiness.com" autocomplete="url" required></div>
   </div>
-  <p class="form-note" style="margin:6px 0 0">Your links (add at least one)</p>
-  <div class="fields two">
-    <div class="field full"><label for="a-site">Website</label><input id="a-site" name="website" type="url" inputmode="url" placeholder="yourbusiness.com" autocomplete="url"></div>
-    <div class="field"><label for="a-fb">Facebook page</label><input id="a-fb" name="facebook_url" type="url" inputmode="url" placeholder="facebook.com/…"></div>
-    <div class="field"><label for="a-ig">Instagram</label><input id="a-ig" name="instagram_url" type="url" inputmode="url" placeholder="instagram.com/…"></div>
-    <div class="field full"><label for="a-gbp">Google Business Profile link</label><input id="a-gbp" name="google_business_url" type="url" inputmode="url" placeholder="Paste your Google Maps / g.page link"></div>
-  </div>
-  <div class="fields two">
-    <fieldset class="choice"><legend>Running ads now?</legend><label><input type="radio" name="runs_ads" value="yes"><span>Yes</span></label><label><input type="radio" name="runs_ads" value="no"><span>No</span></label></fieldset>
-    <div class="field"><label for="a-spend">Monthly ad spend</label><select id="a-spend" name="monthly_ad_spend">{spend}</select></div>
-    <div class="field full"><label for="a-goal">Biggest goal for the next 6 months</label><textarea id="a-goal" name="biggest_goal" placeholder="More booked jobs, fill the slow season, hire techs, launch a new service…"></textarea></div>
-  </div>
-  <p class="err" role="alert" hidden>Add your name, business name, a 10-digit mobile number, a full email address and at least one link.</p>
+  <p class="err" role="alert" hidden>Add your name, business name, a 10-digit mobile number, a full email address and your website.</p>
   <button class="btn primary" type="submit">Request my free audit {TRI}</button>
-  <p class="form-note">Free, no obligation. We'll email it to you within 3 business days.</p>
+  <p class="form-note">Free, no obligation. We'll find your social pages and Google profile from there and email your audit within 3 business days.</p>
 </form>"""
 
 def audit_page():
@@ -785,7 +818,7 @@ def audit_page():
     body = f"""<section class="page-head with-form"><div class="wrap">
   <div class="stack" style="gap:20px"><p class="crumbs"><a href="./">Home</a> / Free audit</p>{eyebrow("Free · No obligation")}
     <h1 class="display-l">Get a free content &amp; ads audit.</h1>
-    <p class="body-l">Send us your links. We'll look at your website, social pages, Google profile and ads the way your customers see them, and send back a short, plain-English audit.</p>
+    <p class="body-l">Send us your website. We'll look at it, your social pages, Google profile and ads the way your customers see them, and send back a short, plain-English audit.</p>
     <div class="stack" style="gap:12px"><span class="eyebrow">{TRI}What you get</span>{ticks(gets)}</div>
     <p class="form-note">Prefer to talk? Call or text {PHONE}, or <a href="contact.html">book a 30-minute call</a>.</p>
   </div>
@@ -793,7 +826,7 @@ def audit_page():
 </div></section>
 """ + section("How it works", "Three steps. No pitch deck.", "", '<ol class="steps three">' + "".join(
         f'<li class="step"><span class="n">0{i+1}</span><h3>{e(t)}</h3><p>{e(d)}</p></li>' for i, (t, d) in enumerate([
-            ("Send your links", "Two minutes. Your website, Facebook, Instagram and Google profile, whichever you have."),
+            ("Send your website", "Thirty seconds: your name, contact info and website. We find the rest."),
             ("We dig in", "We review everything and compare you with a few competitors near you."),
             ("You get the audit", "A short write-up by email with what to fix first. Use it with us or on your own.")])) + "</ol>", "band") + \
         cta_band("Rather just talk it through?", "30 minutes. We'll look at what you're posting now and what we'd film first.")
@@ -842,17 +875,28 @@ H1_VARIANTS = ["Video production & social media marketing in {n}, MO.", "{n}, MO
 WHY_VARIANTS = [("Why video in {n}", "Be the {n} company people call first."), ("Local to {n}", "Show {n} the work behind your name."),
                 ("Standing out in {n}", "Make {n} customers choose you.")]
 
+CITY_INTRO_VARIANTS = [
+    "We plan, film, edit and post content for {n} businesses, and run Meta and Google ads aimed at {n} and the surrounding area.",
+    "One local team handles it all for {n} companies: the shoot, the edit, the weekly posts and the ads that reach {n} and nearby towns.",
+    "From the first shoot day to the monthly report, we handle content and ads for {n} businesses, aimed at the customers around {n} you actually want.",
+]
+
 def city_page(c):
-    n = c["name"]; idx = CITIES.index(c)
+    n = c["name"]; idx = CITIES.index(c); x = CITY_SEO[c["slug"]]
     focus = [IND_BY_SLUG[s] for s in CITY_FOCUS.get(c["slug"], []) if s in IND_BY_SLUG]
-    faq = [(f"Do you film in {n}?", f"Yes. We shoot on location in {n} and across {c['county']}. Our studio is in St. Charles.", False)]
-    if c["slug"] in CITY_NOTE:
-        q, a = CITY_NOTE[c["slug"]]; faq.append((q, a, False))
+    near_names = [CITY_BY_SLUG[s]["name"] for s in c["near"] if s in CITY_BY_SLUG]
+    near_txt = (", and nearby " + (", ".join(near_names[:-1]) + " and " + near_names[-1] if len(near_names) > 1 else near_names[0])) if near_names else ""
+    faq = [(f"Do you film in {n}?", f"Yes. We shoot on location in {n}, across {c['county']}{near_txt}. Our studio is in St. Charles.", False)]
+    q = CITY_NOTE.get(c["slug"]) or x.get("q")
+    if q:
+        faq.append((q[0], q[1], False))
     if focus:
         faq.append((f"Which {n} businesses do you work with most?", f"Across {n} we often work with " + ", ".join(i["noun"] for i in focus[:-1]) + f" and {focus[-1]['noun']}, plus other home service, automotive and local service businesses.", False))
-    faq += [("How much does it cost?", "Monthly content plans are $795, $1,495 or $2,195 a month. Ad management is $1,150 or $1,950 a month plus a one-time setup, and you pay ad spend directly to the platforms.", False),
-            ("How fast can you start?", "First posts can go live as soon as the next week.", False),
-            ("Is there a contract?", "Most plans are month to month. A special offer may come with a set term, stated before signing. Ask about current specials.", False)]
+        faq.append((f"What does it cost for a {n} business?", "Content plans are $795, $1,495 or $2,195 a month. " + start_sentence(focus[0], f"Around {n}, {focus[0]['noun']}") + " You pay ad spend directly to the platforms.", False))
+    else:
+        faq.append(("How much does it cost?", "Monthly content plans are $795, $1,495 or $2,195 a month. Ad management is $1,150 or $1,950 a month plus a one-time setup, and you pay ad spend directly to the platforms.", False))
+    gq, ga = GENERIC_FAQ[(idx + 2) % len(GENERIC_FAQ)]
+    faq.append((gq, ga, False))
     near = "".join(f'<li><a href="{city_file(s)}">{TRI}{e(CITY_BY_SLUG[s]["name"])}</a></li>' for s in c["near"] if s in CITY_BY_SLUG)
     focus_html = ""
     if focus:
@@ -861,13 +905,21 @@ def city_page(c):
     eb, h2 = WHY_VARIANTS[idx % 3]
     schema = {**BUSINESS, "areaServed": {"@type": "City", "name": f"{n}, MO"}}
     gal = section("Recent shoots", "Shot on real jobs.", f"A sample of the work we make for businesses around {n}.", gallery(idx, 5), "band dark")
-    blocks = [section(eb.format(n=n), h2.format(n=n), c["local"], f'<p class="muted" style="max-width:70ch">We plan, film, edit and post content for {e(n)} businesses, and run Meta and Google ads aimed at {e(n)} and the surrounding area. <a href="content-creation.html">Monthly content</a> starts at $795/mo and <a href="paid-advertising.html">paid ads</a> at $1,150/mo.</p>'), focus_html,
-              pricing_section("content", "band bone" if not focus_html else "band") + pricing_section("ads", "band bone" if focus_html else "band", anchor=False)]
+    intro = CITY_INTRO_VARIANTS[idx % 3].format(n=n)
+    local = section(eb.format(n=n), h2.format(n=n), c["local"],
+        f'<div class="stack" style="gap:14px;max-width:70ch"><p class="muted">{e(intro)}</p><p class="muted"><strong style="color:var(--ink)">Where we shoot:</strong> {e(x["area"])}</p>'
+        f'<p class="muted"><a href="content-creation.html">Monthly content</a> starts at $795/mo and <a href="paid-advertising.html">paid ads</a> at $1,150/mo.</p></div>')
+    price = seo_pricing(focus, f"What {n} businesses usually start with.",
+        f"Most {n} businesses start with one content plan and add ads aimed at {n} and nearby towns when they're ready.",
+        "band" if focus_html else "band bone", city=n)
+    blocks = [local, focus_html, price]
     if idx % 2:
-        blocks = [blocks[0], blocks[2], blocks[1]]
-    body = page_head(f"{n}, MO", H1_VARIANTS[idx % 3].format(n=n), c["intro"], n, "See pricing") + "".join(blocks) + gal + reviews(2, idx) + \
+        blocks = [local, price, focus_html]
+    body = page_head(f"{n}, MO", H1_VARIANTS[idx % 3].format(n=n), c["intro"], n, "See pricing") + "".join(blocks) + \
+        ((gal + reviews(2, idx)) if idx % 3 != 1 else (reviews(2, idx) + gal)) + \
         f"""<section class="band"><div class="wrap"><div class="band-head"><div class="stack">{eyebrow("Nearby")}<h2 class="display-l">We also serve.</h2></div><p class="body-l">Close to {e(n)} and on our regular routes.</p></div><ul class="areas">{near}<li><a href="areas.html">{TRI}All areas</a></li></ul></div></section>""" + \
-        section("FAQ", f"{n} questions.", "", faq_html(faq), "band bone") + cta_band(f"Let's fill your schedule in {n}.")
+        section("FAQ", f"{n} questions.", "", faq_html(faq), "band bone") + \
+        cta_band(f"Let's fill your schedule in {n}.", f"30 minutes. We'll look at what you're posting now, what competitors around {n} are doing, and what we'd film first.")
     return page(city_file(c["slug"]), f"Video Production & Social Media Marketing in {n}, MO | Onyx Media",
                 f"Video production, monthly social content and paid ads for local businesses in {n}, MO ({c['county']}). Content from $795/mo, ads from $1,150/mo.",
                 body, None, extra_head=ld(schema) + faq_ld(faq))

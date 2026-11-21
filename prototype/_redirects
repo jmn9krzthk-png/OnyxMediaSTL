@@ -7,3 +7,9 @@
 /pricing         /content-creation.html   301
 /portfolio       /work.html               301
 /blank*          /                        301
+
+# Industries no longer offered (removed Nov 2026) -> Industries hub (301 permanent)
+/law-firms-marketing-st-louis.html           /industries.html   301
+/law-firms-marketing-st-louis                /industries.html   301
+/insurance-agencies-marketing-st-louis.html  /industries.html   301
+/insurance-agencies-marketing-st-louis       /industries.html   301

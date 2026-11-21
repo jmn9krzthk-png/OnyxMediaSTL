@@ -8,7 +8,7 @@ Fields: slug, name (as used in headings), noun (plural, used in sentences), grou
 intro, shots (what we film), ideas [(title, text)], season, jobs (what they want more of), case (optional)
 """
 
-GROUPS = [("home", "Home services"), ("auto", "Automotive"), ("pets", "Pets"), ("pro", "Local & professional services")]
+GROUPS = [("home", "Home services"), ("auto", "Automotive"), ("pets", "Pets"), ("pro", "Local services")]
 
 INDUSTRIES = [
     # ---------------- Home services
@@ -214,20 +214,10 @@ INDUSTRIES = [
          shots=["Play yards and group play", "Staff with the dogs", "Facility walk-throughs", "Pickup reunions"],
          ideas=[("A day at camp", "What a stay actually looks like."), ("Facility tour", "Clean, safe, and fun."), ("Staff spotlights", "The people caring for their pets.")],
          season="Holidays and summer travel fill up fast. Promote them early."),
-    # ---------------- Local & professional services
-    dict(slug="law-firms", name="Law Firms", noun="law firms", group="pro", jobs="consultations",
-         intro="People choose a lawyer they feel they already know. Clear, human video of your attorneys answering common questions builds that trust before the first call.",
-         shots=["Attorney Q&A videos", "Office and team introductions", "Practice-area explainers", "Community involvement"],
-         ideas=[("Common questions", "Short answers to what people search."), ("Meet the attorney", "A real face before the consultation."), ("What to expect", "Walk through the process.")],
-         season="Steady educational content builds referrals and search visibility over time."),
+    # ---------------- Local services
     dict(slug="sign-graphics", name="Sign & Graphics Shops", noun="sign, print and graphics shops", group="pro", jobs="orders",
          intro="Your work is visual, but most shops never show the process. Production and install video turns finished signs into your best ads.",
          shots=["Printing and production", "Sign and graphic installs", "Finished storefront reveals", "Custom apparel and print"],
          ideas=[("Install reveals", "Blank wall to branded storefront."), ("How it's made", "Production close-ups."), ("Client spotlights", "Local businesses wearing your work.")],
          season="Steady content keeps local businesses thinking of you when they need signage."),
-    dict(slug="insurance-agencies", name="Insurance Agencies", noun="insurance agencies", group="pro", jobs="quotes",
-         intro="Insurance is hard to tell apart on price alone. A friendly local agent on camera explaining coverage in plain language makes you the one people call.",
-         shots=["Agent explainers", "Team introductions", "Community and local events", "Client stories, with permission"],
-         ideas=[("Plain-language coverage", "What a policy actually covers."), ("Meet your agent", "A local face."), ("Seasonal reminders", "Storm season, new drivers, home buying.")],
-         season="Renewal periods and storm season are natural times to reach people."),
 ]

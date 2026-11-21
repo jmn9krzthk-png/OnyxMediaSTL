@@ -6,7 +6,7 @@ import { adminDb } from "../lib/supabase.js";
 
 export const config = { path: "/api/audit" };
 
-// Keep in sync with AD_SPEND_OPTIONS in tools/build_site.py
+// The form now asks only for contact info and a website; the other fields are still accepted if sent.
 const AD_SPEND = ["Not running ads", "Under $500", "$500–$1,500", "$1,500–$3,000", "$3,000–$7,000", "$7,000+"];
 const SUCCESS = "/audit-thank-you.html";
 
@@ -24,7 +24,7 @@ export default formHandler(async (req) => {
   const email = cleanEmail(body.email);
   const phone = cleanPhone(body.phone);
   if (!name || !business || !email || !phone) {
-    throw new HttpError(400, "Add your name, business name, a 10-digit mobile number and a full email address.");
+    throw new HttpError(400, "Add your name, business name, a 10-digit mobile number, a full email address and your website.");
   }
 
   const urls = {};
@@ -33,9 +33,7 @@ export default formHandler(async (req) => {
     if (u === null) throw new HttpError(400, `The ${label} link doesn't look right. Paste the full address, or leave it blank.`);
     urls[field] = u || null;
   }
-  if (!urls.website && !urls.facebook_url && !urls.instagram_url && !urls.google_business_url) {
-    throw new HttpError(400, "Add at least one link (website, Facebook, Instagram or Google) so we have something to audit.");
-  }
+  if (!urls.website) throw new HttpError(400, "Add your website so we have something to audit.");
 
   const runsAdsRaw = clean(body.runs_ads, 5).toLowerCase();
   const runs_ads = runsAdsRaw === "yes" ? true : runsAdsRaw === "no" ? false : null;
